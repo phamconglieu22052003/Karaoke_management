@@ -1,0 +1,33 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <title>Dashboard</title>
+  </head>
+  <body>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      "
+    >
+      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+
+      <form th:action="@{/logout}" method="post" style="margin: 0">
+        <button type="submit">Đăng xuất</button>
+      </form>
+    </div>
+    <hr />
+
+    <h1>Hệ thống quản lý Karaoke</h1>
+
+    <ul>
+      <li><a th:href="@{/rooms}">Quản lý phòng</a></li>
+      <li><a th:href="@{/room-types}">Loại phòng</a></li>
+      <li><a th:href="@{/booking}">Đặt phòng</a></li>
+      <li><a href="/room-sessions">Room Session (Check-in/out)</a></li>
+    </ul>
+  </body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <title th:text="${booking.id == null ? 'Đặt phòng' : 'Sửa đặt phòng'}">
+      Đặt phòng
+    </title>
+  </head>
+
+  <body>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      "
+    >
+      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+
+      <form th:action="@{/logout}" method="post" style="margin: 0">
+        <button type="submit">Đăng xuất</button>
+      </form>
+    </div>
+    <hr />
+
+    <h2 th:text="${booking.id == null ? 'Đặt phòng' : 'Sửa đặt phòng'}"></h2>
+
+    <p>
+      <a th:href="@{/booking}">← Quay lại danh sách đặt phòng</a>
+    </p>
+
+    <div th:if="${error}" style="color: red; margin-bottom: 10px">
+      <b th:text="${error}"></b>
+    </div>
+
+    <form
+      th:action="${booking.id == null ? '/booking' : '/booking/update'}"
+      th:object="${booking}"
+      method="post"
+    >
+      <input type="hidden" th:if="${booking.id != null}" th:field="*{id}" />
+
+      <!-- Nếu entity của bạn có customerName/customerPhone thì giữ, không có thì XÓA 2 input này -->
+      <div>
+        <label>Tên khách</label><br />
+        <input type="text" th:field="*{customerName}" required />
+      </div>
+
+      <br />
+
+      <div>
+        <label>SĐT</label><br />
+        <input type="text" th:field="*{customerPhone}" required />
+      </div>
+
+      <br />
+
+      <div>
+        <label>Phòng</label><br />
+        <select name="roomId" required>
+          <option value="" disabled th:selected="${booking.room == null}">
+            -- Chọn phòng --
+          </option>
+
+          <option
+            th:each="r : ${rooms}"
+            th:value="${r.id}"
+            th:text="${r.name}"
+            th:selected="${booking.room != null and r.id == booking.room.id}"
+          ></option>
+        </select>
+      </div>
+
+      <br />
+
+      <div>
+        <label>Giờ bắt đầu</label><br />
+        <input
+          type="datetime-local"
+          name="startTime"
+          th:value="${booking.startTime != null ? #temporals.format(booking.startTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+          required
+        />
+      </div>
+
+      <br />
+
+      <div>
+        <label>Giờ kết thúc</label><br />
+        <input
+          type="datetime-local"
+          name="endTime"
+          th:value="${booking.endTime != null ? #temporals.format(booking.endTime, 'yyyy-MM-dd''T''HH:mm') : ''}"
+          required
+        />
+      </div>
+
+      <br />
+
+      <div>
+        <label>Trạng thái</label><br />
+        <select th:field="*{status}">
+          <option
+            th:each="s : ${statuses}"
+            th:value="${s}"
+            th:text="${s}"
+          ></option>
+        </select>
+      </div>
+
+      <br /><br />
+
+      <button
+        type="submit"
+        th:text="${booking.id == null ? 'Lưu đặt phòng' : 'Cập nhật'}"
+      >
+        Lưu đặt phòng
+      </button>
+      <a th:href="@{/booking}">Hủy</a>
+    </form>
+  </body>
+</html>

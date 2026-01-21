@@ -1,0 +1,45 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Danh sách hóa đơn</title>
+  </head>
+  <body>
+    <h2>Danh sách hóa đơn</h2>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tổng tiền</th>
+          <th>Trạng thái</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr th:if="${#lists.isEmpty(invoices)}">
+          <td colspan="4">Chưa có hóa đơn</td>
+        </tr>
+
+        <tr th:each="inv : ${invoices}">
+          <td th:text="${inv.id}">1</td>
+          <td th:text="${inv.totalAmount}">100000</td>
+          <td th:text="${inv.status}">UNPAID</td>
+
+          <td>
+            <!-- NÚT THANH TOÁN VNPay: POST -->
+            <form
+              th:action="@{/payment/vnpay/create}"
+              method="post"
+              style="display: inline"
+            >
+              <input type="hidden" name="invoiceId" th:value="${inv.id}" />
+              <button type="submit">Thanh toán VNPay</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

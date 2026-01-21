@@ -1,0 +1,85 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <title th:text="${room.id == null ? 'Thêm phòng' : 'Sửa phòng'}">
+      Room Form
+    </title>
+  </head>
+  <body>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      "
+    >
+      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+
+      <form th:action="@{/logout}" method="post" style="margin: 0">
+        <button type="submit">Đăng xuất</button>
+      </form>
+    </div>
+    <hr />
+
+    <h2 th:text="${room.id == null ? 'Thêm phòng mới' : 'Sửa phòng'}"></h2>
+
+    <p>
+      <a th:href="@{/rooms}">← Quay lại danh sách phòng</a>
+    </p>
+
+    <form
+      th:action="@{${room.id == null ? '/rooms' : '/rooms/update'}}"
+      th:object="${room}"
+      method="post"
+    >
+      >
+      <input type="hidden" th:if="${room.id != null}" th:field="*{id}" />
+
+      <div>
+        <label>Tên phòng</label><br />
+        <input type="text" th:field="*{name}" required />
+      </div>
+
+      <br />
+
+      <div>
+        <label>Sức chứa</label><br />
+        <input type="number" th:field="*{capacity}" min="1" required />
+      </div>
+
+      <br />
+
+      <div>
+        <label>Trạng thái</label><br />
+        <select th:field="*{status}">
+          <option
+            th:each="s : ${statuses}"
+            th:value="${s}"
+            th:text="${s}"
+          ></option>
+        </select>
+      </div>
+
+      <br />
+
+      <div>
+        <label>Loại phòng</label><br />
+        <select name="roomType.id" required>
+          <option
+            th:each="rt : ${roomTypes}"
+            th:value="${rt.id}"
+            th:selected="${room.roomType != null and rt.id == room.roomType.id}"
+            th:text="${rt.name}"
+          ></option>
+        </select>
+      </div>
+
+      <br /><br />
+
+      <button type="submit">Lưu</button>
+      <a th:href="@{/rooms}">Hủy</a>
+    </form>
+  </body>
+</html>

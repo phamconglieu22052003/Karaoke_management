@@ -1,0 +1,76 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <title>Danh sách phòng</title>
+  </head>
+  <body>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      "
+    >
+      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+
+      <form th:action="@{/logout}" method="post" style="margin: 0">
+        <button type="submit">Đăng xuất</button>
+      </form>
+    </div>
+    <hr />
+
+    <h2>Danh sách phòng</h2>
+
+    <p>
+      <a th:href="@{/dashboard}">🏠 Dashboard</a> |
+      <a th:href="@{/rooms/new}">+ Thêm phòng</a> |
+      <a th:href="@{/room-types}">+ Loại phòng</a> |
+      <a th:href="@{/booking}">Đặt phòng</a>
+    </p>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tên phòng</th>
+          <th>Sức chứa</th>
+          <th>Trạng thái</th>
+          <th>Loại phòng</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr th:if="${#lists.isEmpty(rooms)}">
+          <td colspan="6" align="center">Chưa có phòng nào.</td>
+        </tr>
+
+        <tr th:each="r : ${rooms}">
+          <td th:text="${r.id}">1</td>
+          <td th:text="${r.name}">P101</td>
+          <td th:text="${r.capacity}">6</td>
+          <td th:text="${r.status}">AVAILABLE</td>
+          <td th:text="${r.roomType != null ? r.roomType.name : 'Chưa gán'}">
+            Phòng thường
+          </td>
+          <td>
+            <a th:href="@{'/rooms/edit/' + ${r.id}}">Sửa</a>
+
+            <form
+              th:action="@{'/rooms/delete/' + ${r.id}}"
+              method="post"
+              style="display: inline"
+              onsubmit="
+                return confirm('Bạn có chắc muốn xóa phòng này không?');
+              "
+            >
+              <button type="submit">Xóa</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

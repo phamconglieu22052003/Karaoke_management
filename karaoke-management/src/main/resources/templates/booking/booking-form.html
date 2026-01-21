@@ -1,0 +1,77 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Đặt phòng</title>
+  </head>
+  <body>
+    <h2>Đặt phòng</h2>
+
+    <p>
+      <a th:href="@{/booking}">← Quay lại danh sách đặt phòng</a>
+    </p>
+
+    <!-- HIỂN THỊ LỖI ĐẸP -->
+    <p
+      th:if="${error}"
+      style="color: red; font-weight: bold"
+      th:text="${error}"
+    ></p>
+
+    <!--
+      Nếu booking.id == null => tạo mới => POST /booking/save
+      Nếu booking.id != null => sửa => POST /booking/update
+    -->
+    <form
+      th:action="${booking.id == null} ? @{/booking/save} : @{/booking/update}"
+      method="post"
+      th:object="${booking}"
+    >
+      <!-- id (ẩn, để update) -->
+      <input type="hidden" th:field="*{id}" />
+
+      <div style="margin: 8px 0">
+        <label>Phòng</label><br />
+        <select name="roomId" required>
+          <option value="">-- Chọn phòng --</option>
+          <option
+            th:each="r : ${rooms}"
+            th:value="${r.id}"
+            th:selected="${booking.room != null and booking.room.id == r.id}"
+            th:text="${r.name}"
+          >
+            P101
+          </option>
+        </select>
+      </div>
+
+      <div style="margin: 8px 0">
+        <label>Giờ bắt đầu</label><br />
+        <input type="datetime-local" th:field="*{startTime}" required />
+      </div>
+
+      <div style="margin: 8px 0">
+        <label>Giờ kết thúc</label><br />
+        <input type="datetime-local" th:field="*{endTime}" required />
+      </div>
+
+      <div style="margin: 8px 0">
+        <label>Trạng thái</label><br />
+        <select th:field="*{status}">
+          <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}">
+            BOOKED
+          </option>
+        </select>
+      </div>
+
+      <div style="margin-top: 12px">
+        <button type="submit">
+          <span
+            th:text="${booking.id == null ? 'Lưu đặt phòng' : 'Cập nhật'}"
+          ></span>
+        </button>
+        <a th:href="@{/booking}" style="margin-left: 12px">Hủy</a>
+      </div>
+    </form>
+  </body>
+</html>

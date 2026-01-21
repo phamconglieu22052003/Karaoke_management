@@ -1,0 +1,27 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kết quả thanh toán VNPay</title>
+  </head>
+  <body>
+    <h2>Kết quả thanh toán VNPay</h2>
+
+    <div th:if="${!validHash}" style="color: red">
+      Chữ ký không hợp lệ (Sai hash / bị sửa tham số).
+    </div>
+
+    <div th:if="${validHash}">
+      <div th:if="${success}" style="color: green">Thanh toán thành công!</div>
+      <div th:if="${!success}" style="color: red">
+        Thanh toán thất bại. responseCode = <b th:text="${responseCode}"></b>
+      </div>
+    </div>
+
+    <hr />
+
+    <p><b>OrderInfo:</b> <span th:text="${orderInfo}"></span></p>
+    <p><b>TxnRef:</b> <span th:text="${txnRef}"></span></p>
+    <p><b>Amount:</b> <span th:text="${amount}"></span></p>
+  </body>
+</html>
