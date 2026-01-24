@@ -1,11 +1,43 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
-    <meta charset="utf-8" />
-    <title>Invoice</title>
+    <meta charset="UTF-8" />
+    <title>Hóa đơn</title>
   </head>
   <body>
     <h2>Danh sách hóa đơn</h2>
-    <a th:href="@{/dashboard}">Về dashboard</a>
+    <p>
+      <a th:href="@{/rooms}">Phòng</a> |
+      <a th:href="@{/room-sessions}">Room Sessions</a>
+    </p>
+
+    <table border="1" cellpadding="8" cellspacing="0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Session</th>
+          <th>Tổng</th>
+          <th>Trạng thái</th>
+          <th>Ngày tạo</th>
+          <th>Ngày thanh toán</th>
+          <th>Chi tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${#lists.isEmpty(invoices)}">
+          <td colspan="7">Chưa có hóa đơn</td>
+        </tr>
+
+        <tr th:each="i : ${invoices}">
+          <td th:text="${i.id}">1</td>
+          <td th:text="${i.roomSession != null ? i.roomSession.id : ''}">10</td>
+          <td th:text="${i.totalAmount}">100000</td>
+          <td th:text="${i.status}">UNPAID</td>
+          <td th:text="${i.createdAt}"></td>
+          <td th:text="${i.paidAt}"></td>
+          <td><a th:href="@{/invoice/{id}(id=${i.id})}">Xem</a></td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>

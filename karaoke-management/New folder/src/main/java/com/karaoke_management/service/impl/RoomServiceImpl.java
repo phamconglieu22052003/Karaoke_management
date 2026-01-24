@@ -35,4 +35,5 @@ public class RoomServiceImpl implements RoomService {
     public void deleteById(Long id) {  
         roomRepository.deleteById(id);
     }
+    
 }

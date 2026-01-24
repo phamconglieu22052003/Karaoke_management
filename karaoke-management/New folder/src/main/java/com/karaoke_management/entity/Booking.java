@@ -13,6 +13,13 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ====== NEW: khớp DB (NOT NULL) ======
+    @Column(name = "customer_name", nullable = false)
+    private String customerName;
+
+    @Column(name = "customer_phone", nullable = true)
+    private String customerPhone;
+
     // mỗi booking gắn với 1 phòng
     @ManyToOne(optional = false)
     @JoinColumn(name = "room_id", nullable = false)
@@ -30,11 +37,25 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.BOOKED;
 
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+
+
     public Booking() {}
 
     // ===== Getter/Setter =====
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getCustomerName() { return customerName; }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+    public String getCustomerPhone() { return customerPhone; }
+    public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
 
     public Room getRoom() { return room; }
     public void setRoom(Room room) { this.room = room; }

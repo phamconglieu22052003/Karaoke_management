@@ -13,8 +13,8 @@ public class PageController {
 
 
 
-    @GetMapping("/invoice")
-    public String invoice() {
-        return "invoice/invoice-list";
-    }
+    // @GetMapping("/invoice")
+    // public String invoice() {
+    //     return "invoice/invoice-list";
+    // }
 }

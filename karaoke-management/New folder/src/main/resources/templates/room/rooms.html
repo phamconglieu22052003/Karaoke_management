@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <title>Danh sách phòng</title>
   </head>
   <body>
@@ -13,8 +13,7 @@
         margin-bottom: 12px;
       "
     >
-      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
-
+      <div>Xin chào, <b th:text="${#authentication.name}">admin</b></div>
       <form th:action="@{/logout}" method="post" style="margin: 0">
         <button type="submit">Đăng xuất</button>
       </form>
@@ -24,10 +23,9 @@
     <h2>Danh sách phòng</h2>
 
     <p>
-      <a th:href="@{/dashboard}">🏠 Dashboard</a> |
-      <a th:href="@{/rooms/new}">+ Thêm phòng</a> |
-      <a th:href="@{/room-types}">+ Loại phòng</a> |
-      <a th:href="@{/booking}">Đặt phòng</a>
+      <a th:href="@{/dashboard}">Dashboard</a> |
+      <a th:href="@{/booking}">Đặt phòng</a> |
+      <a th:href="@{/room-sessions}">Lịch sử mở phòng</a>
     </p>
 
     <table border="1" cellpadding="8" cellspacing="0">
@@ -35,39 +33,45 @@
         <tr>
           <th>ID</th>
           <th>Tên phòng</th>
-          <th>Sức chứa</th>
-          <th>Trạng thái</th>
           <th>Loại phòng</th>
+          <th>Giá/giờ</th>
+          <th>Trạng thái</th>
           <th>Hành động</th>
         </tr>
       </thead>
 
       <tbody>
         <tr th:if="${#lists.isEmpty(rooms)}">
-          <td colspan="6" align="center">Chưa có phòng nào.</td>
+          <td colspan="6">Chưa có phòng</td>
         </tr>
 
         <tr th:each="r : ${rooms}">
           <td th:text="${r.id}">1</td>
           <td th:text="${r.name}">P101</td>
-          <td th:text="${r.capacity}">6</td>
-          <td th:text="${r.status}">AVAILABLE</td>
-          <td th:text="${r.roomType != null ? r.roomType.name : 'Chưa gán'}">
-            Phòng thường
+          <td th:text="${r.roomType != null ? r.roomType.name : ''}">VIP</td>
+          <td th:text="${r.roomType != null ? r.roomType.pricePerHour : ''}">
+            100000
           </td>
-          <td>
-            <a th:href="@{'/rooms/edit/' + ${r.id}}">Sửa</a>
+          <td th:text="${r.status}">AVAILABLE</td>
 
+          <td>
+            <!-- Mở phòng -->
             <form
-              th:action="@{'/rooms/delete/' + ${r.id}}"
+              th:if="${r.status.name() == 'AVAILABLE'}"
+              th:action="@{/room-sessions/open}"
               method="post"
               style="display: inline"
-              onsubmit="
-                return confirm('Bạn có chắc muốn xóa phòng này không?');
-              "
+              onsubmit="return confirm('Mở phòng này?');"
             >
-              <button type="submit">Xóa</button>
+              <input type="hidden" name="roomId" th:value="${r.id}" />
+              <button type="submit">Mở phòng</button>
             </form>
+
+            <!-- Nếu đang OCCUPIED thì user đi xem session để đóng -->
+            <span th:if="${r.status.name() == 'OCCUPIED'}">
+              Đang mở |
+              <a th:href="@{/room-sessions}">Xem session</a>
+            </span>
           </td>
         </tr>
       </tbody>

@@ -1,38 +1,34 @@
 package com.karaoke_management.controller;
 
-import com.karaoke_management.service.InvoiceService;
+import com.karaoke_management.entity.Invoice;
+import com.karaoke_management.repository.InvoiceRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/invoice")
 public class InvoiceController {
 
-    private final InvoiceService invoiceService;
+    private final InvoiceRepository invoiceRepository;
 
-    public InvoiceController(InvoiceService invoiceService) {
-        this.invoiceService = invoiceService;
+    public InvoiceController(InvoiceRepository invoiceRepository) {
+        this.invoiceRepository = invoiceRepository;
     }
 
-    // List invoices
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("invoices", invoiceService.findAll());
+        model.addAttribute("invoices", invoiceRepository.findAllByOrderByIdDesc());
         return "invoice/invoice-list";
     }
 
-    // Create invoice from session
-    @PostMapping("/create/{sessionId}")
-    public String create(@PathVariable Long sessionId) {
-        var inv = invoiceService.createOrGetBySession(sessionId);
-        return "redirect:/invoice/" + inv.getId();
-    }
-
-    // View invoice detail
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("invoice", invoiceService.getRequired(id));
+        Invoice inv = invoiceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        model.addAttribute("invoice", inv);
         return "invoice/invoice-detail";
     }
 }

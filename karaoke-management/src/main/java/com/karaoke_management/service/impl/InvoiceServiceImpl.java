@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -30,15 +31,23 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public Invoice createOrGetBySession(Long roomSessionId) {
-        // nếu đã có invoice cho session -> trả lại
-        var existed = invoiceRepository.findByRoomSession_Id(roomSessionId);
-        if (existed.isPresent()) return existed.get();
+
+        // ✅ FIX: dùng Optional rõ ràng
+        Optional<Invoice> existed = invoiceRepository.findByRoomSession_Id(roomSessionId);
+        if (existed.isPresent()) {
+            return existed.get();
+        }
 
         RoomSession session = roomSessionRepository.findById(roomSessionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RoomSession not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "RoomSession not found"
+                ));
 
         if (session.getStatus() != RoomSessionStatus.CLOSED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session chưa đóng phòng, không thể tạo hóa đơn");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Session chưa đóng phòng, không thể tạo hóa đơn"
+            );
         }
 
         BigDecimal total = session.getTotalAmount();
@@ -56,7 +65,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional(readOnly = true)
     public Invoice getRequired(Long id) {
         return invoiceRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Invoice not found"
+                ));
     }
 
     @Override

@@ -30,4 +30,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+    @Query("""
+        select (count(b) > 0)
+        from Booking b
+        where b.room.id = :roomId
+          and (:excludeId is null or b.id <> :excludeId)
+          and (:start < b.endTime and :end > b.startTime)
+    """)
+    boolean existsOverlap(
+            @Param("roomId") Long roomId,
+            @Param("excludeId") Long excludeId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }

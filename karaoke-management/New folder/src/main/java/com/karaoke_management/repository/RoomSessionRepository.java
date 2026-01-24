@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface RoomSessionRepository extends JpaRepository<RoomSession, Long> {
 
-    boolean existsByRoom_IdAndStatus(Long roomId, RoomSessionStatus status);
-
-    List<RoomSession> findAllByStatusOrderByStartTimeDesc(RoomSessionStatus status);
-
+    // lấy session mới nhất lên trước
     List<RoomSession> findAllByOrderByStartTimeDesc();
+
+    // dùng để chặn mở phòng trùng
+    boolean existsByRoom_IdAndStatus(Long roomId, RoomSessionStatus status);
 }

@@ -14,7 +14,6 @@
       "
     >
       <div>Xin chào, <b th:text="${#authentication.name}">admin</b></div>
-
       <form th:action="@{/logout}" method="post" style="margin: 0">
         <button type="submit">Đăng xuất</button>
       </form>
@@ -55,7 +54,6 @@
 
           <td>
             <a th:href="@{/booking/edit/{id}(id=${b.id})}">Sửa</a>
-
             <form
               th:action="@{/booking/delete/{id}(id=${b.id})}"
               method="post"

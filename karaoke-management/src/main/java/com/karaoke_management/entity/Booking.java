@@ -37,6 +37,14 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.BOOKED;
 
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+
+
     public Booking() {}
 
     // ===== Getter/Setter =====

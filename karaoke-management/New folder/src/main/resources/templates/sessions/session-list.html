@@ -2,134 +2,70 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
-    <title>Room Sessions</title>
-    <style>
-      table {
-        border-collapse: collapse;
-        width: 100%;
-      }
-      th,
-      td {
-        border: 1px solid #ccc;
-        padding: 8px;
-      }
-      .msg {
-        padding: 10px;
-        margin: 10px 0;
-      }
-      .ok {
-        background: #e8ffe8;
-        border: 1px solid #7ad67a;
-      }
-      .err {
-        background: #ffe8e8;
-        border: 1px solid #d67a7a;
-      }
-      .row {
-        display: flex;
-        gap: 20px;
-      }
-      .col {
-        flex: 1;
-      }
-      form {
-        margin: 0;
-      }
-      .actions {
-        display: flex;
-        gap: 8px;
-      }
-    </style>
+    <title>Lịch sử mở phòng</title>
   </head>
   <body>
-    <h1>Room Session (Check-in / Check-out)</h1>
-
-    <div th:if="${success}" class="msg ok" th:text="${success}"></div>
-    <div th:if="${error}" class="msg err" th:text="${error}"></div>
+    <h2>Lịch sử mở phòng (Room Sessions)</h2>
 
     <p>
-      <a href="/dashboard">← Về Dashboard</a>
+      <a th:href="@{/rooms}">← Quay lại danh sách phòng</a>
     </p>
 
-    <div class="row">
-      <div class="col">
-        <h2>Check-in</h2>
-        <form method="post" action="/room-sessions/checkin">
-          <label>Chọn phòng:</label>
-          <select name="roomId" required>
-            <option value="">-- Chọn phòng --</option>
-            <option
-              th:each="r : ${rooms}"
-              th:value="${r.id}"
-              th:text="${r.name + ' - ' + r.status}"
-            ></option>
-          </select>
-          <button type="submit">Check-in</button>
-        </form>
+    <table border="1" cellpadding="8" cellspacing="0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Phòng</th>
+          <th>Bắt đầu</th>
+          <th>Kết thúc</th>
+          <th>Trạng thái</th>
+          <th>Số phút</th>
+          <th>Tổng tiền</th>
+          <th>Mở bởi</th>
+          <th>Đóng bởi</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
 
-        <h3>Session đang ACTIVE</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Phòng</th>
-              <th>Bắt đầu</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="s : ${activeSessions}">
-              <td th:text="${s.id}"></td>
-              <td th:text="${s.room != null ? s.room.name : 'N/A'}"></td>
-              <td th:text="${s.startTime}"></td>
-              <td th:text="${s.status}"></td>
-              <td class="actions">
-                <form
-                  th:action="@{'/room-sessions/' + ${s.id} + '/checkout'}"
-                  method="post"
-                >
-                  <button type="submit">Check-out</button>
-                </form>
-              </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(activeSessions)}">
-              <td colspan="5">Không có session ACTIVE</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <tbody>
+        <tr th:if="${#lists.isEmpty(sessions)}">
+          <td colspan="10">Chưa có session nào</td>
+        </tr>
 
-      <div class="col">
-        <h2>Lịch sử Session</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Phòng</th>
-              <th>Start</th>
-              <th>End</th>
-              <th>Status</th>
-              <th>Created By</th>
-              <th>Checked Out By</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="s : ${sessions}">
-              <td th:text="${s.id}"></td>
-              <td th:text="${s.room != null ? s.room.name : 'N/A'}"></td>
-              <td th:text="${s.startTime}"></td>
-              <td th:text="${s.endTime}"></td>
-              <td th:text="${s.status}"></td>
-              <td th:text="${s.createdBy}"></td>
-              <td th:text="${s.checkedOutBy}"></td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(sessions)}">
-              <td colspan="7">Chưa có session nào</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+        <tr th:each="s : ${sessions}">
+          <td th:text="${s.id}">1</td>
+          <td th:text="${s.room != null ? s.room.name : ''}">P101</td>
+          <td th:text="${s.startTime}">2026-01-21T01:10</td>
+          <td th:text="${s.endTime}">2026-01-21T02:10</td>
+          <td th:text="${s.status}">OPEN</td>
+          <td th:text="${s.totalMinutes}">60</td>
+          <td th:text="${s.totalAmount}">100000</td>
+          <td th:text="${s.createdBy}">admin</td>
+          <td th:text="${s.checkedOutBy}">admin</td>
+
+          <td>
+            <form
+              th:if="${s.status.name() == 'OPEN'}"
+              th:action="@{/room-sessions/close/{id}(id=${s.id})}"
+              method="post"
+              style="display: inline"
+              onsubmit="return confirm('Đóng phòng và tính tiền?');"
+            >
+              <button type="submit">Đóng phòng</button>
+            </form>
+          </td>
+          <td>
+            <form
+              th:if="${s.status.name() == 'CLOSED'}"
+              th:action="@{/invoice/create/{sessionId}(sessionId=${s.id})}"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit">Tạo/Xem hóa đơn</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>
