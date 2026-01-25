@@ -1,6 +1,7 @@
 package com.karaoke_management.service.impl;
 
 import com.karaoke_management.entity.Booking;
+import com.karaoke_management.entity.BookingStatus;
 import com.karaoke_management.repository.BookingRepository;
 import com.karaoke_management.service.BookingService;
 import jakarta.persistence.EntityManager;
@@ -63,21 +64,14 @@ public class BookingServiceImpl implements BookingService {
         // thời gian không hợp lệ thì coi như conflict để chặn
         if (!startTime.isBefore(endTime)) return true;
 
-        String jpql =
-                "select count(b) " +
-                "from Booking b " +
-                "where b.room.id = :roomId " +
-                "  and b.startTime < :endTime " +
-                "  and b.endTime > :startTime " +
-                "  and (:excludeId is null or b.id <> :excludeId)";
-
-        Long cnt = em.createQuery(jpql, Long.class)
-                .setParameter("roomId", roomId)
-                .setParameter("startTime", startTime)
-                .setParameter("endTime", endTime)
-                .setParameter("excludeId", excludeBookingId)
-                .getSingleResult();
-
-        return cnt != null && cnt > 0;
+        // ✅ Chống trùng chuẩn: bỏ qua booking đã hủy (CANCELLED)
+        // Dùng query chuẩn overlap: newStart < oldEnd AND newEnd > oldStart
+        return bookingRepository.existsOverlap(
+                roomId,
+                excludeBookingId,
+                startTime,
+                endTime,
+                BookingStatus.CANCELLED
+        );
     }
 }

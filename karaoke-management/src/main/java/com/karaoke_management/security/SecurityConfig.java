@@ -40,6 +40,10 @@ public class SecurityConfig {
                 .requestMatchers("/invoice/**").hasAnyRole("ADMIN", "STAFF")
                 .requestMatchers("/room-types/**").hasAnyRole("ADMIN", "STAFF")
                 .requestMatchers("/room-sessions/**").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/qr").permitAll()
+                .requestMatchers("/payment/vnpay/mock/**").permitAll()
+                .requestMatchers("/css/**").permitAll()
+
 
                 .anyRequest().authenticated()
             )

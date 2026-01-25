@@ -1,8 +1,9 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
+  <<head>
     <meta charset="UTF-8" />
     <title>Chi tiết hóa đơn</title>
+    <link rel="stylesheet" th:href="@{/css/invoice-detail.css}" />
   </head>
   <body>
     <h2>Chi tiết hóa đơn</h2>
@@ -14,34 +15,62 @@
 
     <hr />
 
+    <!-- ===================== THÔNG TIN HÓA ĐƠN ===================== -->
     <div>
       <p><b>ID:</b> <span th:text="${invoice.id}">1</span></p>
+
       <p>
-        <b>Tổng tiền:</b> <span th:text="${invoice.totalAmount}">0</span> VND
+        <b>Tổng tiền:</b>
+        <span th:text="${invoice.totalAmount}">0</span> VND
       </p>
-      <p><b>Trạng thái:</b> <span th:text="${invoice.status}">UNPAID</span></p>
+
+      <p>
+        <b>Trạng thái:</b>
+        <span th:text="${invoice.status}">UNPAID</span>
+      </p>
+
       <p th:if="${invoice.paidAt != null}">
-        <b>Đã thanh toán lúc:</b> <span th:text="${invoice.paidAt}">time</span>
+        <b>Đã thanh toán lúc:</b>
+        <span th:text="${invoice.paidAt}">time</span>
       </p>
+
       <p th:if="${invoice.vnpTransactionNo != null}">
-        <b>VNPay TransactionNo:</b>
+        <b>Mã giao dịch:</b>
         <span th:text="${invoice.vnpTransactionNo}">xxx</span>
       </p>
     </div>
 
     <hr />
 
-    <!-- Chỉ hiện nút thanh toán nếu chưa PAID -->
-    <form
-      th:if="${invoice.status != T(com.karaoke_management.entity.InvoiceStatus).PAID}"
-      th:action="@{/payment/vnpay/create}"
-      method="post"
-    >
-      <input type="hidden" name="invoiceId" th:value="${invoice.id}" />
-      <button type="submit">Thanh toán VNPay</button>
-    </form>
+    <!-- ===================== THANH TOÁN ===================== -->
 
-    <!-- Auto refresh nhẹ mỗi 3s nếu chưa paid (để realtime trạng thái sau IPN) -->
+    <!-- Chỉ hiện khi CHƯA PAID -->
+    <div
+      th:if="${invoice.status != T(com.karaoke_management.entity.InvoiceStatus).PAID}"
+    >
+      <h3>Thanh toán</h3>
+
+      <!-- ===== NÚT VNPay THẬT (để sẵn, khi có TMN Code) ===== -->
+      <form
+        th:action="@{/payment/vnpay/create}"
+        method="post"
+        style="display: inline"
+      >
+        <input type="hidden" name="invoiceId" th:value="${invoice.id}" />
+        <button type="submit" class="btn btn-primary">Thanh toán VNPay</button>
+      </form>
+
+      <!-- ===== NÚT QR MOCK: QUÉT LÀ PAID ===== -->
+      <a
+        th:href="@{/payment/vnpay/mock/qr(invoiceId=${invoice.id})}"
+        class="btn btn-success"
+      >
+        Thanh toán QR
+      </a>
+    </div>
+
+    <!-- ===================== AUTO REFRESH ===================== -->
+    <!-- Refresh nhẹ mỗi 3s nếu chưa PAID (để thấy realtime sau khi quét QR) -->
     <script th:inline="javascript">
       const status = /*[[${invoice.status}]]*/ "UNPAID";
       if (status !== "PAID") {

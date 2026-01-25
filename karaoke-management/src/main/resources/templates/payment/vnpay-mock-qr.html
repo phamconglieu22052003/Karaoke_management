@@ -1,0 +1,32 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <title>VNPay Demo - Quét QR</title>
+  </head>
+  <body style="font-family: Arial, sans-serif">
+    <h2>VNPay Demo - Quét QR để thanh toán</h2>
+
+    <p>Hóa đơn: <b th:text="${invoice.id}">0</b></p>
+    <p>Trạng thái hiện tại: <b th:text="${invoice.status}">UNPAID</b></p>
+
+    <p>Khách dùng điện thoại quét QR bên dưới:</p>
+
+    <img
+      th:src="@{/qr(data=${confirmUrl})}"
+      alt="QR thanh toán"
+      style="border: 1px solid #ccc; padding: 8px"
+    />
+
+    <p style="margin-top: 12px">
+      <a th:href="${confirmUrl}" target="_blank">Xác nhận thanh toán</a>
+    </p>
+
+    <hr />
+    <p>
+      <a th:href="@{/invoice/{id}(id=${invoice.id})}"
+        >Quay lại chi tiết hóa đơn</a
+      >
+    </p>
+  </body>
+</html>
