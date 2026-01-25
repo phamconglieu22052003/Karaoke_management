@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -60,10 +61,12 @@ public class BookingController {
     @Transactional
     public String save(
             @RequestParam String customerName,
-            @RequestParam String customerPhone,
+            // form cũ đang gửi name="phone"; form mới gửi name="customerPhone"
+            @RequestParam(required = false) String customerPhone,
+            @RequestParam(required = false, name = "phone") String phone,
             @RequestParam Long roomId,
-            @RequestParam LocalDateTime startTime,
-            @RequestParam LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime endTime,
             @RequestParam BookingStatus status,
             Model model
     ) {
@@ -72,7 +75,11 @@ public class BookingController {
             return backToFormWithError("Vui lòng nhập tên khách", model, new Booking());
         }
 
-        if (customerPhone == null || customerPhone.isBlank()) {
+        String resolvedPhone = (customerPhone != null && !customerPhone.isBlank())
+                ? customerPhone
+                : (phone != null ? phone : "");
+
+        if (resolvedPhone.isBlank()) {
             return backToFormWithError("Vui lòng nhập số điện thoại", model, new Booking());
         }
 
@@ -86,7 +93,7 @@ public class BookingController {
 
         // ====== CHỐNG TRÙNG GIỜ ======
         boolean overlapped = bookingRepository.existsOverlap(
-                roomId, null, startTime, endTime
+                roomId, null, startTime, endTime, BookingStatus.CANCELLED
         );
         if (overlapped) {
             return backToFormWithError(
@@ -98,7 +105,9 @@ public class BookingController {
 
         Booking booking = new Booking();
         booking.setCustomerName(customerName.trim());
-        booking.setCustomerPhone(customerPhone.trim());
+        booking.setCustomerPhone(resolvedPhone.trim());
+        // giữ tương thích với cột phone cũ trong DB
+        booking.setPhone(resolvedPhone.trim());
         booking.setRoom(room);
         booking.setStartTime(startTime);
         booking.setEndTime(endTime);
@@ -114,10 +123,11 @@ public class BookingController {
     public String update(
             @RequestParam Long id,
             @RequestParam String customerName,
-            @RequestParam String customerPhone,
+            @RequestParam(required = false) String customerPhone,
+            @RequestParam(required = false, name = "phone") String phone,
             @RequestParam Long roomId,
-            @RequestParam LocalDateTime startTime,
-            @RequestParam LocalDateTime endTime,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime endTime,
             @RequestParam BookingStatus status,
             Model model
     ) {
@@ -129,7 +139,11 @@ public class BookingController {
             return backToFormWithError("Vui lòng nhập tên khách", model, booking);
         }
 
-        if (customerPhone == null || customerPhone.isBlank()) {
+        String resolvedPhone = (customerPhone != null && !customerPhone.isBlank())
+                ? customerPhone
+                : (phone != null ? phone : "");
+
+        if (resolvedPhone.isBlank()) {
             return backToFormWithError("Vui lòng nhập số điện thoại", model, booking);
         }
 
@@ -143,7 +157,7 @@ public class BookingController {
 
         // ====== CHỐNG TRÙNG GIỜ (loại trừ chính nó) ======
         boolean overlapped = bookingRepository.existsOverlap(
-                roomId, id, startTime, endTime
+                roomId, id, startTime, endTime, BookingStatus.CANCELLED
         );
         if (overlapped) {
             return backToFormWithError(
@@ -154,13 +168,25 @@ public class BookingController {
         }
 
         booking.setCustomerName(customerName.trim());
-        booking.setCustomerPhone(customerPhone.trim());
+        booking.setCustomerPhone(resolvedPhone.trim());
+        booking.setPhone(resolvedPhone.trim());
         booking.setRoom(room);
         booking.setStartTime(startTime);
         booking.setEndTime(endTime);
         booking.setStatus(status);
 
         bookingRepository.save(booking);
+        return "redirect:/booking";
+    }
+
+    // ================= DELETE (giữ đúng link trong booking-list.html) =================
+    @PostMapping("/delete/{id}")
+    @Transactional
+    public String delete(@PathVariable Long id) {
+        if (!bookingRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found");
+        }
+        bookingRepository.deleteById(id);
         return "redirect:/booking";
     }
 

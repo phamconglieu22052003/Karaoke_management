@@ -44,10 +44,16 @@
 
       <div style="margin-bottom: 10px">
         <label>Số điện thoại:</label><br />
+        <!--
+          GIỮ TƯƠNG THÍCH:
+          - Code cũ từng dùng name="phone"
+          - Code mới chuẩn dùng customerPhone
+          Controller hiện hỗ trợ cả 2.
+        -->
         <input
           type="text"
-          name="phone"
-          th:value="${booking != null ? booking.phone : ''}"
+          name="customerPhone"
+          th:value="${booking != null ? (booking.customerPhone != null ? booking.customerPhone : booking.phone) : ''}"
         />
       </div>
 
@@ -120,7 +126,11 @@
 
       <div style="margin-bottom: 10px">
         <label>Số điện thoại:</label><br />
-        <input type="text" name="phone" th:value="${booking.phone}" />
+        <input
+          type="text"
+          name="customerPhone"
+          th:value="${booking.customerPhone != null ? booking.customerPhone : booking.phone}"
+        />
       </div>
 
       <div style="margin: 8px 0">

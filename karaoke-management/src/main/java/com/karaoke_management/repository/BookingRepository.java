@@ -1,6 +1,7 @@
 package com.karaoke_management.repository;
 
 import com.karaoke_management.entity.Booking;
+import com.karaoke_management.entity.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,12 +36,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         from Booking b
         where b.room.id = :roomId
           and (:excludeId is null or b.id <> :excludeId)
+          and b.status <> :cancelled
           and (:start < b.endTime and :end > b.startTime)
     """)
     boolean existsOverlap(
             @Param("roomId") Long roomId,
             @Param("excludeId") Long excludeId,
             @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("end") LocalDateTime end,
+            @Param("cancelled") BookingStatus cancelled
     );
 }

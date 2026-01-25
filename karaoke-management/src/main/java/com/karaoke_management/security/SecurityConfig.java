@@ -17,40 +17,48 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
-            .requestMatchers("/login").permitAll()
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                // static
+                .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
+                .requestMatchers("/login").permitAll()
 
-            // pages
-            .requestMatchers("/", "/dashboard").hasAnyRole("ADMIN", "STAFF")
-            .requestMatchers("/rooms/**").hasAnyRole("ADMIN", "STAFF")
-            .requestMatchers("/booking/**").hasAnyRole("ADMIN", "STAFF")
-            .requestMatchers("/bookings/**").hasAnyRole("ADMIN", "STAFF")
-            .requestMatchers("/invoice/**").hasAnyRole("ADMIN", "STAFF")
-            .requestMatchers("/room-types/**").hasAnyRole("ADMIN", "STAFF")
-            .requestMatchers("/room-sessions/**").hasAnyRole("ADMIN", "STAFF")
-            .requestMatchers("/booking/**").hasAnyRole("ADMIN", "STAFF")
-            .anyRequest().authenticated()
-        )
-        .formLogin(form -> form
-            .loginPage("/login")
-            .loginProcessingUrl("/login")
-            .defaultSuccessUrl("/dashboard", true)
-            .failureUrl("/login?error=true")
-            .permitAll()
-        )
-        .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessUrl("/login")
-            .permitAll()
-        )
-        .csrf(csrf -> csrf.disable());
+                // ✅ VNPay endpoints: MUST be public (VNPay server cannot login)
+                // IMPORTANT: sửa path cho đúng với controller VNPay của bạn nếu khác
+                .requestMatchers(
+                    "/payment/vnpay/ipn",
+                    "/payment/vnpay/return",
+                    "/payment/vnpay/**"   // nếu bạn có endpoint tạo payment / redirect VNPay
+                ).permitAll()
 
-    return http.build();
-}
+                // pages
+                .requestMatchers("/", "/dashboard").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/rooms/**").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/booking/**").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/bookings/**").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/invoice/**").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/room-types/**").hasAnyRole("ADMIN", "STAFF")
+                .requestMatchers("/room-sessions/**").hasAnyRole("ADMIN", "STAFF")
 
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/dashboard", true)
+                .failureUrl("/login?error=true")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login")
+                .permitAll()
+            )
+            .csrf(csrf -> csrf.disable());
+
+        return http.build();
+    }
 
     // Tài khoản cố định (demo đồ án)
     @Bean
@@ -61,13 +69,11 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin123"))
-                .roles("ADMIN")
-                .build();
+            .username("admin")
+            .password(passwordEncoder().encode("admin123"))
+            .roles("ADMIN")
+            .build();
 
         return new InMemoryUserDetailsManager(admin);
     }
-    
-    
 }
