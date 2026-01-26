@@ -1,57 +1,54 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="utf-8" />
-    <title>Thêm loại phòng</title>
-  </head>
-  <body>
-    <div
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      "
-    >
-      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout('Thêm loại phòng', 'roomTypes', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead"></th:block>
 
-      <form th:action="@{/logout}" method="post" style="margin: 0">
-        <button type="submit">Đăng xuất</button>
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Thêm loại phòng</h2>
+        <div class="help-text">Thiết lập tên, giá/giờ và mô tả.</div>
+      </div>
+      <a class="btn btn-outline" th:href="@{/room-types}">← Quay lại</a>
+    </div>
+
+    <div class="card">
+      <form th:action="@{/room-types}" th:object="${roomType}" method="post">
+        <div class="form-row">
+          <div class="field">
+            <label>Tên loại phòng</label>
+            <input class="input" type="text" th:field="*{name}" required />
+          </div>
+
+          <div class="field">
+            <label>Giá/giờ (VND)</label>
+            <input
+              class="input"
+              type="number"
+              step="0.01"
+              th:field="*{pricePerHour}"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top: 12px">
+          <label>Mô tả</label>
+          <input
+            class="input"
+            type="text"
+            th:field="*{description}"
+            placeholder="Ví dụ: Phòng VIP 15 người"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Lưu</button>
+          <a class="btn btn-outline" th:href="@{/room-types}">Hủy</a>
+        </div>
       </form>
     </div>
-    <hr />
-
-    <h2>Thêm loại phòng</h2>
-
-    <p>
-      <a th:href="@{/room-types}">← Quay lại loại phòng</a> |
-      <a th:href="@{/rooms}">← Về phòng</a>
-    </p>
-
-    <form th:action="@{/room-types}" th:object="${roomType}" method="post">
-      <div>
-        <label>Tên loại phòng</label><br />
-        <input type="text" th:field="*{name}" required />
-      </div>
-
-      <br />
-
-      <div>
-        <label>Giá/giờ</label><br />
-        <input type="number" step="0.01" th:field="*{pricePerHour}" required />
-      </div>
-
-      <br />
-
-      <div>
-        <label>Mô tả</label><br />
-        <input type="text" th:field="*{description}" />
-      </div>
-
-      <br /><br />
-
-      <button type="submit">Lưu</button>
-      <a th:href="@{/room-types}">Hủy</a>
-    </form>
-  </body>
+  </section>
 </html>

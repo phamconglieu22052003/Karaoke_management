@@ -1,56 +1,62 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="utf-8" />
-    <title>Loại phòng</title>
-  </head>
-  <body>
-    <div
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      "
-    >
-      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout('Loại phòng', 'roomTypes', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead"></th:block>
 
-      <form th:action="@{/logout}" method="post" style="margin: 0">
-        <button type="submit">Đăng xuất</button>
-      </form>
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Danh sách loại phòng</h2>
+        <div class="help-text">
+          Thiết lập loại phòng và giá/giờ áp dụng khi tính tiền session.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a class="btn btn-primary" th:href="@{/room-types/new}"
+          >+ Thêm loại phòng</a
+        >
+      </div>
     </div>
-    <hr />
 
-    <h2>Danh sách loại phòng</h2>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px">ID</th>
+              <th>Tên loại phòng</th>
+              <th style="width: 140px">Giá/giờ</th>
+              <th>Mô tả</th>
+            </tr>
+          </thead>
 
-    <p>
-      <a th:href="@{/rooms}">← Quay lại danh sách phòng</a> |
-      <a th:href="@{/dashboard}">🏠 Dashboard</a> |
-      <a th:href="@{/room-types/new}">+ Thêm loại phòng</a>
-    </p>
+          <tbody>
+            <tr th:if="${#lists.isEmpty(roomTypes)}">
+              <td
+                colspan="4"
+                style="text-align: center; color: #6b7280; padding: 18px"
+              >
+                Chưa có loại phòng nào.
+              </td>
+            </tr>
 
-    <table border="1" cellpadding="8" cellspacing="0">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Tên loại phòng</th>
-          <th>Giá/giờ</th>
-          <th>Mô tả</th>
-        </tr>
-      </thead>
+            <tr th:each="rt : ${roomTypes}">
+              <td th:text="${rt.id}">1</td>
+              <td th:text="${rt.name}">VIP</td>
+              <td th:text="${rt.pricePerHour}">100000</td>
+              <td th:text="${rt.description}">...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <tbody>
-        <tr th:if="${#lists.isEmpty(roomTypes)}">
-          <td colspan="4" align="center">Chưa có loại phòng nào.</td>
-        </tr>
-
-        <tr th:each="rt : ${roomTypes}">
-          <td th:text="${rt.id}"></td>
-          <td th:text="${rt.name}"></td>
-          <td th:text="${rt.pricePerHour}"></td>
-          <td th:text="${rt.description}"></td>
-        </tr>
-      </tbody>
-    </table>
-  </body>
+      <div class="help-text" style="margin-top: 12px">
+        Lưu ý: hiện tại module loại phòng chỉ hỗ trợ <b>thêm mới</b>. Nếu cần
+        sửa/xóa, mình có thể bổ sung nhanh trong Controller.
+      </div>
+    </div>
+  </section>
 </html>

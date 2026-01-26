@@ -11,9 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Controller
@@ -23,16 +24,42 @@ public class BookingController {
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
 
+    // ✅ format VN
+    private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
     public BookingController(BookingRepository bookingRepository,
                              RoomRepository roomRepository) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
     }
 
-    // ================= LIST =================
+    // ================= LIST (+ FILTER) =================
+    // /booking?from=26/01/2026 10:00&to=26/01/2026 22:00
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("bookings", bookingRepository.findAll());
+    public String list(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            Model model
+    ) {
+        LocalDateTime fromDt = parseVnDateTimeOrNull(from);
+        LocalDateTime toDt = parseVnDateTimeOrNull(to);
+
+        List<Booking> bookings;
+        if (fromDt == null && toDt == null) {
+            bookings = bookingRepository.findAll();
+        } else {
+            bookings = bookingRepository.filterByTimeRange(fromDt, toDt);
+        }
+
+        model.addAttribute("bookings", bookings);
+
+        // ✅ giữ chuỗi VN để đổ lại input (type=text)
+        model.addAttribute("from", from == null ? "" : from);
+        model.addAttribute("to", to == null ? "" : to);
+
+        // để hiển thị hint format
+        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
+
         return "booking/booking-list";
     }
 
@@ -41,6 +68,7 @@ public class BookingController {
     public String newForm(Model model) {
         model.addAttribute("booking", new Booking());
         model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
         return "booking/booking-form";
     }
 
@@ -53,6 +81,12 @@ public class BookingController {
 
         model.addAttribute("booking", booking);
         model.addAttribute("rooms", roomRepository.findAll());
+
+        // ✅ đưa ra chuỗi VN cho input text
+        model.addAttribute("startTimeStr", booking.getStartTime() == null ? "" : VN_DTF.format(booking.getStartTime()));
+        model.addAttribute("endTimeStr", booking.getEndTime() == null ? "" : VN_DTF.format(booking.getEndTime()));
+        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
+
         return "booking/booking-form";
     }
 
@@ -61,56 +95,56 @@ public class BookingController {
     @Transactional
     public String save(
             @RequestParam String customerName,
-            // form cũ đang gửi name="phone"; form mới gửi name="customerPhone"
             @RequestParam(required = false) String customerPhone,
             @RequestParam(required = false, name = "phone") String phone,
             @RequestParam Long roomId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime endTime,
+            @RequestParam String startTime,   // ✅ nhận chuỗi VN
+            @RequestParam String endTime,     // ✅ nhận chuỗi VN
             @RequestParam BookingStatus status,
             Model model
     ) {
-        // validate
+        Booking formBooking = new Booking();
+
         if (customerName == null || customerName.isBlank()) {
-            return backToFormWithError("Vui lòng nhập tên khách", model, new Booking());
+            return backToFormWithError("Vui lòng nhập tên khách", model, formBooking, startTime, endTime);
         }
 
-        String resolvedPhone = (customerPhone != null && !customerPhone.isBlank())
-                ? customerPhone
-                : (phone != null ? phone : "");
-
+        String resolvedPhone = resolvePhone(customerPhone, phone);
         if (resolvedPhone.isBlank()) {
-            return backToFormWithError("Vui lòng nhập số điện thoại", model, new Booking());
+            return backToFormWithError("Vui lòng nhập số điện thoại", model, formBooking, startTime, endTime);
         }
 
-        if (endTime.isBefore(startTime) || endTime.equals(startTime)) {
-            return backToFormWithError("Giờ kết thúc phải sau giờ bắt đầu", model, new Booking());
+        LocalDateTime startDt = parseVnDateTimeOrNull(startTime);
+        LocalDateTime endDt = parseVnDateTimeOrNull(endTime);
+        if (startDt == null || endDt == null) {
+            return backToFormWithError("Sai định dạng thời gian. Đúng: dd/MM/yyyy HH:mm (VD: 26/01/2026 20:30)", model, formBooking, startTime, endTime);
+        }
+        if (!endDt.isAfter(startDt)) {
+            return backToFormWithError("Giờ kết thúc phải sau giờ bắt đầu", model, formBooking, startTime, endTime);
         }
 
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 
-        // ====== CHỐNG TRÙNG GIỜ ======
-        boolean overlapped = bookingRepository.existsOverlap(
-                roomId, null, startTime, endTime, BookingStatus.CANCELLED
+        boolean overlapped = bookingRepository.existsOverlapExcludingStatus(
+                roomId, null, startDt, endDt, BookingStatus.CANCELLED
         );
         if (overlapped) {
-            return backToFormWithError(
-                    "Phòng đã có người đặt trong khung giờ này",
-                    model,
-                    new Booking()
-            );
+            formBooking.setCustomerName(customerName);
+            formBooking.setCustomerPhone(resolvedPhone);
+            formBooking.setPhone(resolvedPhone);
+            formBooking.setRoom(room);
+            formBooking.setStatus(status);
+            return backToFormWithError("Phòng đã có người đặt trong khung giờ này", model, formBooking, startTime, endTime);
         }
 
         Booking booking = new Booking();
         booking.setCustomerName(customerName.trim());
         booking.setCustomerPhone(resolvedPhone.trim());
-        // giữ tương thích với cột phone cũ trong DB
         booking.setPhone(resolvedPhone.trim());
         booking.setRoom(room);
-        booking.setStartTime(startTime);
-        booking.setEndTime(endTime);
+        booking.setStartTime(startDt);
+        booking.setEndTime(endDt);
         booking.setStatus(status);
 
         bookingRepository.save(booking);
@@ -126,8 +160,8 @@ public class BookingController {
             @RequestParam(required = false) String customerPhone,
             @RequestParam(required = false, name = "phone") String phone,
             @RequestParam Long roomId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime startTime,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime endTime,
+            @RequestParam String startTime, // ✅ chuỗi VN
+            @RequestParam String endTime,   // ✅ chuỗi VN
             @RequestParam BookingStatus status,
             Model model
     ) {
@@ -136,50 +170,52 @@ public class BookingController {
                         new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
 
         if (customerName == null || customerName.isBlank()) {
-            return backToFormWithError("Vui lòng nhập tên khách", model, booking);
+            return backToFormWithError("Vui lòng nhập tên khách", model, booking, startTime, endTime);
         }
 
-        String resolvedPhone = (customerPhone != null && !customerPhone.isBlank())
-                ? customerPhone
-                : (phone != null ? phone : "");
-
+        String resolvedPhone = resolvePhone(customerPhone, phone);
         if (resolvedPhone.isBlank()) {
-            return backToFormWithError("Vui lòng nhập số điện thoại", model, booking);
+            return backToFormWithError("Vui lòng nhập số điện thoại", model, booking, startTime, endTime);
         }
 
-        if (endTime.isBefore(startTime) || endTime.equals(startTime)) {
-            return backToFormWithError("Giờ kết thúc phải sau giờ bắt đầu", model, booking);
+        LocalDateTime startDt = parseVnDateTimeOrNull(startTime);
+        LocalDateTime endDt = parseVnDateTimeOrNull(endTime);
+        if (startDt == null || endDt == null) {
+            return backToFormWithError("Sai định dạng thời gian. Đúng: dd/MM/yyyy HH:mm (VD: 26/01/2026 20:30)", model, booking, startTime, endTime);
+        }
+        if (!endDt.isAfter(startDt)) {
+            return backToFormWithError("Giờ kết thúc phải sau giờ bắt đầu", model, booking, startTime, endTime);
         }
 
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
 
-        // ====== CHỐNG TRÙNG GIỜ (loại trừ chính nó) ======
-        boolean overlapped = bookingRepository.existsOverlap(
-                roomId, id, startTime, endTime, BookingStatus.CANCELLED
+        boolean overlapped = bookingRepository.existsOverlapExcludingStatus(
+                roomId, id, startDt, endDt, BookingStatus.CANCELLED
         );
         if (overlapped) {
-            return backToFormWithError(
-                    "Phòng đã có người đặt trong khung giờ này",
-                    model,
-                    booking
-            );
+            booking.setCustomerName(customerName);
+            booking.setCustomerPhone(resolvedPhone);
+            booking.setPhone(resolvedPhone);
+            booking.setRoom(room);
+            booking.setStatus(status);
+            return backToFormWithError("Phòng đã có người đặt trong khung giờ này", model, booking, startTime, endTime);
         }
 
         booking.setCustomerName(customerName.trim());
         booking.setCustomerPhone(resolvedPhone.trim());
         booking.setPhone(resolvedPhone.trim());
         booking.setRoom(room);
-        booking.setStartTime(startTime);
-        booking.setEndTime(endTime);
+        booking.setStartTime(startDt);
+        booking.setEndTime(endDt);
         booking.setStatus(status);
 
         bookingRepository.save(booking);
         return "redirect:/booking";
     }
 
-    // ================= DELETE (giữ đúng link trong booking-list.html) =================
+    // ================= DELETE =================
     @PostMapping("/delete/{id}")
     @Transactional
     public String delete(@PathVariable Long id) {
@@ -190,11 +226,30 @@ public class BookingController {
         return "redirect:/booking";
     }
 
-    // ================= HELPER =================
-    private String backToFormWithError(String error, Model model, Booking booking) {
+    // ================= HELPERS =================
+    private LocalDateTime parseVnDateTimeOrNull(String s) {
+        if (s == null || s.isBlank()) return null;
+        try {
+            return LocalDateTime.parse(s.trim(), VN_DTF);
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
+    }
+
+    private String resolvePhone(String customerPhone, String phone) {
+        String resolved = (customerPhone != null && !customerPhone.isBlank())
+                ? customerPhone
+                : (phone != null ? phone : "");
+        return resolved == null ? "" : resolved.trim();
+    }
+
+    private String backToFormWithError(String error, Model model, Booking booking, String startTimeStr, String endTimeStr) {
         model.addAttribute("error", error);
         model.addAttribute("booking", booking);
         model.addAttribute("rooms", roomRepository.findAll());
+        model.addAttribute("startTimeStr", startTimeStr == null ? "" : startTimeStr);
+        model.addAttribute("endTimeStr", endTimeStr == null ? "" : endTimeStr);
+        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
         return "booking/booking-form";
     }
 }

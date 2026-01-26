@@ -64,14 +64,14 @@ public class BookingServiceImpl implements BookingService {
         // thời gian không hợp lệ thì coi như conflict để chặn
         if (!startTime.isBefore(endTime)) return true;
 
-        // ✅ Chống trùng chuẩn: bỏ qua booking đã hủy (CANCELLED)
+        // Chống trùng chuẩn: bỏ qua booking đã hủy (CANCELLED)
         // Dùng query chuẩn overlap: newStart < oldEnd AND newEnd > oldStart
-        return bookingRepository.existsOverlap(
-                roomId,
-                excludeBookingId,
-                startTime,
-                endTime,
-                BookingStatus.CANCELLED
+        return bookingRepository.existsOverlapExcludingStatus(
+            roomId,
+            excludeBookingId,
+            startTime,
+            endTime,
+            BookingStatus.CANCELLED
         );
     }
 }

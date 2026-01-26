@@ -1,43 +1,157 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Hóa đơn</title>
-  </head>
-  <body>
-    <h2>Danh sách hóa đơn</h2>
-    <p>
-      <a th:href="@{/rooms}">Phòng</a> |
-      <a th:href="@{/room-sessions}">Room Sessions</a>
-    </p>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout('Hóa đơn', 'invoices', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead">
+    <!-- Flatpickr (dùng cho from/to nhập text) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  </th:block>
 
-    <table border="1" cellpadding="8" cellspacing="0">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Session</th>
-          <th>Tổng</th>
-          <th>Trạng thái</th>
-          <th>Ngày tạo</th>
-          <th>Ngày thanh toán</th>
-          <th>Chi tiết</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:if="${#lists.isEmpty(invoices)}">
-          <td colspan="7">Chưa có hóa đơn</td>
-        </tr>
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Danh sách hóa đơn</h2>
+        <div class="help-text">Lọc theo thời gian và khoảng tiền.</div>
+      </div>
+    </div>
 
-        <tr th:each="i : ${invoices}">
-          <td th:text="${i.id}">1</td>
-          <td th:text="${i.roomSession != null ? i.roomSession.id : ''}">10</td>
-          <td th:text="${i.totalAmount}">100000</td>
-          <td th:text="${i.status}">UNPAID</td>
-          <td th:text="${i.createdAt}"></td>
-          <td th:text="${i.paidAt}"></td>
-          <td><a th:href="@{/invoice/{id}(id=${i.id})}">Xem</a></td>
-        </tr>
-      </tbody>
-    </table>
-  </body>
+    <div class="card">
+      <!-- FILTER -->
+      <form method="get" th:action="@{/invoice}" class="filter">
+        <div class="field">
+          <label>Từ</label>
+          <input
+            class="input datetime-picker"
+            type="text"
+            name="from"
+            th:value="${from}"
+            placeholder="dd/MM/yyyy HH:mm"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label>Đến</label>
+          <input
+            class="input datetime-picker"
+            type="text"
+            name="to"
+            th:value="${to}"
+            placeholder="dd/MM/yyyy HH:mm"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label>Tối thiểu</label>
+          <input
+            class="input"
+            type="number"
+            step="1000"
+            name="min"
+            th:value="${min}"
+            placeholder="0"
+          />
+        </div>
+
+        <div class="field">
+          <label>Tối đa</label>
+          <input
+            class="input"
+            type="number"
+            step="1000"
+            name="max"
+            th:value="${max}"
+            placeholder="0"
+          />
+        </div>
+
+        <div class="field small">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" type="submit">Lọc</button>
+        </div>
+
+        <div class="field small">
+          <label>&nbsp;</label>
+          <a class="btn btn-outline" th:href="@{/invoice}">Xóa lọc</a>
+        </div>
+
+        <div class="filter-note">
+          Định dạng: <b th:text="${dtPattern}">dd/MM/yyyy HH:mm</b>
+        </div>
+      </form>
+
+      <div class="hr"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px">ID</th>
+              <th style="width: 130px">Session</th>
+              <th>Thu ngân</th>
+              <th style="width: 140px">Tiền phòng</th>
+              <th style="width: 140px">Giảm giá</th>
+              <th style="width: 150px">Tổng tiền</th>
+              <th style="width: 140px">Trạng thái</th>
+              <th style="width: 140px">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${#lists.isEmpty(invoices)}">
+              <td
+                colspan="8"
+                style="text-align: center; color: #6b7280; padding: 18px"
+              >
+                Không có hóa đơn
+              </td>
+            </tr>
+
+            <tr th:each="inv : ${invoices}">
+              <td th:text="${inv.id}">1</td>
+              <td
+                th:text="${inv.roomSession != null ? inv.roomSession.id : ''}"
+              >
+                17
+              </td>
+              <td th:text="${inv.cashier != null ? inv.cashier.username : ''}">
+                admin
+              </td>
+              <td th:text="${inv.roomAmount}">100000</td>
+              <td th:text="${inv.discountAmount}">0</td>
+              <td>
+                <b th:text="${inv.totalAmount}">100000</b>
+              </td>
+              <td>
+                <span class="badge badge-muted" th:text="${inv.status}"
+                  >PAID</span
+                >
+              </td>
+              <td>
+                <a
+                  class="btn btn-outline btn-sm"
+                  th:href="@{/invoice/{id}(id=${inv.id})}"
+                  >Chi tiết</a
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      flatpickr(".datetime-picker", {
+        enableTime: true,
+        time_24hr: true,
+        dateFormat: "d/m/Y H:i",
+        allowInput: false,
+      });
+    </script>
+  </section>
 </html>

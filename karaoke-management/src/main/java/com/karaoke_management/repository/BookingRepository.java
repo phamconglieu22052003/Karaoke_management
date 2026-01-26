@@ -7,43 +7,63 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    /**
-     * Check booking conflict theo quy tắc:
-     * existing.start < new.end AND existing.end > new.start
-     *
-     * - Khi tạo mới: excludeId = -1
-     * - Khi update: excludeId = booking.getId()
-     */
+    // ================== LIST CŨ (GIỮ NGUYÊN) ==================
+    List<Booking> findAll();
+
+    List<Booking> findAllByOrderByIdDesc();
+
+    // ================== CHỐNG TRÙNG GIỜ (GIỮ NGUYÊN CHỮ KÝ BẠN ĐANG CÓ) ==================
+    // overlap nếu: startTime < endTime2 && endTime > startTime2
     @Query("""
-        SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END
+        SELECT COUNT(b) > 0
         FROM Booking b
         WHERE b.room.id = :roomId
-          AND (:excludeId = -1 OR b.id <> :excludeId)
+          AND (:excludeId IS NULL OR b.id <> :excludeId)
           AND b.startTime < :endTime
           AND b.endTime > :startTime
     """)
-    boolean existsBookingConflict(
+    boolean existsOverlap(
             @Param("roomId") Long roomId,
             @Param("excludeId") Long excludeId,
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+
+    // ================== (TÙY CHỌN) CHỐNG TRÙNG GIỜ NHƯNG BỎ QUA 1 STATUS (VD: CANCELLED) ==================
+    // Nếu controller bạn muốn bỏ qua CANCELLED, dùng hàm này thay vì existsOverlap(...)
     @Query("""
-        select (count(b) > 0)
-        from Booking b
-        where b.room.id = :roomId
-          and (:excludeId is null or b.id <> :excludeId)
-          and b.status <> :cancelled
-          and (:start < b.endTime and :end > b.startTime)
+        SELECT COUNT(b) > 0
+        FROM Booking b
+        WHERE b.room.id = :roomId
+          AND (:excludeId IS NULL OR b.id <> :excludeId)
+          AND (:excludedStatus IS NULL OR b.status <> :excludedStatus)
+          AND b.startTime < :endTime
+          AND b.endTime > :startTime
     """)
-    boolean existsOverlap(
+    boolean existsOverlapExcludingStatus(
             @Param("roomId") Long roomId,
             @Param("excludeId") Long excludeId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end,
-            @Param("cancelled") BookingStatus cancelled
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("excludedStatus") BookingStatus excludedStatus
+    );
+
+    // ================== LỌC BOOKING THEO KHOẢNG THỜI GIAN (OVERLAP RANGE) ==================
+    // Hiển thị tất cả booking có giao với [from, to]
+    // Điều kiện overlap: booking.end >= from AND booking.start <= to
+    @Query("""
+        SELECT b
+        FROM Booking b
+        WHERE (:from IS NULL OR b.endTime >= :from)
+          AND (:to IS NULL OR b.startTime <= :to)
+        ORDER BY b.id DESC
+    """)
+    List<Booking> filterByTimeRange(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
     );
 }

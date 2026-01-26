@@ -1,0 +1,140 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:fragment="layout(title, active, pageHead, content)"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${title}">Karaoke Management</title>
+
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <th:block th:replace="${pageHead}" />
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark">KM</div>
+          <div class="brand-text">
+            <div class="brand-name">Karaoke</div>
+            <div class="brand-sub">Management</div>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'dashboard' ? ' active' : ''"
+            th:href="@{/dashboard}"
+          >
+            Dashboard
+          </a>
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'rooms' ? ' active' : ''"
+            th:href="@{/rooms}"
+          >
+            Phòng
+          </a>
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'roomTypes' ? ' active' : ''"
+            th:href="@{/room-types}"
+          >
+            Loại phòng
+          </a>
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'booking' ? ' active' : ''"
+            th:href="@{/booking}"
+          >
+            Đặt phòng
+          </a>
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'sessions' ? ' active' : ''"
+            th:href="@{/room-sessions}"
+          >
+            Mở/đóng phòng
+          </a>
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'invoices' ? ' active' : ''"
+            th:href="@{/invoice}"
+          >
+            Hóa đơn
+          </a>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="who">
+            <div class="who-label">Đăng nhập</div>
+            <div
+              class="who-name"
+              th:text="${#authentication != null ? #authentication.name : 'guest'}"
+            >
+              admin
+            </div>
+          </div>
+          <form th:action="@{/logout}" method="post" style="margin: 0">
+            <button class="btn btn-outline btn-sm w-100" type="submit">
+              Đăng xuất
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <div class="main">
+        <header class="app-header">
+          <button
+            class="icon-btn"
+            type="button"
+            aria-label="Toggle sidebar"
+            onclick="toggleSidebar()"
+          >
+            ☰
+          </button>
+
+          <div class="app-header-title">
+            <div class="title" th:text="${title}">Karaoke Management</div>
+            <div class="subtitle">Quản lý vận hành quán karaoke</div>
+          </div>
+
+          <div class="app-header-actions">
+            <a class="btn btn-outline btn-sm" th:href="@{/dashboard}"
+              >Trang chủ</a
+            >
+          </div>
+        </header>
+
+        <main class="app-content">
+          <div class="container">
+            <th:block th:insert="${content}" />
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      function toggleSidebar() {
+        const el = document.getElementById("sidebar");
+        el.classList.toggle("open");
+      }
+      // Close sidebar when clicking outside (mobile)
+      document.addEventListener("click", function (e) {
+        const sidebar = document.getElementById("sidebar");
+        const isMobile = window.matchMedia("(max-width: 960px)").matches;
+        if (!isMobile) return;
+        if (!sidebar.classList.contains("open")) return;
+        const clickedInside =
+          sidebar.contains(e.target) ||
+          (e.target && e.target.closest && e.target.closest(".icon-btn"));
+        if (!clickedInside) sidebar.classList.remove("open");
+      });
+    </script>
+  </body>
+</html>

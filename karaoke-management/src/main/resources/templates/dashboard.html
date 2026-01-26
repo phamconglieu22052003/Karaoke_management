@@ -1,33 +1,67 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="utf-8" />
-    <title>Dashboard</title>
-  </head>
-  <body>
-    <div
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      "
-    >
-      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout('Dashboard', 'dashboard', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead"></th:block>
 
-      <form th:action="@{/logout}" method="post" style="margin: 0">
-        <button type="submit">Đăng xuất</button>
-      </form>
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Tổng quan</h2>
+        <div class="help-text">
+          Xin chào, <b th:text="${#authentication.name}">user</b>. Chọn một chức
+          năng bên dưới để bắt đầu.
+        </div>
+      </div>
     </div>
-    <hr />
 
-    <h1>Hệ thống quản lý Karaoke</h1>
+    <div class="grid-cards">
+      <a class="card card-link" th:href="@{/rooms}">
+        <div class="card-kpi">
+          <div class="kpi-title">Quản lý phòng</div>
+          <div class="kpi-sub">Xem trạng thái, mở phòng, theo dõi</div>
+        </div>
+      </a>
 
-    <ul>
-      <li><a th:href="@{/rooms}">Quản lý phòng</a></li>
-      <li><a th:href="@{/room-types}">Loại phòng</a></li>
-      <li><a th:href="@{/booking}">Đặt phòng</a></li>
-      <li><a href="/room-sessions">Room Session (Check-in/out)</a></li>
-    </ul>
-  </body>
+      <a class="card card-link" th:href="@{/room-types}">
+        <div class="card-kpi">
+          <div class="kpi-title">Loại phòng</div>
+          <div class="kpi-sub">Thiết lập loại phòng & giá/giờ</div>
+        </div>
+      </a>
+
+      <a class="card card-link" th:href="@{/booking}">
+        <div class="card-kpi">
+          <div class="kpi-title">Đặt phòng</div>
+          <div class="kpi-sub">Tạo booking, lọc theo thời gian</div>
+        </div>
+      </a>
+
+      <a class="card card-link" th:href="@{/room-sessions}">
+        <div class="card-kpi">
+          <div class="kpi-title">Mở/đóng phòng</div>
+          <div class="kpi-sub">Check-in/out, tạo hóa đơn theo session</div>
+        </div>
+      </a>
+
+      <a class="card card-link" th:href="@{/invoice}">
+        <div class="card-kpi">
+          <div class="kpi-title">Hóa đơn</div>
+          <div class="kpi-sub">Tra cứu, lọc, xem chi tiết hóa đơn</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <div
+        style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"
+      >
+        <span class="badge badge-ok">Đang hoạt động</span>
+        <span class="help-text"
+          >Gợi ý: dùng menu bên trái để chuyển nhanh giữa các màn hình.</span
+        >
+      </div>
+    </div>
+  </section>
 </html>
