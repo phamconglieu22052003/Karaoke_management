@@ -10,10 +10,10 @@ public class BookingDTO {
 
     private Long roomId;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @DateTimeFormat(pattern = "HH:mm dd/MM/yyyy")
     private LocalDateTime startTime;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @DateTimeFormat(pattern = "HH:mm dd/MM/yyyy")
     private LocalDateTime endTime;
 
     private String customerName;

@@ -10,9 +10,6 @@ public class PageController {
     public String dashboard() {
         return "dashboard";
     }
-
-
-
     // @GetMapping("/invoice")
     // public String invoice() {
     //     return "invoice/invoice-list";

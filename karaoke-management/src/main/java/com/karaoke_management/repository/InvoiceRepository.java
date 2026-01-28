@@ -12,27 +12,25 @@ import java.util.Optional;
 
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
-    // Giữ chức năng cũ
-    List<Invoice> findAllByOrderByIdDesc();
+    // ✅ cần cho InvoiceServiceImpl.createOrGetBySession(...)
+    Optional<Invoice> findByRoomSessionId(Long roomSessionId);
 
-    // Giữ chức năng tạo hóa đơn theo session (nếu bạn đang dùng)
-    @Query("select i from Invoice i where i.roomSession.id = :sessionId")
-    Optional<Invoice> findByRoomSessionId(@Param("sessionId") Long sessionId);
-
-    // ✅ Lọc theo createdAt + totalAmount (param có thể null)
     @Query("""
-        SELECT i
-        FROM Invoice i
-        WHERE (:from IS NULL OR i.createdAt >= :from)
-          AND (:to   IS NULL OR i.createdAt <= :to)
-          AND (:min  IS NULL OR i.totalAmount >= :min)
-          AND (:max  IS NULL OR i.totalAmount <= :max)
-        ORDER BY i.id DESC
+        select i from Invoice i
+        join i.roomSession rs
+        join rs.room r
+        where (:from is null or i.createdAt >= :from)
+          and (:to is null or i.createdAt <= :to)
+          and (:min is null or i.totalAmount >= :min)
+          and (:max is null or i.totalAmount <= :max)
+          and (:roomId is null or r.id = :roomId)
+        order by i.id desc
     """)
     List<Invoice> filterInvoices(
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to,
             @Param("min") BigDecimal min,
-            @Param("max") BigDecimal max
+            @Param("max") BigDecimal max,
+            @Param("roomId") Long roomId
     );
 }

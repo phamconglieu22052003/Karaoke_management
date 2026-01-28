@@ -26,11 +26,11 @@ public class Booking {
     private Room room;
 
     @Column(name = "start_time", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @DateTimeFormat(pattern = "HH:mm dd/MM/yyyy")
     private LocalDateTime startTime;
 
     @Column(name = "end_time", nullable = false)
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @DateTimeFormat(pattern = "HH:mm dd/MM/yyyy")
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)

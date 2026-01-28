@@ -34,7 +34,7 @@
             type="text"
             name="from"
             th:value="${from}"
-            placeholder="dd/MM/yyyy HH:mm"
+            placeholder="HH:mm dd/MM/yyyy"
             autocomplete="off"
           />
         </div>
@@ -46,7 +46,7 @@
             type="text"
             name="to"
             th:value="${to}"
-            placeholder="dd/MM/yyyy HH:mm"
+            placeholder="HH:mm dd/MM/yyyy"
             autocomplete="off"
           />
         </div>
@@ -61,7 +61,7 @@
           <a class="btn btn-outline" th:href="@{/booking}">Xóa lọc</a>
         </div>
 
-        <div class="filter-note">Định dạng: <b>dd/MM/yyyy HH:mm</b></div>
+        <div class="filter-note">Định dạng: <b>20:30 26/01/2026</b></div>
       </form>
 
       <div class="hr"></div>
@@ -99,11 +99,11 @@
               <td th:text="${b.room.name}">Room 1</td>
 
               <td
-                th:text="${#temporals.format(b.startTime, 'dd/MM/yyyy HH:mm')}"
+                th:text="${#temporals.format(b.startTime, 'HH:mm dd/MM/yyyy')}"
               >
                 26/01/2026 20:00
               </td>
-              <td th:text="${#temporals.format(b.endTime, 'dd/MM/yyyy HH:mm')}">
+              <td th:text="${#temporals.format(b.endTime, 'HH:mm dd/MM/yyyy')}">
                 26/01/2026 22:00
               </td>
 
@@ -144,7 +144,7 @@
       flatpickr(".datetime-picker", {
         enableTime: true,
         time_24hr: true,
-        dateFormat: "d/m/Y H:i",
+        dateFormat: " H:i d/m/Y",
         allowInput: false,
       });
     </script>

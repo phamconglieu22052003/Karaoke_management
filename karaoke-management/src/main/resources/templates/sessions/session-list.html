@@ -49,8 +49,16 @@
             <tr th:each="s : ${sessions}">
               <td th:text="${s.id}">1</td>
               <td th:text="${s.room != null ? s.room.name : ''}">P101</td>
-              <td th:text="${s.startTime}">2026-01-21T01:10</td>
-              <td th:text="${s.endTime}">2026-01-21T02:10</td>
+              <td
+                th:text="${s.startTime != null ? #temporals.format(s.startTime, 'HH:mm dd/MM/yyyy') : ''}"
+              >
+                01:10 21/01/2026
+              </td>
+              <td
+                th:text="${s.endTime != null ? #temporals.format(s.endTime, 'HH:mm dd/MM/yyyy') : ''}"
+              >
+                02:10 21/01/2026
+              </td>
               <td>
                 <span
                   class="badge"

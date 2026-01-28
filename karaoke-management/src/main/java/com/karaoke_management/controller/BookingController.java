@@ -25,7 +25,7 @@ public class BookingController {
     private final RoomRepository roomRepository;
 
     // ✅ format VN
-    private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
     public BookingController(BookingRepository bookingRepository,
                              RoomRepository roomRepository) {
@@ -58,7 +58,7 @@ public class BookingController {
         model.addAttribute("to", to == null ? "" : to);
 
         // để hiển thị hint format
-        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
+        model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
 
         return "booking/booking-list";
     }
@@ -68,7 +68,7 @@ public class BookingController {
     public String newForm(Model model) {
         model.addAttribute("booking", new Booking());
         model.addAttribute("rooms", roomRepository.findAll());
-        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
+        model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
         return "booking/booking-form";
     }
 
@@ -85,7 +85,7 @@ public class BookingController {
         // ✅ đưa ra chuỗi VN cho input text
         model.addAttribute("startTimeStr", booking.getStartTime() == null ? "" : VN_DTF.format(booking.getStartTime()));
         model.addAttribute("endTimeStr", booking.getEndTime() == null ? "" : VN_DTF.format(booking.getEndTime()));
-        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
+        model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
 
         return "booking/booking-form";
     }
@@ -117,7 +117,7 @@ public class BookingController {
         LocalDateTime startDt = parseVnDateTimeOrNull(startTime);
         LocalDateTime endDt = parseVnDateTimeOrNull(endTime);
         if (startDt == null || endDt == null) {
-            return backToFormWithError("Sai định dạng thời gian. Đúng: dd/MM/yyyy HH:mm (VD: 26/01/2026 20:30)", model, formBooking, startTime, endTime);
+            return backToFormWithError("Sai định dạng thời gian. Đúng: HH:mm dd/MM/yyyy (VD: 26/01/2026 20:30)", model, formBooking, startTime, endTime);
         }
         if (!endDt.isAfter(startDt)) {
             return backToFormWithError("Giờ kết thúc phải sau giờ bắt đầu", model, formBooking, startTime, endTime);
@@ -181,7 +181,7 @@ public class BookingController {
         LocalDateTime startDt = parseVnDateTimeOrNull(startTime);
         LocalDateTime endDt = parseVnDateTimeOrNull(endTime);
         if (startDt == null || endDt == null) {
-            return backToFormWithError("Sai định dạng thời gian. Đúng: dd/MM/yyyy HH:mm (VD: 26/01/2026 20:30)", model, booking, startTime, endTime);
+            return backToFormWithError("Sai định dạng thời gian. Đúng: HH:mm dd/MM/yyyy (VD: 26/01/2026 20:30)", model, booking, startTime, endTime);
         }
         if (!endDt.isAfter(startDt)) {
             return backToFormWithError("Giờ kết thúc phải sau giờ bắt đầu", model, booking, startTime, endTime);
@@ -249,7 +249,7 @@ public class BookingController {
         model.addAttribute("rooms", roomRepository.findAll());
         model.addAttribute("startTimeStr", startTimeStr == null ? "" : startTimeStr);
         model.addAttribute("endTimeStr", endTimeStr == null ? "" : endTimeStr);
-        model.addAttribute("dtPattern", "dd/MM/yyyy HH:mm");
+        model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
         return "booking/booking-form";
     }
 }

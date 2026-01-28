@@ -52,8 +52,12 @@
           <td th:text="${b.customerName}"></td>
           <td th:text="${b.customerPhone}"></td>
           <td th:text="${b.room != null ? b.room.name : ''}"></td>
-          <td th:text="${b.startTime}"></td>
-          <td th:text="${b.endTime}"></td>
+          <td
+            th:text="${#temporals.format(b.startTime, 'HH:mm dd/MM/yyyy')}"
+          ></td>
+          <td
+            th:text="${#temporals.format(b.endTime, 'HH:mm dd/MM/yyyy')}"
+          ></td>
           <td th:text="${b.status}"></td>
         </tr>
       </tbody>

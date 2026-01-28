@@ -23,7 +23,7 @@ public class Room {
     @ManyToOne
     @JoinColumn(name = "room_type_id")
     private RoomType roomType;
-
+    
     public Room() {}
 
     public Long getId() { return id; }

@@ -56,7 +56,12 @@
 
           <div class="kv-row" th:if="${invoice.paidAt != null}">
             <div class="kv-k">Đã thanh toán lúc</div>
-            <div class="kv-v" th:text="${invoice.paidAt}">time</div>
+            <div
+              class="kv-v"
+              th:text="${invoice.paidAt != null ? #temporals.format(invoice.paidAt, 'HH:mm dd/MM/yyyy') : '--'}"
+            >
+              time
+            </div>
           </div>
 
           <div class="kv-row" th:if="${invoice.vnpTransactionNo != null}">

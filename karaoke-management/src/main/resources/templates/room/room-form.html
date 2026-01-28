@@ -1,85 +1,120 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="utf-8" />
-    <title th:text="${room.id == null ? 'Thêm phòng' : 'Sửa phòng'}">
-      Room Form
-    </title>
-  </head>
-  <body>
-    <div
-      style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      "
-    >
-      <div>Xin chào, <b th:text="${#authentication.name}">user</b></div>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout(${room.id == null ? 'Thêm phòng' : 'Sửa phòng'}, 'rooms', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead"></th:block>
 
-      <form th:action="@{/logout}" method="post" style="margin: 0">
-        <button type="submit">Đăng xuất</button>
+  <section>
+    <div class="topbar">
+      <div>
+        <h2
+          class="page-title"
+          th:text="${room.id == null ? 'Thêm phòng' : 'Sửa phòng'}"
+        >
+          Thêm phòng
+        </h2>
+        <div class="help-text">
+          Nhập thông tin phòng để hiển thị trong danh sách và có thể chọn khi
+          đặt phòng.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a class="btn btn-outline" th:href="@{/rooms}">← Quay lại</a>
+      </div>
+    </div>
+
+    <div class="card" style="max-width: 780px">
+      <form
+        th:action="@{${room.id == null ? '/rooms' : '/rooms/update'}}"
+        th:object="${room}"
+        method="post"
+        style="display: flex; flex-direction: column; gap: 14px"
+      >
+        <!-- id (khi sửa) -->
+        <input type="hidden" th:field="*{id}" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div>
+            <label class="label">Tên phòng</label>
+            <input
+              class="input"
+              type="text"
+              th:field="*{name}"
+              placeholder="VD: P101"
+              required
+            />
+            <div class="help-text">Tên phòng phải duy nhất (không trùng).</div>
+          </div>
+
+          <div>
+            <label class="label">Sức chứa</label>
+            <input
+              class="input"
+              type="number"
+              th:field="*{capacity}"
+              min="1"
+              placeholder="VD: 8"
+              required
+            />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div>
+            <label class="label">Trạng thái</label>
+            <select class="input" th:field="*{status}" required>
+              <option
+                th:each="s : ${statuses}"
+                th:value="${s}"
+                th:text="${s}"
+              ></option>
+            </select>
+            <div class="help-text">
+              Để đặt phòng được, phòng nên ở trạng thái AVAILABLE.
+            </div>
+          </div>
+
+          <div>
+            <label class="label">Loại phòng</label>
+
+            <!-- ✅ Binding chuẩn, tránh lỗi lưu sai room_type_id -->
+            <select class="input" th:field="*{roomType.id}" required>
+              <option value="" disabled th:selected="${room.roomType == null}">
+                -- Chọn loại phòng --
+              </option>
+              <option
+                th:each="rt : ${roomTypes}"
+                th:value="${rt.id}"
+                th:text="${rt.name}"
+              ></option>
+            </select>
+
+            <div class="help-text">
+              Loại phòng lấy từ danh sách “Loại phòng”.
+            </div>
+          </div>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 6px;
+          "
+        >
+          <a class="btn btn-outline" th:href="@{/rooms}">Hủy</a>
+          <button
+            class="btn btn-primary"
+            type="submit"
+            th:text="${room.id == null ? 'Tạo phòng' : 'Cập nhật'}"
+          >
+            Lưu
+          </button>
+        </div>
       </form>
     </div>
-    <hr />
-
-    <h2 th:text="${room.id == null ? 'Thêm phòng mới' : 'Sửa phòng'}"></h2>
-
-    <p>
-      <a th:href="@{/rooms}">← Quay lại danh sách phòng</a>
-    </p>
-
-    <form
-      th:action="@{${room.id == null ? '/rooms' : '/rooms/update'}}"
-      th:object="${room}"
-      method="post"
-    >
-      >
-      <input type="hidden" th:if="${room.id != null}" th:field="*{id}" />
-
-      <div>
-        <label>Tên phòng</label><br />
-        <input type="text" th:field="*{name}" required />
-      </div>
-
-      <br />
-
-      <div>
-        <label>Sức chứa</label><br />
-        <input type="number" th:field="*{capacity}" min="1" required />
-      </div>
-
-      <br />
-
-      <div>
-        <label>Trạng thái</label><br />
-        <select th:field="*{status}">
-          <option
-            th:each="s : ${statuses}"
-            th:value="${s}"
-            th:text="${s}"
-          ></option>
-        </select>
-      </div>
-
-      <br />
-
-      <div>
-        <label>Loại phòng</label><br />
-        <select name="roomType.id" required>
-          <option
-            th:each="rt : ${roomTypes}"
-            th:value="${rt.id}"
-            th:selected="${room.roomType != null and rt.id == room.roomType.id}"
-            th:text="${rt.name}"
-          ></option>
-        </select>
-      </div>
-
-      <br /><br />
-
-      <button type="submit">Lưu</button>
-      <a th:href="@{/rooms}">Hủy</a>
-    </form>
-  </body>
+  </section>
 </html>

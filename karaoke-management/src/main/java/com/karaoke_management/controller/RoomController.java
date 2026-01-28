@@ -2,12 +2,12 @@ package com.karaoke_management.controller;
 
 import com.karaoke_management.entity.Room;
 import com.karaoke_management.entity.RoomStatus;
+import com.karaoke_management.entity.RoomType;
 import com.karaoke_management.service.RoomService;
 import com.karaoke_management.service.RoomTypeService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 
 @Controller
 public class RoomController {
@@ -30,7 +30,9 @@ public class RoomController {
     // Form thêm phòng
     @GetMapping("/rooms/new")
     public String createRoomForm(Model model) {
-        model.addAttribute("room", new Room());
+        Room room = new Room();
+        room.setRoomType(new RoomType()); // ✅ để th:field *{roomType.id} không bị null
+        model.addAttribute("room", room);
         model.addAttribute("roomTypes", roomTypeService.findAll());
         model.addAttribute("statuses", RoomStatus.values());
         return "room/room-form";
@@ -38,15 +40,25 @@ public class RoomController {
 
     // Lưu phòng mới
     @PostMapping("/rooms")
-    public String saveRoom(@ModelAttribute Room room) {
-        roomService.save(room);
-        return "redirect:/rooms";
+    public String saveRoom(@ModelAttribute("room") Room room, Model model) {
+        try {
+            roomService.save(room);
+            return "redirect:/rooms";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("roomTypes", roomTypeService.findAll());
+            model.addAttribute("statuses", RoomStatus.values());
+            // đảm bảo không null
+            if (room.getRoomType() == null) room.setRoomType(new RoomType());
+            return "room/room-form";
+        }
     }
 
     // Form sửa phòng
     @GetMapping("/rooms/edit/{id}")
     public String editRoomForm(@PathVariable Long id, Model model) {
         Room room = roomService.findById(id);
+        if (room.getRoomType() == null) room.setRoomType(new RoomType());
         model.addAttribute("room", room);
         model.addAttribute("roomTypes", roomTypeService.findAll());
         model.addAttribute("statuses", RoomStatus.values());
@@ -55,9 +67,17 @@ public class RoomController {
 
     // Cập nhật phòng
     @PostMapping("/rooms/update")
-    public String updateRoom(@ModelAttribute Room room) {
-        roomService.save(room);
-        return "redirect:/rooms";
+    public String updateRoom(@ModelAttribute("room") Room room, Model model) {
+        try {
+            roomService.save(room);
+            return "redirect:/rooms";
+        } catch (IllegalArgumentException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("roomTypes", roomTypeService.findAll());
+            model.addAttribute("statuses", RoomStatus.values());
+            if (room.getRoomType() == null) room.setRoomType(new RoomType());
+            return "room/room-form";
+        }
     }
 
     // Xóa phòng

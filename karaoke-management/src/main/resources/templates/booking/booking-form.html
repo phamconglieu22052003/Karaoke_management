@@ -109,7 +109,7 @@
               type="text"
               name="startTime"
               th:value="${startTimeStr != null ? startTimeStr : ''}"
-              placeholder="dd/MM/yyyy HH:mm"
+              placeholder="HH:mm dd/MM/yyyy"
               required
               autocomplete="off"
             />
@@ -122,7 +122,7 @@
               type="text"
               name="endTime"
               th:value="${endTimeStr != null ? endTimeStr : ''}"
-              placeholder="dd/MM/yyyy HH:mm"
+              placeholder="HH:mm dd/MM/yyyy"
               required
               autocomplete="off"
             />
@@ -130,7 +130,7 @@
         </div>
 
         <p class="help-text">
-          Định dạng: <b>dd/MM/yyyy HH:mm</b> • Ví dụ: <i>26/01/2026 20:30</i>
+          Định dạng: <b>HH:mm dd/MM/yyyy</b> • Ví dụ: <i>20:30 26/01/2026 </i>
         </p>
 
         <div class="hr"></div>
@@ -150,7 +150,7 @@
       flatpickr(".datetime-picker", {
         enableTime: true,
         time_24hr: true,
-        dateFormat: "d/m/Y H:i",
+        dateFormat: "H:i d/m/Y",
         allowInput: false,
       });
     </script>

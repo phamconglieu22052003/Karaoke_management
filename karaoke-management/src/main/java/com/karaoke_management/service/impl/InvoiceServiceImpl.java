@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.domain.Sort;
+
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -31,7 +33,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<Invoice> findAll() {
-        return invoiceRepository.findAllByOrderByIdDesc();
+        return invoiceRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
     }
 
     @Override
