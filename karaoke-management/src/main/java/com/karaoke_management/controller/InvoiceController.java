@@ -57,6 +57,7 @@ public class InvoiceController {
         model.addAttribute("min", min);
         model.addAttribute("max", max);
         model.addAttribute("roomId", roomId); // ✅ để giữ lại dropdown phòng
+        model.addAttribute("rooms", roomRepository.findAll());
 
         model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
         return "invoice/invoice-list";
