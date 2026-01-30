@@ -12,7 +12,7 @@ public class VnpayUtil {
 
     private VnpayUtil() {}
 
-    // ✅ Lấy IP đúng cách (VNPay khuyến nghị)
+    // Lấy IP đúng cách (VNPay khuyến nghị)
     public static String getIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isBlank()) {
@@ -25,7 +25,7 @@ public class VnpayUtil {
         return request.getRemoteAddr();
     }
 
-    // ✅ flatten parameterMap (Map<String,String[]> -> Map<String,String>)
+    // flatten parameterMap (Map<String,String[]> -> Map<String,String>)
     public static Map<String, String> flattenParams(Map<String, String[]> parameterMap) {
         Map<String, String> out = new LinkedHashMap<>();
         for (Map.Entry<String, String[]> e : parameterMap.entrySet()) {
@@ -54,7 +54,7 @@ public class VnpayUtil {
         return URLEncoder.encode(s, StandardCharsets.US_ASCII);
     }
 
-    // ✅ HashData: sort key, bỏ vnp_SecureHash, vnp_SecureHashType
+    // HashData: sort key, bỏ vnp_SecureHash, vnp_SecureHashType
     public static String buildHashData(Map<String, String> params) {
         List<String> keys = new ArrayList<>(params.keySet());
         Collections.sort(keys);
@@ -71,7 +71,7 @@ public class VnpayUtil {
         return sb.toString();
     }
 
-    // ✅ QueryString: sort key, bỏ vnp_SecureHash, vnp_SecureHashType
+    // QueryString: sort key, bỏ vnp_SecureHash, vnp_SecureHashType
     public static String buildQueryString(Map<String, String> params) {
         List<String> keys = new ArrayList<>(params.keySet());
         Collections.sort(keys);
@@ -88,7 +88,7 @@ public class VnpayUtil {
         return sb.toString();
     }
 
-    // ✅ verify chữ ký trả về từ VNPay
+    // verify chữ ký trả về từ VNPay
     public static boolean verifySecureHash(Map<String, String> allParams, String hashSecret) {
         String received = allParams.get("vnp_SecureHash");
         if (received == null || received.isBlank()) return false;

@@ -4,145 +4,10 @@
   th:replace="~{layout/main-layout :: layout('Danh sách hóa đơn', 'invoices', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead">
-    <style>
-      .filter-card {
-        padding: 16px;
-      }
-      .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 12px;
-        align-items: end;
-      }
-      .fg-3 {
-        grid-column: span 3;
-      }
-      .fg-2 {
-        grid-column: span 2;
-      }
-      .fg-4 {
-        grid-column: span 4;
-      }
-      .fg-12 {
-        grid-column: span 12;
-      }
-
-      @media (max-width: 1100px) {
-        .fg-3,
-        .fg-2,
-        .fg-4 {
-          grid-column: span 6;
-        }
-      }
-      @media (max-width: 720px) {
-        .fg-3,
-        .fg-2,
-        .fg-4 {
-          grid-column: span 12;
-        }
-      }
-
-      .f-label {
-        font-size: 12px;
-        color: #6b7280;
-        margin: 0 0 6px;
-        font-weight: 700;
-      }
-      .f-input,
-      .f-select {
-        width: 100%;
-        height: 40px;
-        padding: 0 12px;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        outline: none;
-        background: #fff;
-      }
-      .f-input:focus,
-      .f-select:focus {
-        border-color: #93c5fd;
-        box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.35);
-      }
-
-      .btn-row {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-      }
-
-      .hint {
-        margin-top: 8px;
-        font-size: 12px;
-        color: #6b7280;
-      }
-
-      .chips {
-        margin-top: 10px;
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .chip {
-        font-size: 12px;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        padding: 6px 10px;
-        border-radius: 999px;
-        color: #374151;
-      }
-
-      .t-right {
-        text-align: right;
-      }
-      .t-center {
-        text-align: center;
-      }
-      .mono {
-        font-variant-numeric: tabular-nums;
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 800;
-        border: 1px solid #e5e7eb;
-        color: #374151;
-        background: #fff;
-      }
-      .badge-ok {
-        background: #ecfdf5;
-        border-color: #a7f3d0;
-        color: #065f46;
-      }
-      .badge-warn {
-        background: #fffbeb;
-        border-color: #fde68a;
-        color: #92400e;
-      }
-      .badge-bad {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: #991b1b;
-      }
-
-      .table-wrap table td,
-      .table-wrap table th {
-        vertical-align: middle;
-      }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/invoice-list.css}" />
   </th:block>
 
-  <section
-    th:with="
-      pattern=${(dtPattern != null and !#strings.isEmpty(dtPattern)) ? dtPattern : 'HH:mm dd/MM/yyyy'},
-      roomIdStr=${roomId != null ? roomId.toString() : ''}
-    "
-  >
+  <section>
     <div class="topbar">
       <div>
         <h2 class="page-title">Danh sách hóa đơn</h2>
@@ -162,7 +27,6 @@
               name="from"
               th:value="${from}"
               placeholder="HH:mm dd/MM/yyyy"
-              autocomplete="off"
             />
           </div>
 
@@ -174,7 +38,6 @@
               name="to"
               th:value="${to}"
               placeholder="HH:mm dd/MM/yyyy"
-              autocomplete="off"
             />
           </div>
 
@@ -188,7 +51,6 @@
               placeholder="VD: 100000"
               min="0"
               step="1000"
-              inputmode="numeric"
             />
           </div>
 
@@ -202,26 +64,20 @@
               placeholder="VD: 500000"
               min="0"
               step="1000"
-              inputmode="numeric"
             />
           </div>
 
           <div class="fg-2">
             <div class="f-label">Phòng</div>
             <select class="f-select" name="roomId">
-              <!-- ✅ SỬA LỖI: KHÔNG DÙNG th:value="" -->
-              <option
-                value=""
-                th:selected="${roomId == null or #strings.isEmpty(roomId)}"
-              >
+              <option value="" th:selected="${roomId == null}">
                 Tất cả phòng
               </option>
-
               <option
                 th:each="r : ${rooms}"
                 th:value="${r.id}"
                 th:text="${r.name}"
-                th:selected="${!#strings.isEmpty(roomIdStr) and roomIdStr == r.id.toString()}"
+                th:selected="${roomId != null and roomId == r.id}"
               >
                 P101
               </option>
@@ -232,24 +88,33 @@
             <div class="btn-row">
               <button class="btn btn-primary" type="submit">Lọc</button>
               <a class="btn btn-outline" th:href="@{/invoice}">Xóa lọc</a>
+              <!-- Xuất CSV theo đúng bộ lọc hiện tại -->
+              <a
+                class="btn btn-outline"
+                th:href="@{/invoice/export-excel(from=${from}, to=${to}, min=${min}, max=${max}, roomId=${roomId})}"
+              >
+                Xuất Excel
+              </a>
+
+              <a
+                class="btn btn-outline"
+                th:href="@{/invoice/export(from=${from}, to=${to}, min=${min}, max=${max}, roomId=${roomId})}"
+              >
+                Xuất CSV
+              </a>
             </div>
 
             <div class="hint">
-              Định dạng: <b th:text="${pattern}">HH:mm dd/MM/yyyy</b> (VD: 20:30
-              26/01/2026)
+              Định dạng: <b th:text="${dtPattern}">HH:mm dd/MM/yyyy</b> (VD:
+              20:30 26/01/2026)
             </div>
 
+            <!-- Chips: hiển thị điều kiện đang lọc -->
             <div class="chips">
-              <span
-                class="chip"
-                th:if="${from != null and !#strings.isEmpty(from)}"
-              >
+              <span class="chip" th:if="${from != null and !from.isBlank()}">
                 Từ: <b th:text="${from}">...</b>
               </span>
-              <span
-                class="chip"
-                th:if="${to != null and !#strings.isEmpty(to)}"
-              >
+              <span class="chip" th:if="${to != null and !to.isBlank()}">
                 Đến: <b th:text="${to}">...</b>
               </span>
               <span class="chip" th:if="${min != null}">
@@ -258,8 +123,8 @@
               <span class="chip" th:if="${max != null}">
                 Max: <b th:text="${max}">0</b>
               </span>
-              <span class="chip" th:if="${!#strings.isEmpty(roomIdStr)}">
-                Phòng ID: <b th:text="${roomIdStr}">1</b>
+              <span class="chip" th:if="${roomId != null}">
+                Phòng ID: <b th:text="${roomId}">1</b>
               </span>
             </div>
           </div>
@@ -306,25 +171,26 @@
 
               <td
                 style="font-weight: 900"
-                th:text="${(inv.roomSession != null and inv.roomSession.room != null) ? inv.roomSession.room.name : ''}"
+                th:text="${inv.roomSession != null and inv.roomSession.room != null ? inv.roomSession.room.name : ''}"
               >
                 VIP1
               </td>
 
+              <!-- Money: safe format -->
               <td class="t-right" style="font-weight: 900">
                 <span
                   th:text="${inv.totalAmount != null
-                    ? #numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'
-                    : ''}"
+                    ? #numbers.formatDecimal(inv.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫'
+                  : ''}"
+                  >203,333 đ</span
                 >
-                  203,333 đ
-                </span>
               </td>
 
+              <!-- Date: safe format -->
               <td
                 class="mono"
                 th:text="${inv.createdAt != null
-                    ? T(java.time.format.DateTimeFormatter).ofPattern(pattern).format(inv.createdAt)
+                    ? T(java.time.format.DateTimeFormatter).ofPattern('HH:mm dd/MM/yyyy').format(inv.createdAt)
                     : ''}"
               >
                 23:09 28/01/2026
@@ -334,17 +200,16 @@
                 <span
                   class="badge"
                   th:classappend="${inv.status != null and inv.status.name() == 'PAID'} ? ' badge-ok'
-                        : (${inv.status != null and inv.status.name() == 'UNPAID'} ? ' badge-warn' : ' badge-bad')"
-                  th:text="${inv.status != null ? inv.status.name() : ''}"
+                    : (${inv.status != null and inv.status.name() == 'UNPAID'} ? ' badge-warn' : ' badge-bad')"
+                  th:text="${inv.status}"
+                  >PAID</span
                 >
-                  PAID
-                </span>
               </td>
 
               <td
                 class="mono"
                 th:text="${inv.paidAt != null
-                    ? T(java.time.format.DateTimeFormatter).ofPattern(pattern).format(inv.paidAt)
+                    ? T(java.time.format.DateTimeFormatter).ofPattern('HH:mm dd/MM/yyyy').format(inv.paidAt)
                     : ''}"
               >
                 23:09 28/01/2026
@@ -353,10 +218,9 @@
               <td class="t-center">
                 <a
                   class="btn btn-outline btn-sm"
-                  th:href="@{/invoice/{id}(id=${inv.id})}"
+                  th:href="@{'/invoice/' + ${inv.id}}"
+                  >Chi tiết</a
                 >
-                  Chi tiết
-                </a>
               </td>
             </tr>
           </tbody>
