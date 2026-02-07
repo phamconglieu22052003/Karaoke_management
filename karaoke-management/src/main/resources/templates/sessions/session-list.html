@@ -74,6 +74,7 @@
 
               <td>
                 <div class="actions">
+                  <!-- OPEN: Đóng phòng -->
                   <form
                     th:if="${s.status.name() == 'OPEN'}"
                     th:action="@{/room-sessions/close/{id}(id=${s.id})}"
@@ -86,6 +87,23 @@
                     </button>
                   </form>
 
+                  <!-- OPEN: Gọi món -->
+                  <a
+                    th:if="${s.status.name() == 'OPEN'}"
+                    class="btn btn-outline btn-sm"
+                    th:href="@{/pos/sessions/{id}/order(id=${s.id})}"
+                    >Gọi món</a
+                  >
+
+                  <!-- CLOSED: Xem lại order đã chốt -->
+                  <a
+                    th:if="${s.status.name() == 'CLOSED'}"
+                    class="btn btn-outline btn-sm"
+                    th:href="@{/pos/sessions/{id}/order/view(id=${s.id})}"
+                    >Xem order</a
+                  >
+
+                  <!-- CLOSED: Tạo/Xem hóa đơn (giữ nguyên chức năng cũ) -->
                   <a
                     th:if="${s.status.name() == 'CLOSED'}"
                     class="btn btn-outline btn-sm"
