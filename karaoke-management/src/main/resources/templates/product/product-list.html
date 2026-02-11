@@ -1,0 +1,198 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout('Sản phẩm', 'products', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead"></th:block>
+
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Sản phẩm</h2>
+        <div class="help-text">
+          Quản lý danh sách món/đồ uống dùng cho gọi món (UC08).
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a class="btn btn-outline" th:href="@{/product-categories}">Danh mục</a>
+        <a class="btn btn-outline" th:href="@{/room-sessions}"
+          >← Mở/đóng phòng</a
+        >
+      </div>
+    </div>
+
+    <div
+      th:if="${msg != null}"
+      class="card"
+      style="padding: 12px; border-left: 4px solid var(--ok)"
+    >
+      <b th:text="${msg}">msg</b>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1.1fr 1.9fr">
+      <!-- Form -->
+      <div class="card" style="padding: 16px">
+        <h3
+          style="margin: 0 0 10px"
+          th:text="${editing != null and editing} ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'"
+        >
+          Thêm sản phẩm
+        </h3>
+        <form th:action="@{/products/save}" method="post">
+          <input type="hidden" name="id" th:value="${product.id}" />
+
+          <label class="form-label">Tên sản phẩm</label>
+          <input
+            class="input"
+            type="text"
+            name="name"
+            th:value="${product.name}"
+            placeholder="VD: Bia Tiger"
+            required
+          />
+
+          <div class="grid" style="grid-template-columns: 1fr 1fr">
+            <div>
+              <label class="form-label">Giá</label>
+              <input
+                class="input"
+                type="number"
+                step="0.01"
+                name="price"
+                th:value="${product.price}"
+                required
+              />
+            </div>
+            <div>
+              <label class="form-label">Đơn vị</label>
+              <input
+                class="input"
+                type="text"
+                name="unit"
+                th:value="${product.unit}"
+                placeholder="lon / chai / đĩa"
+              />
+            </div>
+          </div>
+
+          <label class="form-label">Danh mục</label>
+          <select class="input" name="categoryId">
+            <option value="">-- Không chọn --</option>
+            <option
+              th:each="c : ${categories}"
+              th:value="${c.id}"
+              th:text="${c.name}"
+              th:selected="${product.category != null && product.category.id == c.id}"
+            >
+              Food
+            </option>
+          </select>
+
+          <div
+            class="grid"
+            style="grid-template-columns: 1fr 1fr; align-items: center"
+          >
+            <label
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 800;
+                margin-top: 10px;
+              "
+            >
+              <input
+                type="checkbox"
+                name="active"
+                value="true"
+                th:checked="${product.active == null || product.active}"
+              />
+              Đang bán
+            </label>
+            <div
+              style="
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                margin-top: 10px;
+              "
+            >
+              <a
+                class="btn btn-outline"
+                th:if="${editing != null and editing}"
+                th:href="@{/products}"
+                >Hủy</a
+              >
+              <button class="btn btn-primary" type="submit">Lưu</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 70px">ID</th>
+                <th>Tên</th>
+                <th>Danh mục</th>
+                <th style="width: 120px">Giá</th>
+                <th style="width: 110px">Đơn vị</th>
+                <th style="width: 110px">Trạng thái</th>
+                <th style="width: 220px">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(products)}">
+                <td
+                  colspan="7"
+                  style="text-align: center; color: #6b7280; padding: 18px"
+                >
+                  Chưa có sản phẩm
+                </td>
+              </tr>
+              <tr th:each="p : ${products}">
+                <td th:text="${p.id}">1</td>
+                <td th:text="${p.name}">Bia</td>
+                <td th:text="${p.category != null ? p.category.name : ''}">
+                  Đồ uống
+                </td>
+                <td th:text="${p.price}">20000</td>
+                <td th:text="${p.unit}">lon</td>
+                <td>
+                  <span
+                    class="badge"
+                    th:classappend="${p.active} ? ' badge-ok' : ' badge-muted'"
+                    th:text="${p.active} ? 'ACTIVE' : 'INACTIVE'"
+                    >ACTIVE</span
+                  >
+                </td>
+                <td>
+                  <div class="actions">
+                    <a
+                      class="btn btn-outline btn-sm"
+                      th:href="@{/products/edit/{id}(id=${p.id})}"
+                      >Sửa</a
+                    >
+                    <form
+                      th:action="@{/products/toggle/{id}(id=${p.id})}"
+                      method="post"
+                      style="display: inline"
+                      onsubmit="return confirm('Đổi trạng thái sản phẩm?');"
+                    >
+                      <button class="btn btn-danger btn-sm" type="submit">
+                        Đổi trạng thái
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</html>

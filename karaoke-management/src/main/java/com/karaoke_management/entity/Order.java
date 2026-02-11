@@ -1,8 +1,6 @@
 package com.karaoke_management.entity;
 
-import com.karaoke_management.enums.OrderStatus;
 import jakarta.persistence.*;
-import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,30 +8,80 @@ import java.util.List;
 
 @Entity
 @Table(name = "orders")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Bạn đã có entity RoomSession
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "room_session_id")
+    @JoinColumn(name = "room_session_id", nullable = false)
     private RoomSession roomSession;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private OrderStatus status = OrderStatus.OPEN;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    @Column(length = 120)
-    private String createdBy; // username (tuỳ bạn có lưu User entity hay không)
+    @Column(name = "created_by", length = 80)
+    private String createdBy;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) createdAt = LocalDateTime.now();
+        if (status == null) status = OrderStatus.OPEN;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public RoomSession getRoomSession() {
+        return roomSession;
+    }
+
+    public void setRoomSession(RoomSession roomSession) {
+        this.roomSession = roomSession;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
 }

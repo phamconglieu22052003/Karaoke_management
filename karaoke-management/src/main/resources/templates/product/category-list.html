@@ -1,0 +1,123 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout('Danh mục sản phẩm', 'productCategories', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead"></th:block>
+
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Danh mục sản phẩm</h2>
+        <div class="help-text">
+          Quản lý nhóm món (đồ uống, trái cây, snack...)
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a class="btn btn-outline" th:href="@{/products}">→ Sản phẩm</a>
+      </div>
+    </div>
+
+    <div th:if="${msg}" class="alert alert-ok" th:text="${msg}">OK</div>
+
+    <div class="grid" style="grid-template-columns: 420px 1fr; gap: 14px">
+      <div class="card">
+        <div class="card-head">
+          <div
+            class="card-title"
+            th:text="${editing != null and editing} ? 'Cập nhật danh mục' : 'Thêm danh mục'"
+          >
+            Thêm danh mục
+          </div>
+        </div>
+
+        <div class="card-body">
+          <form th:action="@{/product-categories/save}" method="post">
+            <input type="hidden" name="id" th:value="${category.id}" />
+
+            <label class="label">Tên danh mục</label>
+            <input
+              class="input"
+              type="text"
+              name="name"
+              th:value="${category.name}"
+              placeholder="VD: Đồ uống"
+              required
+            />
+
+            <div style="display: flex; gap: 10px; margin-top: 12px">
+              <button class="btn btn-primary" type="submit">Lưu</button>
+              <a class="btn btn-outline" th:href="@{/product-categories}"
+                >Làm mới</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Danh sách</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 80px">ID</th>
+                <th>Tên</th>
+                <th style="width: 120px">Trạng thái</th>
+                <th style="width: 220px">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(categories)}">
+                <td
+                  colspan="4"
+                  style="text-align: center; color: #6b7280; padding: 18px"
+                >
+                  Chưa có danh mục
+                </td>
+              </tr>
+
+              <tr th:each="c : ${categories}">
+                <td th:text="${c.id}">1</td>
+                <td>
+                  <div style="font-weight: 900" th:text="${c.name}">
+                    Đồ uống
+                  </div>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    th:classappend="${c.active} ? ' badge-ok' : ' badge-muted'"
+                    th:text="${c.active} ? 'ACTIVE' : 'INACTIVE'"
+                    >ACTIVE</span
+                  >
+                </td>
+                <td>
+                  <div class="actions">
+                    <a
+                      class="btn btn-outline btn-sm"
+                      th:href="@{/product-categories/edit/{id}(id=${c.id})}"
+                      >Sửa</a
+                    >
+                    <form
+                      th:action="@{/product-categories/toggle/{id}(id=${c.id})}"
+                      method="post"
+                      style="display: inline"
+                      onsubmit="return confirm('Đổi trạng thái danh mục?');"
+                    >
+                      <button class="btn btn-danger btn-sm" type="submit">
+                        Đổi trạng thái
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</html>

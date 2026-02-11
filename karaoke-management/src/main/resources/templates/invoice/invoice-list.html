@@ -89,18 +89,18 @@
               <button class="btn btn-primary" type="submit">Lọc</button>
               <a class="btn btn-outline" th:href="@{/invoice}">Xóa lọc</a>
               <!-- Xuất CSV theo đúng bộ lọc hiện tại -->
-              <!-- <a
+              <a
                 class="btn btn-outline"
                 th:href="@{/invoice/export-excel(from=${from}, to=${to}, min=${min}, max=${max}, roomId=${roomId})}"
               >
                 Xuất Excel
-              </a> -->
+              </a>
 
               <a
                 class="btn btn-outline"
                 th:href="@{/invoice/export(from=${from}, to=${to}, min=${min}, max=${max}, roomId=${roomId})}"
               >
-                Xuất Excel
+                Xuất CSV
               </a>
             </div>
 

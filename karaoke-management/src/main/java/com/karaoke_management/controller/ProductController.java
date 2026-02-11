@@ -1,66 +1,65 @@
 package com.karaoke_management.controller;
 
 import com.karaoke_management.entity.Product;
-import com.karaoke_management.repository.ProductCategoryRepository;
-import com.karaoke_management.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
+import com.karaoke_management.entity.ProductCategory;
+import com.karaoke_management.service.ProductCategoryService;
+import com.karaoke_management.service.ProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
-@RequiredArgsConstructor
 @RequestMapping("/products")
 public class ProductController {
 
-    private final ProductRepository productRepository;
-    private final ProductCategoryRepository categoryRepository;
+    private final ProductService productService;
+    private final ProductCategoryService categoryService;
+
+    public ProductController(ProductService productService, ProductCategoryService categoryService) {
+        this.productService = productService;
+        this.categoryService = categoryService;
+    }
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("products", productRepository.findAll());
-        return "products/product-list";
-    }
-
-    @GetMapping("/create")
-    public String createForm(Model model) {
+        model.addAttribute("products", productService.findAll());
+        model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("product", new Product());
-        model.addAttribute("categories", categoryRepository.findAll());
-        return "products/product-form";
+        return "product/product-list";
     }
 
-    @PostMapping
-    public String create(@ModelAttribute Product product, @RequestParam(required = false) Long categoryId) {
+    @GetMapping("/edit/{id}")
+    public String edit(@PathVariable Long id, Model model) {
+        model.addAttribute("products", productService.findAll());
+        model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("product", productService.getById(id));
+        model.addAttribute("editing", true);
+        return "product/product-list";
+    }
+
+    @PostMapping("/save")
+    public String save(@ModelAttribute("product") Product product,
+                       @RequestParam(value = "categoryId", required = false) Long categoryId,
+                       RedirectAttributes ra) {
         if (categoryId != null) {
-            product.setCategory(categoryRepository.findById(categoryId).orElse(null));
+            ProductCategory c = new ProductCategory();
+            c.setId(categoryId);
+            product.setCategory(c);
+        } else {
+            product.setCategory(null);
         }
-        productRepository.save(product);
+        productService.save(product);
+        ra.addFlashAttribute("msg", "Đã lưu sản phẩm");
         return "redirect:/products";
     }
 
-    @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
-        Product product = productRepository.findById(id).orElseThrow();
-        model.addAttribute("product", product);
-        model.addAttribute("categories", categoryRepository.findAll());
-        return "products/product-form";
-    }
-
-    @PostMapping("/{id}")
-    public String update(@PathVariable Long id, @ModelAttribute Product product, @RequestParam(required = false) Long categoryId) {
-        Product existing = productRepository.findById(id).orElseThrow();
-        existing.setName(product.getName());
-        existing.setPrice(product.getPrice());
-        existing.setUnit(product.getUnit());
-        existing.setActive(product.isActive());
-
-        if (categoryId != null) {
-            existing.setCategory(categoryRepository.findById(categoryId).orElse(null));
-        } else {
-            existing.setCategory(null);
-        }
-
-        productRepository.save(existing);
+    @PostMapping("/toggle/{id}")
+    public String toggle(@PathVariable Long id, RedirectAttributes ra) {
+        productService.toggleActive(id);
+        ra.addFlashAttribute("msg", "Đã đổi trạng thái");
         return "redirect:/products";
     }
 }
