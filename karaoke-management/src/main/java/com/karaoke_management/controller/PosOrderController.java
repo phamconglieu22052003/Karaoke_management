@@ -46,9 +46,10 @@ public class PosOrderController {
 
         String username = (authentication != null) ? authentication.getName() : "system";
 
-        RoomSession session = roomSessionRepository.findById(sessionId)
+        RoomSession roomSession = roomSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy session: " + sessionId));
 
+        // Tự tạo order OPEN nếu chưa có (đúng yêu cầu POS)
         Order order = orderService.getOrCreateOpenOrder(sessionId, username);
 
         boolean readOnly = (order.getStatus() == OrderStatus.CLOSED);
@@ -72,7 +73,9 @@ public class PosOrderController {
         if (warn != null && !warn.isBlank()) model.addAttribute("warn", warn);
         if (msg != null && !msg.isBlank()) model.addAttribute("msg", msg);
 
-        model.addAttribute("session", session);
+        // !!! QUAN TRỌNG: KHÔNG dùng tên "session" vì Thymeleaf đã có biến built-in session (HttpSession)
+        model.addAttribute("roomSession", roomSession);
+
         model.addAttribute("order", order);
         model.addAttribute("items", items);
         model.addAttribute("orderTotal", total);
@@ -85,7 +88,19 @@ public class PosOrderController {
     }
 
     /**
-     * Xem order gần nhất (CLOSED) theo session (readOnly)
+     * (FIX) Nếu ai đó gõ nhầm URL POST endpoint bằng GET:
+     * GET /pos/sessions/{sessionId}/order/items  -> redirect về màn order
+     *
+     * Tránh Whitelabel 400 khi bạn lỡ mở:
+     * /pos/sessions//order/items hoặc /pos/sessions/{id}/order/items bằng browser.
+     */
+    @GetMapping("/sessions/{sessionId}/order/items")
+    public String redirectItemsGet(@PathVariable Long sessionId) {
+        return "redirect:/pos/sessions/" + sessionId + "/order";
+    }
+
+    /**
+     * Xem order gần nhất theo session (ưu tiên CLOSED) - readOnly
      * GET /pos/sessions/{sessionId}/order/view
      */
     @GetMapping("/sessions/{sessionId}/order/view")
@@ -93,23 +108,32 @@ public class PosOrderController {
                                 Model model,
                                 RedirectAttributes ra) {
 
-        RoomSession session = roomSessionRepository.findById(sessionId)
+        RoomSession roomSession = roomSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy session: " + sessionId));
 
         return orderRepository.findFirstByRoomSession_IdOrderByCreatedAtDesc(sessionId)
                 .map(order -> {
                     List<OrderItem> items = (order.getItems() == null) ? List.of() : order.getItems();
+
+                    // sort để hiển thị ổn định
+                    items = items.stream()
+                            .sorted(Comparator.comparing(OrderItem::getId, Comparator.nullsLast(Long::compareTo)))
+                            .toList();
+
                     BigDecimal total = items.stream()
                             .map(it -> it.getLineAmount() == null ? BigDecimal.ZERO : it.getLineAmount())
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    model.addAttribute("session", session);
+                    // !!! QUAN TRỌNG: KHÔNG dùng tên "session"
+                    model.addAttribute("roomSession", roomSession);
+
                     model.addAttribute("order", order);
                     model.addAttribute("items", items);
                     model.addAttribute("orderTotal", total);
                     model.addAttribute("readOnly", true);
                     model.addAttribute("categories", productCategoryRepository.findAll());
                     model.addAttribute("products", productRepository.findByActiveTrueOrderByNameAsc());
+
                     ra.addFlashAttribute("warn", "Bạn đang xem order đã chốt (CLOSED) — chỉ xem lại.");
                     return "pos/order-screen";
                 })
@@ -192,6 +216,8 @@ public class PosOrderController {
         } catch (Exception ex) {
             ra.addFlashAttribute("warn", ex.getMessage());
         }
-        return "redirect:/pos/sessions/" + sessionId + "/order";
+
+        // UX POS: chốt xong thì chuyển sang xem lại (read-only)
+        return "redirect:/pos/sessions/" + sessionId + "/order/view";
     }
 }

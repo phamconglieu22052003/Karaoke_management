@@ -1,333 +1,318 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="layout/main-layout :: layout('Gọi món', 'pos', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout('Gọi món', 'pos', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead">
     <link rel="stylesheet" th:href="@{/css/order-screen.css}" />
+    <style>
+      /* POS layout tối thiểu - Ưu tiên chạy ổn định (không phụ thuộc JS) */
+      .pos-page{display:flex;flex-direction:column;gap:14px}
+      .pos-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+      .pos-title{font-size:20px;font-weight:800}
+      .pos-sub{font-size:12px;opacity:.75}
+      .pos-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+      .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px}
+      .row-between{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+      .pill{display:inline-flex;gap:6px;align-items:center;padding:8px 10px;border-radius:999px;background:#f6f7fb;font-size:12px}
+      .muted{opacity:.75}
+      .tiny{font-size:12px}
+
+      .btn{border:1px solid transparent;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:700}
+      .btn-outline{background:#fff;border-color:#e5e7eb}
+      .btn-primary{background:#111827;color:#fff}
+      .btn-danger{background:#ef4444;color:#fff}
+      .btn-sm{padding:8px 10px;border-radius:9px;font-size:12px}
+
+      .alert{border:1px solid #e5e7eb;background:#f8fafc;border-radius:12px;padding:10px 12px}
+      .alert-warn{border-color:#fde68a;background:#fffbeb}
+
+      /* 2 cột chắc chắn */
+      .pos-shell{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:start}
+      @media (max-width:1100px){.pos-shell{grid-template-columns:1fr}}
+
+      .tools{display:flex;gap:10px;flex-wrap:wrap}
+      .tool{display:flex;flex-direction:column;gap:6px}
+      .tool label{font-size:12px;opacity:.8}
+      .input{border:1px solid #e5e7eb;border-radius:10px;padding:10px 10px;min-width:220px}
+      .input.small{min-width:140px}
+      .input.wide{min-width:360px}
+      @media (max-width:650px){.input,.input.wide{min-width:100%}.tool{width:100%}}
+
+      /* Product grid */
+      .prod-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+      @media (max-width:1200px){.prod-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media (max-width:650px){.prod-grid{grid-template-columns:1fr}}
+      .prod{border:1px solid #eef2f7;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+      .prod:hover{border-color:#c7d2fe}
+      .prod-top .name{font-weight:800}
+      .prod-top .sub{font-size:12px;opacity:.75}
+      .prod-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px}
+      .price{font-weight:900}
+      .prod-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+      /* Order table */
+      .kpi{display:flex;justify-content:space-between;align-items:baseline;border:1px solid #eef2f7;background:#fbfdff;border-radius:12px;padding:10px;margin-bottom:10px}
+      .kpi .lbl{font-size:12px;opacity:.75}
+      .kpi .amt{font-size:22px;font-weight:900}
+      .table-wrap{border:1px solid #eef2f7;border-radius:12px;overflow:auto}
+      table{width:100%;border-collapse:collapse;min-width:900px}
+      th,td{padding:10px;border-bottom:1px solid #eef2f7;vertical-align:top}
+      thead th{background:#fafafa;font-size:12px;text-transform:uppercase;letter-spacing:.02em;opacity:.7;position:sticky;top:0}
+      .center{ text-align:center; padding:16px !important; }
+
+      /* Quick add bar */
+      .quickadd-bar{margin-top:10px;background:#f8fafc}
+    </style>
   </th:block>
 
-  <section>
-    <div class="topbar">
+  <section class="pos-page">
+    <!-- Header -->
+    <div class="pos-header">
       <div>
-        <h2 class="page-title">Gọi món</h2>
-        <div class="help-text">
-          Thêm món theo từng session. Khi chốt order, bạn chỉ xem lại (CLOSED).
+        <div class="pos-title">Gọi món</div>
+        <div class="pos-sub">
+          Thêm / Reset / Lưu / Xóa dùng form thuần HTML (không phụ thuộc JavaScript).
         </div>
       </div>
-      <div
-        class="pos-actions"
-        style="display: flex; gap: 10px; align-items: center"
-      >
-        <a class="btn btn-outline" th:href="@{/room-sessions}"
-          >← Danh sách session</a
-        >
+
+      <div class="pos-actions">
+        <a class="btn btn-outline" th:href="@{/room-sessions}">← Danh sách session</a>
         <a class="btn btn-outline" th:href="@{/rooms}">Danh sách phòng</a>
-        <a class="btn" th:href="@{/dashboard}">Trang chủ</a>
+        <a class="btn btn-primary" th:href="@{/dashboard}">Trang chủ</a>
       </div>
     </div>
 
-    <div class="pos-toast">
-      <div th:if="${msg != null}" class="alert" th:text="${msg}">OK</div>
-      <div th:if="${warn != null}" class="alert alert-warn" th:text="${warn}">
-        Cảnh báo
-      </div>
+    <!-- Messages -->
+    <div th:if="${msg != null and !#strings.isEmpty(msg)}" class="alert" th:text="${msg}">OK</div>
+    <div th:if="${warn != null and !#strings.isEmpty(warn)}" class="alert alert-warn" th:text="${warn}">Cảnh báo</div>
+
+    <!-- Guard -->
+    <div th:if="${roomSession == null or roomSession.id == null}" class="alert alert-warn">
+      Thiếu <b>sessionId</b>. Hãy quay lại
+      <a th:href="@{/room-sessions}"><b>Danh sách session</b></a> và chọn “Gọi món”.
     </div>
 
-    <div class="card" style="margin-top: 10px">
-      <div class="pos-top">
-        <div class="meta">
-          <div class="pill">
-            Session: <strong th:text="${session.id}">1</strong>
-          </div>
-          <div class="pill">
-            Phòng:
-            <strong th:text="${session.room != null ? session.room.name : ''}"
-              >P101</strong
-            >
-          </div>
-          <div class="pill">
-            Trạng thái: <strong th:text="${session.status}">OPEN</strong>
-          </div>
+    <!-- Meta -->
+    <div class="card" th:if="${roomSession != null and roomSession.id != null}">
+      <div class="row-between">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div class="pill">Session: <b th:text="${roomSession.id}">1</b></div>
+          <div class="pill">Phòng: <b th:text="${roomSession.room != null ? roomSession.room.name : ''}">VIP1</b></div>
+          <div class="pill">Trạng thái session: <b th:text="${roomSession.status}">OPEN</b></div>
+
           <div class="pill" th:if="${order != null}">
-            Order: <strong th:text="${order.id}">10</strong>
-            <span class="muted">•</span>
-            <strong th:text="${order.status}">OPEN</strong>
+            Order: <b th:text="${order.id}">11</b> • <b th:text="${order.status}">OPEN</b>
+          </div>
+
+          <div class="pill" th:if="${readOnly}">
+            <b>READ ONLY</b> <span class="muted">• order đã chốt</span>
           </div>
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <form
             th:if="${order != null and !readOnly}"
-            th:action="@{/pos/sessions/{sessionId}/order/close(sessionId=${session.id})}"
+            th:action="@{${'/pos/sessions/' + roomSession.id + '/order/close'}}"
             method="post"
-            onsubmit="return confirm('Chốt order? Sau khi chốt chỉ xem lại.');"
-            style="margin: 0"
+            onsubmit="return confirm('Chốt order? Sau khi chốt sẽ chỉ xem lại.');"
+            style="margin:0"
           >
-            <input
-              type="hidden"
-              th:if="${_csrf != null}"
-              th:name="${_csrf.parameterName}"
-              th:value="${_csrf.token}"
-            />
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <button class="btn btn-primary" type="submit">Chốt order</button>
           </form>
 
-          <a
-            class="btn btn-outline"
-            th:href="@{/pos/sessions/{sessionId}/order/view(sessionId=${session.id})}"
-            >Xem order đã chốt</a
-          >
-
-          <span th:if="${readOnly}" class="badge badge-muted">READ ONLY</span>
+          <a class="btn btn-outline" th:href="@{${'/pos/sessions/' + roomSession.id + '/order/view'}}">
+            Xem order đã chốt
+          </a>
         </div>
       </div>
     </div>
 
-    <div class="pos-shell" style="margin-top: 14px">
-      <!-- LEFT: Products -->
+    <!-- MAIN 2 CỘT -->
+    <div class="pos-shell" th:if="${roomSession != null and roomSession.id != null}">
+      <!-- LEFT: PRODUCTS -->
       <div class="card">
-        <div class="pos-card-head">
+        <div class="row-between">
           <div>
-            <h3>Sản phẩm</h3>
-            <div class="hint">
-              Chạm để thêm nhanh • Dùng “+Ghi chú” nếu cần ghi chú khi thêm
+            <div style="font-weight:900">Sản phẩm</div>
+            <div class="tiny muted">
+              Nhập số lượng + ghi chú ở thanh dưới → bấm “+ Thêm” tại sản phẩm để thêm vào order.
             </div>
           </div>
         </div>
 
-        <div class="pos-tools">
+        <!-- (Tùy chọn) Bộ lọc server-side: hiện tại chỉ là UI, nếu controller chưa xử lý thì vẫn hiển thị tất cả -->
+        <div class="tools" style="margin-top:10px">
           <div class="tool">
-            <label>Danh mục</label>
-            <select class="input" id="catFilter" onchange="filterProducts()">
+            <label>Danh mục (chỉ hiển thị nếu controller hỗ trợ lọc)</label>
+            <select class="input small" name="cat" form="productFilterForm">
               <option value="">Tất cả</option>
-              <option
-                th:each="c : ${categories}"
-                th:value="${c.id}"
-                th:text="${c.name}"
-              ></option>
+              <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
             </select>
           </div>
+
           <div class="tool">
-            <label>Tìm kiếm</label>
-            <input
-              class="input"
-              id="searchBox"
-              type="text"
-              placeholder="Tên sản phẩm..."
-              oninput="filterProducts()"
-            />
+            <label>Tìm kiếm (chỉ hiển thị nếu controller hỗ trợ lọc)</label>
+            <input class="input" name="q" form="productFilterForm" type="text" placeholder="Tên sản phẩm..." />
+          </div>
+
+          <div class="tool">
+            <label>&nbsp;</label>
+            <form id="productFilterForm" method="get" style="margin:0">
+              <!-- nếu controller không xử lý q/cat thì vẫn không sao -->
+              <button class="btn btn-outline" type="submit">Lọc</button>
+            </form>
           </div>
         </div>
 
-        <div style="margin-top: 10px">
-          <div class="muted" style="font-size: 12px; margin-bottom: 6px">
-            Số lượng thêm nhanh
-          </div>
-          <div
-            class="pos-tools quickqty"
-            id="quickQtyBar"
-            style="align-items: center"
-          >
-            <button
-              type="button"
-              class="active"
-              data-q="1"
-              onclick="setQuickQty(1)"
-            >
-              1
-            </button>
-            <button type="button" data-q="2" onclick="setQuickQty(2)">2</button>
-            <button type="button" data-q="3" onclick="setQuickQty(3)">3</button>
-            <button type="button" data-q="5" onclick="setQuickQty(5)">5</button>
-            <div class="muted" style="margin-left: auto; font-size: 12px">
-              Click sản phẩm = thêm <b id="quickQtyTxt">1</b>
+        <!-- ADD BAR: form thuần HTML -->
+        <form
+          th:if="${!readOnly}"
+          id="addForm"
+          class="card quickadd-bar"
+          th:action="@{${'/pos/sessions/' + roomSession.id + '/order/items'}}"
+          method="post"
+          style="margin-top:10px"
+        >
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+          <div class="tools">
+            <div class="tool">
+              <label>Số lượng</label>
+              <input class="input small" name="quantity" type="number" min="1" value="1" />
+            </div>
+
+            <div class="tool" style="flex:1">
+              <label>Ghi chú</label>
+              <input class="input wide" name="note" type="text" placeholder="Ví dụ: ít đá / không cay..." />
+            </div>
+
+            <div class="tool">
+              <label>&nbsp;</label>
+              <button class="btn btn-outline" type="reset">Reset</button>
             </div>
           </div>
-        </div>
 
-        <!-- Hidden form: quick add -->
-        <form
-          id="quickAddForm"
-          th:if="${!readOnly}"
-          th:action="@{/pos/sessions/{sessionId}/order/items(sessionId=${session.id})}"
-          method="post"
-          style="display: none"
-        >
-          <input
-            type="hidden"
-            th:if="${_csrf != null}"
-            th:name="${_csrf.parameterName}"
-            th:value="${_csrf.token}"
-          />
-          <input type="hidden" name="productId" id="qaProductId" />
-          <input type="hidden" name="quantity" id="qaQty" value="1" />
-          <input type="hidden" name="note" id="qaNote" value="" />
+          <div class="tiny muted" style="margin-top:8px">
+            Bấm “+ Thêm” ở từng sản phẩm sẽ submit form này và gửi <b>productId</b> tương ứng.
+          </div>
         </form>
 
-        <div class="prod-grid" id="productList" style="margin-top: 12px">
+        <!-- PRODUCT LIST -->
+        <div class="prod-grid" id="productList">
           <div
             class="prod"
             th:each="p : ${products}"
-            th:attr="data-cat=${p.category != null ? p.category.id : 0}, data-name=${#strings.toLowerCase(p.name)}, data-id=${p.id}, data-price=${p.price}, data-unit=${p.unit}, data-catname=${p.category != null ? p.category.name : 'Chưa phân loại'}"
-            th:classappend="${readOnly} ? ' muted' : ''"
-            onclick="quickAddFromCard(this)"
+            th:attr="data-cat=${p.category != null ? p.category.id : 0},
+                     data-name=${#strings.toLowerCase(p.name)},
+                     data-id=${p.id}"
           >
-            <div>
+            <div class="prod-top">
               <div class="name" th:text="${p.name}">Bia</div>
               <div class="sub">
-                <span
-                  th:text="${p.category != null ? p.category.name : 'Chưa phân loại'}"
-                  >Đồ uống</span
-                >
-                <span class="muted">•</span>
+                <span th:text="${p.category != null ? p.category.name : 'Chưa phân loại'}">Đồ uống</span>
+                <span class="muted"> • </span>
                 <span th:text="${p.unit != null ? p.unit : ''}">lon</span>
               </div>
             </div>
 
-            <div class="row">
+            <div class="prod-bottom">
               <div class="price" th:text="${p.price}">20000</div>
-              <div
-                style="display: flex; gap: 8px; align-items: center"
-                onclick="event.stopPropagation()"
-              >
+
+              <div class="prod-actions">
+                <!-- 0% JS: nút submit trực tiếp form addForm -->
                 <button
                   th:if="${!readOnly}"
-                  type="button"
-                  class="btn-add"
-                  th:attr="data-id=${p.id}"
-                  onclick="quickAddById(this.getAttribute('data-id'))"
+                  type="submit"
+                  class="btn btn-outline btn-sm"
+                  form="addForm"
+                  name="productId"
+                  th:value="${p.id}"
                 >
                   + Thêm
                 </button>
-                <button
-                  th:if="${!readOnly}"
-                  type="button"
-                  class="btn-note"
-                  th:attr="data-id=${p.id}"
-                  onclick="openAddModal(this.getAttribute('data-id'))"
-                >
-                  + Ghi chú
-                </button>
-                <span th:if="${readOnly}" class="muted">(đã chốt)</span>
+
+                <span th:if="${readOnly}" class="tiny muted">(đã chốt)</span>
               </div>
             </div>
           </div>
 
-          <div
-            th:if="${#lists.isEmpty(products)}"
-            class="alert"
-            style="grid-column: 1 / -1"
-          >
+          <div th:if="${#lists.isEmpty(products)}" class="alert" style="grid-column: 1 / -1">
             Chưa có sản phẩm. Vào <b>Sản phẩm</b> để tạo dữ liệu.
           </div>
         </div>
       </div>
 
-      <!-- RIGHT: Current order -->
+      <!-- RIGHT: ORDER -->
       <div class="card">
-        <div class="pos-card-head">
+        <div class="row-between">
           <div>
-            <h3>Order hiện tại</h3>
-            <div class="hint">
-              Cập nhật nhanh bằng +/- • Có thể sửa ghi chú • Khi CLOSED chỉ xem
-              lại
-            </div>
+            <div style="font-weight:900">Order hiện tại</div>
+            <div class="tiny muted">Sửa số lượng/ghi chú → bấm Lưu. Xóa → bấm Xóa.</div>
           </div>
         </div>
 
-        <div class="order-kpi" th:if="${order != null}">
+        <div class="kpi" th:if="${order != null}">
           <div class="lbl">Tổng tiền</div>
           <div class="amt" th:text="${orderTotal}">0</div>
         </div>
 
-        <div class="table-wrap" style="margin-top: 12px">
-          <table class="pos-table">
+        <div class="table-wrap">
+          <table>
             <thead>
               <tr>
-                <th style="width: 52px">#</th>
+                <th style="width:52px">#</th>
                 <th>Món</th>
-                <th style="width: 120px">Đơn giá</th>
-                <th style="width: 160px">SL</th>
-                <th style="width: 140px">Thành tiền</th>
-                <th style="width: 220px">Ghi chú</th>
-                <th style="width: 160px">Hành động</th>
+                <th style="width:120px">Đơn giá</th>
+                <th style="width:160px">SL</th>
+                <th style="width:140px">Thành tiền</th>
+                <th style="width:260px">Ghi chú</th>
+                <th style="width:190px">Hành động</th>
               </tr>
             </thead>
+
             <tbody>
               <tr th:if="${order == null}">
-                <td
-                  colspan="7"
-                  style="text-align: center; padding: 18px"
-                  class="muted"
-                >
-                  Chưa có order.
-                </td>
+                <td colspan="7" class="muted center">Chưa có order.</td>
               </tr>
+
               <tr th:if="${order != null and #lists.isEmpty(items)}">
-                <td
-                  colspan="7"
-                  style="text-align: center; padding: 18px"
-                  class="muted"
-                >
-                  Order chưa có món.
-                </td>
+                <td colspan="7" class="muted center">Order chưa có món. Hãy bấm “+ Thêm”.</td>
               </tr>
 
               <tr th:each="it, st : ${items}">
                 <td th:text="${st.index + 1}">1</td>
+
                 <td>
-                  <div
-                    style="font-weight: 900"
-                    th:text="${it.product != null ? it.product.name : 'N/A'}"
-                  >
-                    Bia
+                  <div style="font-weight:800" th:text="${it.product != null ? it.product.name : 'N/A'}">Bia</div>
+                  <div class="tiny muted"
+                       th:text="${(it.product != null and it.product.category != null) ? it.product.category.name : ''}">
                   </div>
-                  <div
-                    class="muted"
-                    style="font-size: 12px"
-                    th:text="${it.product != null and it.product.category != null ? it.product.category.name : ''}"
-                  ></div>
                 </td>
+
                 <td th:text="${it.unitPrice}">20000</td>
 
                 <td>
                   <span th:if="${readOnly}" th:text="${it.quantity}">1</span>
 
-                  <div class="qtybox" th:if="${!readOnly}">
-                    <button
-                      type="button"
-                      th:attr="data-item=${it.id}"
-                      onclick="stepQty(this.getAttribute('data-item'), -1)"
-                    >
-                      −
-                    </button>
-                    <input
-                      class="input"
-                      type="number"
-                      name="quantity"
-                      min="1"
-                      th:value="${it.quantity}"
-                      th:attr="form=${'upd__' + it.id}, id=${'qty__' + it.id}"
-                    />
-                    <button
-                      type="button"
-                      th:attr="data-item=${it.id}"
-                      onclick="stepQty(this.getAttribute('data-item'), 1)"
-                    >
-                      +
-                    </button>
-                  </div>
+                  <input
+                    th:if="${!readOnly}"
+                    class="input small"
+                    type="number"
+                    name="quantity"
+                    min="1"
+                    th:value="${it.quantity}"
+                    th:attr="form=${'upd__' + it.id}"
+                  />
                 </td>
 
-                <td th:text="${it.lineAmount}">40000</td>
+                <td th:text="${it.lineAmount}">20000</td>
 
                 <td>
-                  <span
-                    th:if="${readOnly}"
-                    class="muted"
-                    th:text="${it.note}"
-                  ></span>
+                  <span th:if="${readOnly}" class="tiny muted" th:text="${it.note}"></span>
+
                   <input
                     th:if="${!readOnly}"
                     class="input"
@@ -335,44 +320,30 @@
                     name="note"
                     placeholder="Ghi chú"
                     th:value="${it.note}"
-                    th:attr="form=${'upd__' + it.id}, id=${'note__' + it.id}"
+                    th:attr="form=${'upd__' + it.id}"
                   />
                 </td>
 
                 <td>
-                  <div class="actions" th:if="${!readOnly}">
+                  <div th:if="${!readOnly}" style="display:flex;gap:8px;flex-wrap:wrap">
                     <form
                       th:id="${'upd__' + it.id}"
-                      th:action="@{/pos/sessions/{sessionId}/order/items/{itemId}/update(sessionId=${session.id}, itemId=${it.id})}"
+                      th:action="@{${'/pos/sessions/' + roomSession.id + '/order/items/' + it.id + '/update'}}"
                       method="post"
-                      style="display: inline"
+                      style="margin:0"
                     >
-                      <input
-                        type="hidden"
-                        th:if="${_csrf != null}"
-                        th:name="${_csrf.parameterName}"
-                        th:value="${_csrf.token}"
-                      />
-                      <button class="btn btn-outline btn-sm" type="submit">
-                        Lưu
-                      </button>
+                      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                      <button class="btn btn-outline btn-sm" type="submit">Lưu</button>
                     </form>
 
                     <form
-                      th:action="@{/pos/sessions/{sessionId}/order/items/{itemId}/delete(sessionId=${session.id}, itemId=${it.id})}"
+                      th:action="@{${'/pos/sessions/' + roomSession.id + '/order/items/' + it.id + '/delete'}}"
                       method="post"
-                      style="display: inline"
+                      style="margin:0"
                       onsubmit="return confirm('Xóa món khỏi order?');"
                     >
-                      <input
-                        type="hidden"
-                        th:if="${_csrf != null}"
-                        th:name="${_csrf.parameterName}"
-                        th:value="${_csrf.token}"
-                      />
-                      <button class="btn btn-danger btn-sm" type="submit">
-                        Xóa
-                      </button>
+                      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                      <button class="btn btn-danger btn-sm" type="submit">Xóa</button>
                     </form>
                   </div>
 
@@ -382,176 +353,14 @@
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
 
-    <!-- Add with note modal -->
-    <div class="modal-backdrop" id="addModal" onclick="closeAddModal(event)">
-      <div class="modal" onclick="event.stopPropagation()">
-        <div class="m-head">
-          <div>
-            <div class="m-title" id="mTitle">Thêm món</div>
-            <div class="m-sub" id="mSub">Chọn số lượng và ghi chú</div>
-          </div>
-          <button
-            class="btn btn-outline btn-sm"
-            type="button"
-            onclick="hideAddModal()"
-          >
-            Đóng
-          </button>
-        </div>
-        <div class="m-body">
-          <div class="m-row">
-            <div class="muted">Số lượng</div>
-            <input class="input" id="mQty" type="number" min="1" value="1" />
-          </div>
-          <div class="m-row">
-            <div class="muted">Ghi chú</div>
-            <input
-              class="input"
-              id="mNote"
-              type="text"
-              placeholder="Ví dụ: ít đá / không cay..."
-            />
-          </div>
-        </div>
-        <div class="m-actions">
-          <button
-            class="btn btn-outline"
-            type="button"
-            onclick="hideAddModal()"
-          >
-            Hủy
-          </button>
-          <button
-            class="btn btn-primary"
-            type="button"
-            onclick="submitAddModal()"
-          >
-            Thêm vào order
-          </button>
+        <div class="tiny muted" th:if="${readOnly}" style="margin-top:10px">
+          Order đã chốt (CLOSED) nên không thể thêm/sửa/xóa. Hãy vào session đang OPEN.
         </div>
       </div>
     </div>
 
-    <script>
-      let QUICK_QTY = 1;
-      let MODAL_PRODUCT_ID = null;
-
-      function setQuickQty(q) {
-        QUICK_QTY = q;
-        document.getElementById("quickQtyTxt").innerText = String(q);
-        const bar = document.getElementById("quickQtyBar");
-        if (!bar) return;
-        bar.querySelectorAll("button[data-q]").forEach((b) => {
-          const isOn = String(q) === String(b.getAttribute("data-q"));
-          b.classList.toggle("active", isOn);
-        });
-      }
-
-      function quickAddById(productId) {
-        const form = document.getElementById("quickAddForm");
-        if (!form) return;
-        document.getElementById("qaProductId").value = productId;
-        document.getElementById("qaQty").value = QUICK_QTY;
-        document.getElementById("qaNote").value = "";
-        form.submit();
-      }
-
-      function quickAddFromCard(card) {
-        if (!card) return;
-        const productId = card.getAttribute("data-id");
-        if (!productId) return;
-        quickAddById(productId);
-      }
-
-      function openAddModal(productId) {
-        const modal = document.getElementById("addModal");
-        if (!modal) return;
-        MODAL_PRODUCT_ID = productId;
-
-        // try to read from card attrs to show context
-        const card = document.querySelector(`.prod[data-id='${productId}']`);
-        const name = card
-          ? card.querySelector(".name")?.innerText || "Sản phẩm"
-          : "Sản phẩm";
-        const cat = card ? card.getAttribute("data-catname") || "" : "";
-        const price = card ? card.getAttribute("data-price") || "" : "";
-        const unit = card ? card.getAttribute("data-unit") || "" : "";
-
-        document.getElementById("mTitle").innerText = name;
-        document.getElementById("mSub").innerText = [
-          cat,
-          price ? price + (unit ? "/" + unit : "") : "",
-        ]
-          .filter(Boolean)
-          .join(" • ");
-
-        const q = document.getElementById("mQty");
-        const n = document.getElementById("mNote");
-        q.value = String(QUICK_QTY);
-        n.value = "";
-
-        modal.style.display = "flex";
-        setTimeout(() => n.focus(), 20);
-      }
-
-      function hideAddModal() {
-        const modal = document.getElementById("addModal");
-        if (modal) modal.style.display = "none";
-        MODAL_PRODUCT_ID = null;
-      }
-
-      function closeAddModal(ev) {
-        // click outside
-        if (ev && ev.target && ev.target.id === "addModal") hideAddModal();
-      }
-
-      function submitAddModal() {
-        if (!MODAL_PRODUCT_ID) return;
-        const qty = Math.max(
-          1,
-          parseInt(document.getElementById("mQty").value || "1", 10),
-        );
-        const note = (document.getElementById("mNote").value || "").trim();
-
-        const form = document.getElementById("quickAddForm");
-        if (!form) return;
-        document.getElementById("qaProductId").value = MODAL_PRODUCT_ID;
-        document.getElementById("qaQty").value = qty;
-        document.getElementById("qaNote").value = note;
-        form.submit();
-      }
-
-      function filterProducts() {
-        const cat = document.getElementById("catFilter").value;
-        const q = (document.getElementById("searchBox").value || "")
-          .trim()
-          .toLowerCase();
-        const list = document.getElementById("productList");
-        if (!list) return;
-        const cards = list.querySelectorAll(".prod");
-        cards.forEach((c) => {
-          const ccat = c.getAttribute("data-cat") || "";
-          const name = c.getAttribute("data-name") || "";
-          const matchCat = !cat || ccat === cat;
-          const matchName = !q || name.includes(q);
-          c.style.display = matchCat && matchName ? "flex" : "none";
-        });
-      }
-
-      function stepQty(itemId, delta) {
-        const input = document.getElementById("qty__" + itemId);
-        if (!input) return;
-        const current = parseInt(input.value || "1", 10);
-        const next = Math.max(1, current + delta);
-        input.value = String(next);
-
-        // auto submit update form for speed
-        const form = document.getElementById("upd__" + itemId);
-        if (form) form.submit();
-      }
-    </script>
+    <!-- JS optional: không ảnh hưởng chức năng chính nếu không chạy -->
+    <script src="/js/pos-order.js"></script>
   </section>
 </html>
