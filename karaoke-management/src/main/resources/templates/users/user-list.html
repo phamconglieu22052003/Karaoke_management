@@ -1,0 +1,153 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  th:replace="layout/main-layout :: layout('Người dùng', 'users', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead">
+    <style>
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .badge-ok {
+        background: rgba(34, 197, 94, 0.12);
+        color: #15803d;
+        border: 1px solid rgba(34, 197, 94, 0.25);
+      }
+      .badge-muted {
+        background: rgba(107, 114, 128, 0.1);
+        color: #374151;
+        border: 1px solid rgba(107, 114, 128, 0.22);
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(0, 0, 0, 0.02);
+      }
+    </style>
+  </th:block>
+
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Người dùng</h2>
+        <div class="help-text">Quản lý tài khoản và phân quyền nhân viên.</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a class="btn btn-primary" th:href="@{/users/new}">+ Thêm user</a>
+      </div>
+    </div>
+
+    <div th:if="${success}" class="card" style="margin-bottom: 12px">
+      <div style="padding: 12px; color: #15803d; font-weight: 800" th:text="${success}">
+        OK
+      </div>
+    </div>
+    <div th:if="${error}" class="card" style="margin-bottom: 12px">
+      <div style="padding: 12px; color: #b91c1c; font-weight: 800" th:text="${error}">
+        Error
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 70px">ID</th>
+              <th>Username</th>
+              <th>Họ tên</th>
+              <th>SĐT</th>
+              <th>Role</th>
+              <th style="width: 140px">Trạng thái</th>
+              <th style="width: 420px; text-align: right">Hành động</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr th:if="${#lists.isEmpty(users)}">
+              <td colspan="7" style="text-align: center; color: #6b7280; padding: 18px">
+                Chưa có user.
+              </td>
+            </tr>
+
+            <tr th:each="u : ${users}">
+              <td th:text="${u.id}">1</td>
+              <td>
+                <div style="font-weight: 900" th:text="${u.username}">admin</div>
+              </td>
+              <td th:text="${u.fullName}">—</td>
+              <td th:text="${u.phone}">—</td>
+              <td>
+                <span
+                  class="pill"
+                  th:text="${u.roles != null && !u.roles.isEmpty() ? u.roles.iterator().next().roleCode : ''}"
+                  >ADMIN</span
+                >
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  th:classappend="${u.active} ? ' badge-ok' : ' badge-muted'"
+                  th:text="${u.active} ? 'ACTIVE' : 'INACTIVE'"
+                  >ACTIVE</span
+                >
+              </td>
+              <td style="text-align: right">
+                <div class="actions">
+                  <a class="btn btn-outline btn-sm" th:href="@{/users/{id}/edit(id=${u.id})}">Sửa</a>
+
+                  <form
+                    th:action="@{/users/{id}/toggle(id=${u.id})}"
+                    method="post"
+                    style="display: inline"
+                    onsubmit="return confirm('Đổi trạng thái user này?');"
+                  >
+                    <button class="btn btn-outline btn-sm" type="submit">
+                      <span th:text="${u.active} ? 'Khóa' : 'Mở khóa'">Khóa</span>
+                    </button>
+                  </form>
+
+                  <form
+                    th:action="@{/users/{id}/reset-password(id=${u.id})}"
+                    method="post"
+                    style="display: inline"
+                    onsubmit="return confirm('Reset mật khẩu user này về giá trị nhập?');"
+                  >
+                    <input
+                      class="input"
+                      type="password"
+                      name="newPassword"
+                      minlength="6"
+                      placeholder="Mật khẩu mới (>=6)"
+                      style="width: 180px"
+                      required
+                    />
+                    <button class="btn btn-outline btn-sm" type="submit">Reset</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</html>

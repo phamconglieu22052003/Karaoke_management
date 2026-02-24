@@ -31,6 +31,23 @@ public class Invoice {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    // ============ Inventory deduction (idempotent) ============
+    /**
+     * Đánh dấu đã trừ kho cho hóa đơn (chống trừ 2 lần).
+     * SQL Server map boolean -> bit
+     */
+    @Column(name = "inventory_deducted", nullable = false)
+    private boolean inventoryDeducted = false;
+
+    @Column(name = "inventory_deducted_at")
+    private LocalDateTime inventoryDeductedAt;
+
+    /**
+     * Nếu hệ thống tự tạo phiếu xuất kho khi thanh toán hóa đơn, lưu id phiếu ở đây.
+     */
+    @Column(name = "inventory_receipt_id")
+    private Long inventoryReceiptId;
+
     // VNPay fields
     @Column(name = "vnp_txn_ref", length = 64, unique = true)
     private String vnpTxnRef;
@@ -60,6 +77,15 @@ public class Invoice {
 
     public LocalDateTime getPaidAt() { return paidAt; }
     public void setPaidAt(LocalDateTime paidAt) { this.paidAt = paidAt; }
+
+    public boolean isInventoryDeducted() { return inventoryDeducted; }
+    public void setInventoryDeducted(boolean inventoryDeducted) { this.inventoryDeducted = inventoryDeducted; }
+
+    public LocalDateTime getInventoryDeductedAt() { return inventoryDeductedAt; }
+    public void setInventoryDeductedAt(LocalDateTime inventoryDeductedAt) { this.inventoryDeductedAt = inventoryDeductedAt; }
+
+    public Long getInventoryReceiptId() { return inventoryReceiptId; }
+    public void setInventoryReceiptId(Long inventoryReceiptId) { this.inventoryReceiptId = inventoryReceiptId; }
 
     public String getVnpTxnRef() { return vnpTxnRef; }
     public void setVnpTxnRef(String vnpTxnRef) { this.vnpTxnRef = vnpTxnRef; }

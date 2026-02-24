@@ -1,6 +1,7 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
   th:fragment="layout(title, active, pageHead, content)"
 >
   <head>
@@ -67,6 +68,24 @@
             th:href="@{/invoice}"
           >
             Hóa đơn
+          </a>
+
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'inventory' ? ' active' : ''"
+            th:href="@{/inventory/stocks}"
+            sec:authorize="hasAnyRole('ADMIN','MANAGER','WAREHOUSE')"
+          >
+            Kho
+          </a>
+
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'users' ? ' active' : ''"
+            th:href="@{/users}"
+            sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+          >
+            Người dùng
           </a>
         </nav>
 

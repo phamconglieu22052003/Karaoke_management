@@ -4,6 +4,7 @@ import com.karaoke_management.entity.Invoice;
 import com.karaoke_management.entity.InvoiceStatus;
 import com.karaoke_management.payment.VnpayService;
 import com.karaoke_management.repository.InvoiceRepository;
+import com.karaoke_management.service.InvoiceService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -22,10 +23,14 @@ public class PaymentVnpayController {
 
     private final VnpayService vnpayService;
     private final InvoiceRepository invoiceRepository;
+    private final InvoiceService invoiceService;
 
-    public PaymentVnpayController(VnpayService vnpayService, InvoiceRepository invoiceRepository) {
+    public PaymentVnpayController(VnpayService vnpayService,
+                                 InvoiceRepository invoiceRepository,
+                                 InvoiceService invoiceService) {
         this.vnpayService = vnpayService;
         this.invoiceRepository = invoiceRepository;
+        this.invoiceService = invoiceService;
     }
 
     // ===================== A) CREATE PAYMENT URL =====================
@@ -97,10 +102,8 @@ public class PaymentVnpayController {
         Invoice inv = opt.get();
 
         if ("00".equals(responseCode)) {
-            inv.setStatus(InvoiceStatus.PAID);
-            inv.setPaidAt(LocalDateTime.now());
-            inv.setVnpTransactionNo(transactionNo);
-            invoiceRepository.save(inv);
+            // ✅ Mark PAID + tự động trừ kho (chống trừ 2 lần)
+            invoiceService.markPaidAndDeductInventory(inv.getId(), "VNPAY", transactionNo);
         } else {
             inv.setStatus(InvoiceStatus.FAILED);
             inv.setVnpTransactionNo(transactionNo);

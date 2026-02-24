@@ -1,0 +1,157 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="layout/main-layout :: layout(${editMode} ? 'Sửa user' : 'Thêm user', 'users', ~{::pageHead}, ~{::section})"
+>
+  <th:block th:fragment="pageHead">
+    <style>
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      @media (max-width: 860px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .label {
+        font-weight: 800;
+        color: #111827;
+      }
+      .muted {
+        color: #6b7280;
+        font-size: 12px;
+      }
+    </style>
+  </th:block>
+
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title" th:text="${editMode} ? 'Sửa user' : 'Thêm user'">
+          Thêm user
+        </h2>
+        <div class="help-text">
+          Tạo/cập nhật tài khoản nhân viên và phân quyền.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a class="btn btn-outline" th:href="@{/users}">← Quay lại</a>
+      </div>
+    </div>
+
+    <div th:if="${error}" class="card" style="margin-bottom: 12px">
+      <div
+        style="padding: 12px; color: #b91c1c; font-weight: 800"
+        th:text="${error}"
+      >
+        Error
+      </div>
+    </div>
+
+    <div class="card" style="padding: 14px">
+      <form
+        th:action="${editMode} ? @{/users/{id}/edit(id=${form.id})} : @{/users/new}"
+        method="post"
+      >
+        <div class="grid">
+          <div class="field">
+            <div class="label">Username</div>
+            <input
+              class="input"
+              type="text"
+              name="username"
+              th:value="${form.username}"
+              th:readonly="${editMode == true}"
+              required
+            />
+            <div class="muted" th:if="${editMode == true}">
+              Username không thể đổi.
+            </div>
+          </div>
+
+          <div class="field" th:if="${editMode != true}">
+            <div class="label">Mật khẩu</div>
+            <input
+              class="input"
+              type="password"
+              name="password"
+              minlength="6"
+              placeholder=">= 6 ký tự"
+              required
+            />
+          </div>
+          <div class="field" th:if="${editMode == true}">
+            <div class="label">Mật khẩu</div>
+            <input class="input" type="password" value="******" disabled />
+            <div class="muted">Reset mật khẩu ở màn danh sách.</div>
+          </div>
+
+          <div class="field">
+            <div class="label">Họ tên</div>
+            <input
+              class="input"
+              type="text"
+              name="fullName"
+              th:value="${form.fullName}"
+            />
+          </div>
+
+          <div class="field">
+            <div class="label">Số điện thoại</div>
+            <input
+              class="input"
+              type="text"
+              name="phone"
+              th:value="${form.phone}"
+            />
+          </div>
+
+          <div class="field">
+            <div class="label">Role</div>
+            <select class="input" name="roleCode" required>
+              <option
+                value=""
+                disabled
+                th:selected="${form.roleCode == null || form.roleCode == ''}"
+              >
+                -- Chọn role --
+              </option>
+              <option
+                th:each="r : ${roles}"
+                th:value="${r.roleCode}"
+                th:text="${r.roleCode + ' - ' + r.roleName}"
+                th:selected="${form.roleCode == r.roleCode}"
+              ></option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 14px;
+          "
+        >
+          <a class="btn btn-outline" th:href="@{/users}">Hủy</a>
+          <button
+            class="btn btn-primary"
+            type="submit"
+            th:text="${editMode} ? 'Lưu' : 'Tạo user'"
+          >
+            Tạo user
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</html>

@@ -3,6 +3,7 @@ package com.karaoke_management.controller;
 import com.karaoke_management.entity.Invoice;
 import com.karaoke_management.entity.InvoiceStatus;
 import com.karaoke_management.repository.InvoiceRepository;
+import com.karaoke_management.service.InvoiceService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -21,9 +22,11 @@ import java.util.UUID;
 public class PaymentVnpayMockQrController {
 
     private final InvoiceRepository invoiceRepository;
+    private final InvoiceService invoiceService;
 
-    public PaymentVnpayMockQrController(InvoiceRepository invoiceRepository) {
+    public PaymentVnpayMockQrController(InvoiceRepository invoiceRepository, InvoiceService invoiceService) {
         this.invoiceRepository = invoiceRepository;
+        this.invoiceService = invoiceService;
     }
 
     /**
@@ -61,13 +64,14 @@ public class PaymentVnpayMockQrController {
         Invoice inv = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
 
-        // Nếu đã paid thì thôi
-        if (inv.getStatus() != InvoiceStatus.PAID) {
-            inv.setStatus(InvoiceStatus.PAID);
-            inv.setPaidAt(LocalDateTime.now());
-            inv.setVnpTransactionNo("MOCKQR-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase());
-            invoiceRepository.save(inv);
+        // Nếu đã paid thì thôi (nhưng vẫn đảm bảo trừ kho idempotent)
+        String txn = inv.getVnpTransactionNo();
+        if (txn == null || txn.isBlank()) {
+            txn = "MOCKQR-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase();
         }
+
+        // ✅ Mark PAID + tự động trừ kho (chống trừ 2 lần)
+        inv = invoiceService.markPaidAndDeductInventory(invoiceId, "MOCK_QR", txn);
 
         model.addAttribute("invoiceId", invoiceId);
         model.addAttribute("transactionNo", inv.getVnpTransactionNo());

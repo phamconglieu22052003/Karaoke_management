@@ -77,6 +77,9 @@ public class SecurityConfig {
                         // Room type (manager/admin)
                         .requestMatchers("/room-types/**").hasAnyRole("ADMIN", "MANAGER")
 
+                        // Users (admin/manager)
+                        .requestMatchers("/users/**").hasAnyRole("ADMIN", "MANAGER")
+
                         // QR demo
                         .requestMatchers("/qr").permitAll()
 
