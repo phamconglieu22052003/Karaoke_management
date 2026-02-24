@@ -1,6 +1,10 @@
 package com.karaoke_management.controller;
 
 import com.karaoke_management.entity.Invoice;
+import com.karaoke_management.entity.InvoiceLine;
+import com.karaoke_management.entity.InvoiceStatus;
+import com.karaoke_management.enums.InvoiceLineType;
+import com.karaoke_management.repository.InvoiceLineRepository;
 import com.karaoke_management.repository.InvoiceRepository;
 import com.karaoke_management.repository.RoomRepository;
 import com.karaoke_management.service.InvoiceService;
@@ -27,6 +31,7 @@ import java.time.format.DateTimeParseException;
 public class InvoiceController {
 
     private final InvoiceRepository invoiceRepository;
+    private final InvoiceLineRepository invoiceLineRepository;
     private final InvoiceService invoiceService;
     private final RoomRepository roomRepository;
 
@@ -34,9 +39,11 @@ public class InvoiceController {
     private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
     public InvoiceController(InvoiceRepository invoiceRepository,
+                             InvoiceLineRepository invoiceLineRepository,
                              InvoiceService invoiceService,
                              RoomRepository roomRepository) {
         this.invoiceRepository = invoiceRepository;
+        this.invoiceLineRepository = invoiceLineRepository;
         this.invoiceService = invoiceService;
         this.roomRepository = roomRepository;
     }
@@ -75,8 +82,53 @@ public class InvoiceController {
     public String detail(@PathVariable Long id, Model model) {
         Invoice inv = invoiceRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+
+        // ✅ Đảm bảo tổng tiền hiển thị đúng (tiền phòng + tiền gọi món) cho invoice chưa thanh toán
+        // Tránh trường hợp invoice được tạo từ bản code cũ chỉ tính tiền phòng.
+        if ((inv.getStatus() == InvoiceStatus.UNPAID || inv.getStatus() == InvoiceStatus.FAILED)
+                && inv.getRoomSession() != null
+                && inv.getRoomSession().getId() != null) {
+            inv = invoiceService.createOrGetBySession(inv.getRoomSession().getId());
+        }
         model.addAttribute("invoice", inv);
+
+        // Snapshot lines + breakdown
+        var lines = invoiceLineRepository.findAllByInvoice_IdOrderByIdAsc(inv.getId());
+        model.addAttribute("lines", lines);
+        model.addAttribute("roomCharge", sumByType(lines, InvoiceLineType.ROOM));
+        model.addAttribute("orderCharge", sumByType(lines, InvoiceLineType.ITEM));
         return "invoice/invoice-detail";
+    }
+
+    @GetMapping("/{id}/print")
+    public String print(@PathVariable Long id, Model model) {
+        Invoice inv = invoiceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+
+        // Với invoice chưa thanh toán, vẫn refresh snapshot để in đúng
+        if ((inv.getStatus() == InvoiceStatus.UNPAID || inv.getStatus() == InvoiceStatus.FAILED)
+                && inv.getRoomSession() != null
+                && inv.getRoomSession().getId() != null) {
+            inv = invoiceService.createOrGetBySession(inv.getRoomSession().getId());
+        }
+
+        var lines = invoiceLineRepository.findAllByInvoice_IdOrderByIdAsc(inv.getId());
+        model.addAttribute("invoice", inv);
+        model.addAttribute("lines", lines);
+        model.addAttribute("roomCharge", sumByType(lines, InvoiceLineType.ROOM));
+        model.addAttribute("orderCharge", sumByType(lines, InvoiceLineType.ITEM));
+        return "invoice/invoice-print";
+    }
+
+    private static BigDecimal sumByType(java.util.List<InvoiceLine> lines, InvoiceLineType type) {
+        if (lines == null || lines.isEmpty()) return BigDecimal.ZERO;
+        BigDecimal sum = BigDecimal.ZERO;
+        for (InvoiceLine l : lines) {
+            if (l != null && l.getLineType() == type && l.getAmount() != null) {
+                sum = sum.add(l.getAmount());
+            }
+        }
+        return sum;
     }
 
     // =========================

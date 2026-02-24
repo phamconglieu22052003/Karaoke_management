@@ -40,6 +40,13 @@ public class PaymentVnpayController {
         Invoice inv = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
 
+        // ✅ Đảm bảo totalAmount luôn đúng trước khi tạo link thanh toán (tiền phòng + tiền gọi món)
+        // (đặc biệt nếu invoice được tạo từ bản code cũ chỉ tính tiền phòng)
+        if (inv.getRoomSession() != null && inv.getRoomSession().getId() != null
+                && inv.getStatus() != InvoiceStatus.PAID) {
+            inv = invoiceService.createOrGetBySession(inv.getRoomSession().getId());
+        }
+
         if (inv.getStatus() == InvoiceStatus.PAID) {
             return "redirect:/invoice/" + invoiceId;
         }

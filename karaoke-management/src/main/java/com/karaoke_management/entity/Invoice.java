@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "invoices")
@@ -58,6 +60,11 @@ public class Invoice {
     @Column(name = "payment_method", length = 32)
     private String paymentMethod = "VNPAY";
 
+    // Snapshot lines (ROOM + ITEM)
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    private List<InvoiceLine> lines = new ArrayList<>();
+
     public Invoice() {}
 
     // ===== Getter/Setter =====
@@ -95,4 +102,7 @@ public class Invoice {
 
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+    public List<InvoiceLine> getLines() { return lines; }
+    public void setLines(List<InvoiceLine> lines) { this.lines = lines; }
 }

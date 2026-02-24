@@ -7,63 +7,251 @@
     <link rel="stylesheet" th:href="@{/css/order-screen.css}" />
     <style>
       /* POS layout tối thiểu - Ưu tiên chạy ổn định (không phụ thuộc JS) */
-      .pos-page{display:flex;flex-direction:column;gap:14px}
-      .pos-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
-      .pos-title{font-size:20px;font-weight:800}
-      .pos-sub{font-size:12px;opacity:.75}
-      .pos-actions{display:flex;gap:8px;flex-wrap:wrap}
+      .pos-page {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .pos-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .pos-title {
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .pos-sub {
+        font-size: 12px;
+        opacity: 0.75;
+      }
+      .pos-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
 
-      .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px}
-      .row-between{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-      .pill{display:inline-flex;gap:6px;align-items:center;padding:8px 10px;border-radius:999px;background:#f6f7fb;font-size:12px}
-      .muted{opacity:.75}
-      .tiny{font-size:12px}
+      .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 14px;
+      }
+      .row-between {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .pill {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        padding: 8px 10px;
+        border-radius: 999px;
+        background: #f6f7fb;
+        font-size: 12px;
+      }
+      .muted {
+        opacity: 0.75;
+      }
+      .tiny {
+        font-size: 12px;
+      }
 
-      .btn{border:1px solid transparent;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:700}
-      .btn-outline{background:#fff;border-color:#e5e7eb}
-      .btn-primary{background:#111827;color:#fff}
-      .btn-danger{background:#ef4444;color:#fff}
-      .btn-sm{padding:8px 10px;border-radius:9px;font-size:12px}
+      .btn {
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .btn-outline {
+        background: #fff;
+        border-color: #e5e7eb;
+      }
+      .btn-primary {
+        background: #111827;
+        color: #fff;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: #fff;
+      }
+      .btn-sm {
+        padding: 8px 10px;
+        border-radius: 9px;
+        font-size: 12px;
+      }
 
-      .alert{border:1px solid #e5e7eb;background:#f8fafc;border-radius:12px;padding:10px 12px}
-      .alert-warn{border-color:#fde68a;background:#fffbeb}
+      .alert {
+        border: 1px solid #e5e7eb;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+      .alert-warn {
+        border-color: #fde68a;
+        background: #fffbeb;
+      }
 
       /* 2 cột chắc chắn */
-      .pos-shell{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;align-items:start}
-      @media (max-width:1100px){.pos-shell{grid-template-columns:1fr}}
+      .pos-shell {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 14px;
+        align-items: start;
+      }
+      @media (max-width: 1100px) {
+        .pos-shell {
+          grid-template-columns: 1fr;
+        }
+      }
 
-      .tools{display:flex;gap:10px;flex-wrap:wrap}
-      .tool{display:flex;flex-direction:column;gap:6px}
-      .tool label{font-size:12px;opacity:.8}
-      .input{border:1px solid #e5e7eb;border-radius:10px;padding:10px 10px;min-width:220px}
-      .input.small{min-width:140px}
-      .input.wide{min-width:360px}
-      @media (max-width:650px){.input,.input.wide{min-width:100%}.tool{width:100%}}
+      .tools {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .tool {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .tool label {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .input {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 10px;
+        min-width: 220px;
+      }
+      .input.small {
+        min-width: 140px;
+      }
+      .input.wide {
+        min-width: 360px;
+      }
+      @media (max-width: 650px) {
+        .input,
+        .input.wide {
+          min-width: 100%;
+        }
+        .tool {
+          width: 100%;
+        }
+      }
 
       /* Product grid */
-      .prod-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
-      @media (max-width:1200px){.prod-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-      @media (max-width:650px){.prod-grid{grid-template-columns:1fr}}
-      .prod{border:1px solid #eef2f7;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
-      .prod:hover{border-color:#c7d2fe}
-      .prod-top .name{font-weight:800}
-      .prod-top .sub{font-size:12px;opacity:.75}
-      .prod-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px}
-      .price{font-weight:900}
-      .prod-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+      .prod-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+      @media (max-width: 1200px) {
+        .prod-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 650px) {
+        .prod-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .prod {
+        border: 1px solid #eef2f7;
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .prod:hover {
+        border-color: #c7d2fe;
+      }
+      .prod-top .name {
+        font-weight: 800;
+      }
+      .prod-top .sub {
+        font-size: 12px;
+        opacity: 0.75;
+      }
+      .prod-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .price {
+        font-weight: 900;
+      }
+      .prod-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
 
       /* Order table */
-      .kpi{display:flex;justify-content:space-between;align-items:baseline;border:1px solid #eef2f7;background:#fbfdff;border-radius:12px;padding:10px;margin-bottom:10px}
-      .kpi .lbl{font-size:12px;opacity:.75}
-      .kpi .amt{font-size:22px;font-weight:900}
-      .table-wrap{border:1px solid #eef2f7;border-radius:12px;overflow:auto}
-      table{width:100%;border-collapse:collapse;min-width:900px}
-      th,td{padding:10px;border-bottom:1px solid #eef2f7;vertical-align:top}
-      thead th{background:#fafafa;font-size:12px;text-transform:uppercase;letter-spacing:.02em;opacity:.7;position:sticky;top:0}
-      .center{ text-align:center; padding:16px !important; }
+      .kpi {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        border: 1px solid #eef2f7;
+        background: #fbfdff;
+        border-radius: 12px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .kpi .lbl {
+        font-size: 12px;
+        opacity: 0.75;
+      }
+      .kpi .amt {
+        font-size: 22px;
+        font-weight: 900;
+      }
+      .table-wrap {
+        border: 1px solid #eef2f7;
+        border-radius: 12px;
+        overflow: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+      }
+      th,
+      td {
+        padding: 10px;
+        border-bottom: 1px solid #eef2f7;
+        vertical-align: top;
+      }
+      thead th {
+        background: #fafafa;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        opacity: 0.7;
+        position: sticky;
+        top: 0;
+      }
+      .center {
+        text-align: center;
+        padding: 16px !important;
+      }
 
       /* Quick add bar */
-      .quickadd-bar{margin-top:10px;background:#f8fafc}
+      .quickadd-bar {
+        margin-top: 10px;
+        background: #f8fafc;
+      }
     </style>
   </th:block>
 
@@ -73,37 +261,67 @@
       <div>
         <div class="pos-title">Gọi món</div>
         <div class="pos-sub">
-          Thêm / Reset / Lưu / Xóa dùng form thuần HTML (không phụ thuộc JavaScript).
+          Thêm / Reset / Lưu / Xóa dùng form thuần HTML (không phụ thuộc
+          JavaScript).
         </div>
       </div>
 
       <div class="pos-actions">
-        <a class="btn btn-outline" th:href="@{/room-sessions}">← Danh sách session</a>
+        <a class="btn btn-outline" th:href="@{/room-sessions}"
+          >← Danh sách session</a
+        >
         <a class="btn btn-outline" th:href="@{/rooms}">Danh sách phòng</a>
         <a class="btn btn-primary" th:href="@{/dashboard}">Trang chủ</a>
       </div>
     </div>
 
     <!-- Messages -->
-    <div th:if="${msg != null and !#strings.isEmpty(msg)}" class="alert" th:text="${msg}">OK</div>
-    <div th:if="${warn != null and !#strings.isEmpty(warn)}" class="alert alert-warn" th:text="${warn}">Cảnh báo</div>
+    <div
+      th:if="${msg != null and !#strings.isEmpty(msg)}"
+      class="alert"
+      th:text="${msg}"
+    >
+      OK
+    </div>
+    <div
+      th:if="${warn != null and !#strings.isEmpty(warn)}"
+      class="alert alert-warn"
+      th:text="${warn}"
+    >
+      Cảnh báo
+    </div>
 
     <!-- Guard -->
-    <div th:if="${roomSession == null or roomSession.id == null}" class="alert alert-warn">
+    <div
+      th:if="${roomSession == null or roomSession.id == null}"
+      class="alert alert-warn"
+    >
       Thiếu <b>sessionId</b>. Hãy quay lại
-      <a th:href="@{/room-sessions}"><b>Danh sách session</b></a> và chọn “Gọi món”.
+      <a th:href="@{/room-sessions}"><b>Danh sách session</b></a> và chọn “Gọi
+      món”.
     </div>
 
     <!-- Meta -->
     <div class="card" th:if="${roomSession != null and roomSession.id != null}">
       <div class="row-between">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div
+          style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center"
+        >
           <div class="pill">Session: <b th:text="${roomSession.id}">1</b></div>
-          <div class="pill">Phòng: <b th:text="${roomSession.room != null ? roomSession.room.name : ''}">VIP1</b></div>
-          <div class="pill">Trạng thái session: <b th:text="${roomSession.status}">OPEN</b></div>
+          <div class="pill">
+            Phòng:
+            <b
+              th:text="${roomSession.room != null ? roomSession.room.name : ''}"
+              >VIP1</b
+            >
+          </div>
+          <div class="pill">
+            Trạng thái session: <b th:text="${roomSession.status}">OPEN</b>
+          </div>
 
           <div class="pill" th:if="${order != null}">
-            Order: <b th:text="${order.id}">11</b> • <b th:text="${order.status}">OPEN</b>
+            Order: <b th:text="${order.id}">11</b> •
+            <b th:text="${order.status}">OPEN</b>
           </div>
 
           <div class="pill" th:if="${readOnly}">
@@ -111,19 +329,48 @@
           </div>
         </div>
 
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div
+          style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center"
+        >
           <form
             th:if="${order != null and !readOnly}"
             th:action="@{${'/pos/sessions/' + roomSession.id + '/order/close'}}"
             method="post"
-            onsubmit="return confirm('Chốt order? Sau khi chốt sẽ chỉ xem lại.');"
-            style="margin:0"
+            onsubmit="
+              return confirm('Chốt order? Sau khi chốt sẽ chỉ xem lại.');
+            "
+            style="margin: 0"
           >
-            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input
+              type="hidden"
+              th:if="${_csrf != null}"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
             <button class="btn btn-primary" type="submit">Chốt order</button>
           </form>
 
-          <a class="btn btn-outline" th:href="@{${'/pos/sessions/' + roomSession.id + '/order/view'}}">
+          <!-- Khi đang xem order đã chốt: cho phép tạo order mới để tiếp tục gọi món -->
+          <form
+            th:if="${readOnly and canCreateNewOrder}"
+            th:action="@{${'/pos/sessions/' + roomSession.id + '/order/new'}}"
+            method="post"
+            onsubmit="return confirm('Tạo order mới để gọi thêm món?');"
+            style="margin: 0"
+          >
+            <input
+              type="hidden"
+              th:if="${_csrf != null}"
+              th:name="${_csrf.parameterName}"
+              th:value="${_csrf.token}"
+            />
+            <button class="btn btn-primary" type="submit">Tạo order mới</button>
+          </form>
+
+          <a
+            class="btn btn-outline"
+            th:href="@{${'/pos/sessions/' + roomSession.id + '/order/view'}}"
+          >
             Xem order đã chốt
           </a>
         </div>
@@ -131,36 +378,50 @@
     </div>
 
     <!-- MAIN 2 CỘT -->
-    <div class="pos-shell" th:if="${roomSession != null and roomSession.id != null}">
+    <div
+      class="pos-shell"
+      th:if="${roomSession != null and roomSession.id != null}"
+    >
       <!-- LEFT: PRODUCTS -->
       <div class="card">
         <div class="row-between">
           <div>
-            <div style="font-weight:900">Sản phẩm</div>
+            <div style="font-weight: 900">Sản phẩm</div>
             <div class="tiny muted">
-              Nhập số lượng + ghi chú ở thanh dưới → bấm “+ Thêm” tại sản phẩm để thêm vào order.
+              Nhập số lượng + ghi chú ở thanh dưới → bấm “+ Thêm” tại sản phẩm
+              để thêm vào order.
             </div>
           </div>
         </div>
 
         <!-- (Tùy chọn) Bộ lọc server-side: hiện tại chỉ là UI, nếu controller chưa xử lý thì vẫn hiển thị tất cả -->
-        <div class="tools" style="margin-top:10px">
+        <div class="tools" style="margin-top: 10px">
           <div class="tool">
             <label>Danh mục (chỉ hiển thị nếu controller hỗ trợ lọc)</label>
             <select class="input small" name="cat" form="productFilterForm">
               <option value="">Tất cả</option>
-              <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+              <option
+                th:each="c : ${categories}"
+                th:value="${c.id}"
+                th:text="${c.name}"
+              ></option>
             </select>
           </div>
 
           <div class="tool">
             <label>Tìm kiếm (chỉ hiển thị nếu controller hỗ trợ lọc)</label>
-            <input class="input" name="q" form="productFilterForm" type="text" placeholder="Tên sản phẩm..." />
+            <input
+              class="input"
+              name="q"
+              form="productFilterForm"
+              type="text"
+              placeholder="Tên sản phẩm..."
+            />
           </div>
 
           <div class="tool">
             <label>&nbsp;</label>
-            <form id="productFilterForm" method="get" style="margin:0">
+            <form id="productFilterForm" method="get" style="margin: 0">
               <!-- nếu controller không xử lý q/cat thì vẫn không sao -->
               <button class="btn btn-outline" type="submit">Lọc</button>
             </form>
@@ -174,19 +435,35 @@
           class="card quickadd-bar"
           th:action="@{${'/pos/sessions/' + roomSession.id + '/order/items'}}"
           method="post"
-          style="margin-top:10px"
+          style="margin-top: 10px"
         >
-          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <input
+            type="hidden"
+            th:if="${_csrf != null}"
+            th:name="${_csrf.parameterName}"
+            th:value="${_csrf.token}"
+          />
 
           <div class="tools">
             <div class="tool">
               <label>Số lượng</label>
-              <input class="input small" name="quantity" type="number" min="1" value="1" />
+              <input
+                class="input small"
+                name="quantity"
+                type="number"
+                min="1"
+                value="1"
+              />
             </div>
 
-            <div class="tool" style="flex:1">
+            <div class="tool" style="flex: 1">
               <label>Ghi chú</label>
-              <input class="input wide" name="note" type="text" placeholder="Ví dụ: ít đá / không cay..." />
+              <input
+                class="input wide"
+                name="note"
+                type="text"
+                placeholder="Ví dụ: ít đá / không cay..."
+              />
             </div>
 
             <div class="tool">
@@ -195,8 +472,9 @@
             </div>
           </div>
 
-          <div class="tiny muted" style="margin-top:8px">
-            Bấm “+ Thêm” ở từng sản phẩm sẽ submit form này và gửi <b>productId</b> tương ứng.
+          <div class="tiny muted" style="margin-top: 8px">
+            Bấm “+ Thêm” ở từng sản phẩm sẽ submit form này và gửi
+            <b>productId</b> tương ứng.
           </div>
         </form>
 
@@ -212,7 +490,10 @@
             <div class="prod-top">
               <div class="name" th:text="${p.name}">Bia</div>
               <div class="sub">
-                <span th:text="${p.category != null ? p.category.name : 'Chưa phân loại'}">Đồ uống</span>
+                <span
+                  th:text="${p.category != null ? p.category.name : 'Chưa phân loại'}"
+                  >Đồ uống</span
+                >
                 <span class="muted"> • </span>
                 <span th:text="${p.unit != null ? p.unit : ''}">lon</span>
               </div>
@@ -239,7 +520,11 @@
             </div>
           </div>
 
-          <div th:if="${#lists.isEmpty(products)}" class="alert" style="grid-column: 1 / -1">
+          <div
+            th:if="${#lists.isEmpty(products)}"
+            class="alert"
+            style="grid-column: 1 / -1"
+          >
             Chưa có sản phẩm. Vào <b>Sản phẩm</b> để tạo dữ liệu.
           </div>
         </div>
@@ -249,8 +534,10 @@
       <div class="card">
         <div class="row-between">
           <div>
-            <div style="font-weight:900">Order hiện tại</div>
-            <div class="tiny muted">Sửa số lượng/ghi chú → bấm Lưu. Xóa → bấm Xóa.</div>
+            <div style="font-weight: 900">Order hiện tại</div>
+            <div class="tiny muted">
+              Sửa số lượng/ghi chú → bấm Lưu. Xóa → bấm Xóa.
+            </div>
           </div>
         </div>
 
@@ -263,13 +550,13 @@
           <table>
             <thead>
               <tr>
-                <th style="width:52px">#</th>
+                <th style="width: 52px">#</th>
                 <th>Món</th>
-                <th style="width:120px">Đơn giá</th>
-                <th style="width:160px">SL</th>
-                <th style="width:140px">Thành tiền</th>
-                <th style="width:260px">Ghi chú</th>
-                <th style="width:190px">Hành động</th>
+                <th style="width: 120px">Đơn giá</th>
+                <th style="width: 160px">SL</th>
+                <th style="width: 140px">Thành tiền</th>
+                <th style="width: 260px">Ghi chú</th>
+                <th style="width: 190px">Hành động</th>
               </tr>
             </thead>
 
@@ -279,17 +566,25 @@
               </tr>
 
               <tr th:if="${order != null and #lists.isEmpty(items)}">
-                <td colspan="7" class="muted center">Order chưa có món. Hãy bấm “+ Thêm”.</td>
+                <td colspan="7" class="muted center">
+                  Order chưa có món. Hãy bấm “+ Thêm”.
+                </td>
               </tr>
 
               <tr th:each="it, st : ${items}">
                 <td th:text="${st.index + 1}">1</td>
 
                 <td>
-                  <div style="font-weight:800" th:text="${it.product != null ? it.product.name : 'N/A'}">Bia</div>
-                  <div class="tiny muted"
-                       th:text="${(it.product != null and it.product.category != null) ? it.product.category.name : ''}">
+                  <div
+                    style="font-weight: 800"
+                    th:text="${it.product != null ? it.product.name : 'N/A'}"
+                  >
+                    Bia
                   </div>
+                  <div
+                    class="tiny muted"
+                    th:text="${(it.product != null and it.product.category != null) ? it.product.category.name : ''}"
+                  ></div>
                 </td>
 
                 <td th:text="${it.unitPrice}">20000</td>
@@ -311,7 +606,11 @@
                 <td th:text="${it.lineAmount}">20000</td>
 
                 <td>
-                  <span th:if="${readOnly}" class="tiny muted" th:text="${it.note}"></span>
+                  <span
+                    th:if="${readOnly}"
+                    class="tiny muted"
+                    th:text="${it.note}"
+                  ></span>
 
                   <input
                     th:if="${!readOnly}"
@@ -325,25 +624,42 @@
                 </td>
 
                 <td>
-                  <div th:if="${!readOnly}" style="display:flex;gap:8px;flex-wrap:wrap">
+                  <div
+                    th:if="${!readOnly}"
+                    style="display: flex; gap: 8px; flex-wrap: wrap"
+                  >
                     <form
                       th:id="${'upd__' + it.id}"
                       th:action="@{${'/pos/sessions/' + roomSession.id + '/order/items/' + it.id + '/update'}}"
                       method="post"
-                      style="margin:0"
+                      style="margin: 0"
                     >
-                      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                      <button class="btn btn-outline btn-sm" type="submit">Lưu</button>
+                      <input
+                        type="hidden"
+                        th:if="${_csrf != null}"
+                        th:name="${_csrf.parameterName}"
+                        th:value="${_csrf.token}"
+                      />
+                      <button class="btn btn-outline btn-sm" type="submit">
+                        Lưu
+                      </button>
                     </form>
 
                     <form
                       th:action="@{${'/pos/sessions/' + roomSession.id + '/order/items/' + it.id + '/delete'}}"
                       method="post"
-                      style="margin:0"
+                      style="margin: 0"
                       onsubmit="return confirm('Xóa món khỏi order?');"
                     >
-                      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                      <button class="btn btn-danger btn-sm" type="submit">Xóa</button>
+                      <input
+                        type="hidden"
+                        th:if="${_csrf != null}"
+                        th:name="${_csrf.parameterName}"
+                        th:value="${_csrf.token}"
+                      />
+                      <button class="btn btn-danger btn-sm" type="submit">
+                        Xóa
+                      </button>
                     </form>
                   </div>
 
@@ -354,8 +670,67 @@
           </table>
         </div>
 
-        <div class="tiny muted" th:if="${readOnly}" style="margin-top:10px">
-          Order đã chốt (CLOSED) nên không thể thêm/sửa/xóa. Hãy vào session đang OPEN.
+        <!-- LỊCH SỬ: Order đã chốt gần nhất (hiển thị ngay cả khi đang có OPEN order) -->
+        <div
+          th:if="${lastClosedOrder != null and !#lists.isEmpty(lastClosedItems)}"
+          style="margin-top: 14px"
+        >
+          <div class="row-between" style="margin-bottom: 10px">
+            <div>
+              <div style="font-weight: 900">Order đã chốt gần nhất</div>
+              <div class="tiny muted">
+                ID: <b th:text="${lastClosedOrder.id}">0</b> • Trạng thái:
+                <b th:text="${lastClosedOrder.status}">CLOSED</b>
+              </div>
+            </div>
+            <div class="pill">Tổng: <b th:text="${lastClosedTotal}">0</b></div>
+          </div>
+
+          <div class="table-wrap">
+            <table style="min-width: 760px">
+              <thead>
+                <tr>
+                  <th style="width: 52px">#</th>
+                  <th>Món</th>
+                  <th style="width: 120px">Đơn giá</th>
+                  <th style="width: 110px">SL</th>
+                  <th style="width: 140px">Thành tiền</th>
+                  <th style="width: 260px">Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="it, st : ${lastClosedItems}">
+                  <td th:text="${st.index + 1}">1</td>
+                  <td>
+                    <div
+                      style="font-weight: 800"
+                      th:text="${it.product != null ? it.product.name : 'N/A'}"
+                    >
+                      Bia
+                    </div>
+                    <div
+                      class="tiny muted"
+                      th:text="${(it.product != null and it.product.category != null) ? it.product.category.name : ''}"
+                    ></div>
+                  </td>
+                  <td th:text="${it.unitPrice}">0</td>
+                  <td th:text="${it.quantity}">1</td>
+                  <td th:text="${it.lineAmount}">0</td>
+                  <td class="tiny muted" th:text="${it.note}"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tiny muted" style="margin-top: 8px">
+            Đây là order đã chốt gần nhất để bạn đối chiếu lại sau khi thoát
+            ra/vào lại.
+          </div>
+        </div>
+
+        <div class="tiny muted" th:if="${readOnly}" style="margin-top: 10px">
+          Order đã chốt (CLOSED) nên không thể thêm/sửa/xóa. Hãy vào session
+          đang OPEN.
         </div>
       </div>
     </div>

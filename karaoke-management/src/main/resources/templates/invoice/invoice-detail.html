@@ -13,7 +13,15 @@
           Theo dõi trạng thái và thực hiện thanh toán.
         </div>
       </div>
-      <a class="btn btn-outline" th:href="@{/invoice}">← Danh sách hóa đơn</a>
+      <div style="display: flex; gap: 10px; align-items: center">
+        <a class="btn btn-outline" th:href="@{/invoice}">← Danh sách hóa đơn</a>
+        <a
+          class="btn btn-outline"
+          th:href="@{/invoice/{id}/print(id=${invoice.id})}"
+          target="_blank"
+          >In hóa đơn</a
+        >
+      </div>
     </div>
 
     <div class="form-row">
@@ -40,6 +48,16 @@
             <div class="kv-v">
               <b th:text="${invoice.totalAmount}">0</b> VND
             </div>
+          </div>
+
+          <div class="kv-row">
+            <div class="kv-k">Tiền phòng</div>
+            <div class="kv-v"><b th:text="${roomCharge}">0</b> VND</div>
+          </div>
+
+          <div class="kv-row">
+            <div class="kv-k">Tiền gọi món</div>
+            <div class="kv-v"><b th:text="${orderCharge}">0</b> VND</div>
           </div>
           <div class="kv-row">
             <div class="kv-k">Trạng thái</div>
@@ -118,6 +136,67 @@
             Hóa đơn đã thanh toán.
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px">
+      <h3 style="margin-top: 0">Chi tiết món / dịch vụ</h3>
+      <div class="help-text" style="margin-top: 6px">
+        Đây là <b>snapshot</b> tại thời điểm tạo hóa đơn, không bị ảnh hưởng nếu
+        giá sản phẩm thay đổi.
+      </div>
+      <div class="hr"></div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Loại</th>
+              <th>Mô tả</th>
+              <th style="width: 90px; text-align: right">SL</th>
+              <th style="width: 120px; text-align: right">Đơn giá</th>
+              <th style="width: 140px; text-align: right">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${lines == null || #lists.isEmpty(lines)}">
+              <td colspan="5" class="help-text">Chưa có dòng chi tiết.</td>
+            </tr>
+
+            <tr th:each="l : ${lines}">
+              <td>
+                <span class="badge badge-muted" th:text="${l.lineType}"
+                  >ITEM</span
+                >
+              </td>
+              <td>
+                <div>
+                  <b th:text="${l.description}">Item</b>
+                  <div
+                    class="help-text"
+                    th:if="${l.note != null && !#strings.isEmpty(l.note)}"
+                    th:text="${l.note}"
+                  >
+                    note
+                  </div>
+                </div>
+              </td>
+              <td
+                style="text-align: right"
+                th:text="${l.quantity != null ? l.quantity : ''}"
+              >
+                1
+              </td>
+              <td
+                style="text-align: right"
+                th:text="${l.unitPrice != null ? l.unitPrice : ''}"
+              >
+                0
+              </td>
+              <td style="text-align: right"><b th:text="${l.amount}">0</b></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 

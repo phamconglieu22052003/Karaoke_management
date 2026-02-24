@@ -49,8 +49,36 @@ public class PosOrderController {
         RoomSession roomSession = roomSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy session: " + sessionId));
 
-        // Tự tạo order OPEN nếu chưa có (đúng yêu cầu POS)
-        Order order = orderService.getOrCreateOpenOrder(sessionId, username);
+        // === FIX UX ===
+        // Trước đây: luôn "getOrCreateOpenOrder" => nếu order đã CHỐT (CLOSED) thì vào lại /order
+        // sẽ tự tạo order OPEN mới rỗng => người dùng tưởng "mất dữ liệu".
+        //
+        // Hành vi mới:
+        // 1) Nếu có order OPEN => hiển thị để tiếp tục gọi món.
+        // 2) Nếu KHÔNG có order OPEN nhưng có order gần nhất (thường là CLOSED) => hiển thị order đó (read-only)
+        //    và cung cấp nút "Tạo order mới" nếu muốn gọi thêm.
+        // 3) Nếu chưa từng có order nào => tạo order OPEN mới như bình thường.
+
+        Order order;
+        boolean canCreateNewOrder = false;
+        String autoWarn = null;
+
+        var openOpt = orderRepository.findFirstByRoomSession_IdAndStatusOrderByCreatedAtDesc(sessionId, OrderStatus.OPEN);
+        if (openOpt.isPresent()) {
+            order = openOpt.get();
+        } else {
+            var lastOpt = orderRepository.findFirstByRoomSession_IdOrderByCreatedAtDesc(sessionId);
+            if (lastOpt.isPresent()) {
+                order = lastOpt.get();
+                if (order.getStatus() == OrderStatus.CLOSED) {
+                    canCreateNewOrder = true;
+                    autoWarn = "Order đã chốt. Nếu muốn gọi thêm món, bấm 'Tạo order mới'.";
+                }
+            } else {
+                // chưa có order nào -> tạo OPEN mới
+                order = orderService.getOrCreateOpenOrder(sessionId, username);
+            }
+        }
 
         boolean readOnly = (order.getStatus() == OrderStatus.CLOSED);
 
@@ -63,6 +91,25 @@ public class PosOrderController {
                 .map(it -> it.getLineAmount() == null ? BigDecimal.ZERO : it.getLineAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Luôn lấy order CLOSED gần nhất để hiển thị "lịch sử" (kể cả khi đang có OPEN order).
+        // Điều này giúp trường hợp user đã chốt order rồi vào lại, thấy OPEN order mới (rỗng) nhưng vẫn xem lại được order đã chốt.
+        Order lastClosedOrder = orderRepository
+                .findFirstByRoomSession_IdAndStatusOrderByCreatedAtDesc(sessionId, OrderStatus.CLOSED)
+                .orElse(null);
+
+        List<OrderItem> lastClosedItems = List.of();
+        BigDecimal lastClosedTotal = BigDecimal.ZERO;
+        if (lastClosedOrder != null && (order.getId() == null || !lastClosedOrder.getId().equals(order.getId()))) {
+            lastClosedItems = (lastClosedOrder.getItems() == null) ? List.of() : lastClosedOrder.getItems();
+            lastClosedItems = lastClosedItems.stream()
+                    .sorted(Comparator.comparing(OrderItem::getId, Comparator.nullsLast(Long::compareTo)))
+                    .toList();
+
+            lastClosedTotal = lastClosedItems.stream()
+                    .map(it -> it.getLineAmount() == null ? BigDecimal.ZERO : it.getLineAmount())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+
         // flash messages compatibility
         if (success != null && !success.isBlank() && (msg == null || msg.isBlank())) {
             model.addAttribute("msg", success);
@@ -73,6 +120,11 @@ public class PosOrderController {
         if (warn != null && !warn.isBlank()) model.addAttribute("warn", warn);
         if (msg != null && !msg.isBlank()) model.addAttribute("msg", msg);
 
+        // auto warn nếu đang xem order CLOSED và không có flash warn/error
+        if (autoWarn != null && (warn == null || warn.isBlank()) && (error == null || error.isBlank())) {
+            model.addAttribute("warn", autoWarn);
+        }
+
         // !!! QUAN TRỌNG: KHÔNG dùng tên "session" vì Thymeleaf đã có biến built-in session (HttpSession)
         model.addAttribute("roomSession", roomSession);
 
@@ -80,6 +132,11 @@ public class PosOrderController {
         model.addAttribute("items", items);
         model.addAttribute("orderTotal", total);
         model.addAttribute("readOnly", readOnly);
+        model.addAttribute("canCreateNewOrder", canCreateNewOrder);
+
+        model.addAttribute("lastClosedOrder", lastClosedOrder);
+        model.addAttribute("lastClosedItems", lastClosedItems);
+        model.addAttribute("lastClosedTotal", lastClosedTotal);
 
         model.addAttribute("categories", productCategoryRepository.findAll());
         model.addAttribute("products", productRepository.findByActiveTrueOrderByNameAsc());
@@ -100,6 +157,25 @@ public class PosOrderController {
     }
 
     /**
+     * Tạo order mới (OPEN) để gọi tiếp sau khi đã chốt.
+     * POST /pos/sessions/{sessionId}/order/new
+     */
+    @PostMapping("/sessions/{sessionId}/order/new")
+    public String createNewOrder(@PathVariable Long sessionId,
+                                 Authentication authentication,
+                                 RedirectAttributes ra) {
+        String username = (authentication != null) ? authentication.getName() : "system";
+        try {
+            // service sẽ trả về OPEN hiện có nếu đã tồn tại, hoặc tạo mới nếu chưa có
+            orderService.getOrCreateOpenOrder(sessionId, username);
+            ra.addFlashAttribute("msg", "Đã tạo order mới — bạn có thể gọi thêm món.");
+        } catch (Exception ex) {
+            ra.addFlashAttribute("warn", ex.getMessage());
+        }
+        return "redirect:/pos/sessions/" + sessionId + "/order";
+    }
+
+    /**
      * Xem order gần nhất theo session (ưu tiên CLOSED) - readOnly
      * GET /pos/sessions/{sessionId}/order/view
      */
@@ -111,7 +187,9 @@ public class PosOrderController {
         RoomSession roomSession = roomSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy session: " + sessionId));
 
-        return orderRepository.findFirstByRoomSession_IdOrderByCreatedAtDesc(sessionId)
+        // Ưu tiên hiển thị order CLOSED (đã chốt). Nếu không có CLOSED thì fallback về order mới nhất.
+        return orderRepository.findFirstByRoomSession_IdAndStatusOrderByCreatedAtDesc(sessionId, OrderStatus.CLOSED)
+                .or(() -> orderRepository.findFirstByRoomSession_IdOrderByCreatedAtDesc(sessionId))
                 .map(order -> {
                     List<OrderItem> items = (order.getItems() == null) ? List.of() : order.getItems();
 
@@ -131,6 +209,10 @@ public class PosOrderController {
                     model.addAttribute("items", items);
                     model.addAttribute("orderTotal", total);
                     model.addAttribute("readOnly", true);
+                    model.addAttribute("canCreateNewOrder", false);
+                    model.addAttribute("lastClosedOrder", null);
+                    model.addAttribute("lastClosedItems", List.of());
+                    model.addAttribute("lastClosedTotal", BigDecimal.ZERO);
                     model.addAttribute("categories", productCategoryRepository.findAll());
                     model.addAttribute("products", productRepository.findByActiveTrueOrderByNameAsc());
 

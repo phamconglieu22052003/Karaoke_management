@@ -1,0 +1,187 @@
+<!doctype html>
+<html
+  lang="vi"
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/main-layout :: layout('Kết quả thanh toán (Mock)', 'payments', ~{::pageHead}, ~{::section})}"
+>
+  <head>
+    <th:block th:fragment="pageHead">
+      <meta charset="UTF-8" />
+      <style>
+        .pay-box {
+          max-width: 760px;
+          margin: 0 auto;
+        }
+        .pay-card {
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 16px;
+          background: #fff;
+        }
+        .pay-title {
+          font-size: 20px;
+          font-weight: 700;
+          margin: 0 0 8px;
+        }
+        .pay-row {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-top: 10px;
+        }
+        .pay-meta {
+          color: #374151;
+        }
+        .pay-actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-top: 14px;
+        }
+        .btn {
+          display: inline-block;
+          padding: 10px 14px;
+          border-radius: 10px;
+          text-decoration: none;
+          border: 1px solid #d1d5db;
+        }
+        .btn-primary {
+          background: #111827;
+          color: #fff;
+          border-color: #111827;
+        }
+        .badge {
+          display: inline-block;
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .badge-ok {
+          background: #dcfce7;
+          color: #166534;
+        }
+        .badge-warn {
+          background: #fef9c3;
+          color: #854d0e;
+        }
+      </style>
+    </th:block>
+  </head>
+
+  <body>
+    <section>
+      <div class="pay-box">
+        <div class="pay-card">
+          <div
+            class="pay-row"
+            style="align-items: center; justify-content: space-between"
+          >
+            <h1 class="pay-title">Kết quả thanh toán (Mock)</h1>
+
+            <!-- Nếu controller có truyền paymentStatus hoặc success -->
+            <span
+              class="badge badge-ok"
+              th:if="${success == true or paymentStatus == 'SUCCESS' or paymentStatus == 'PAID'}"
+              >THÀNH CÔNG</span
+            >
+            <span
+              class="badge badge-warn"
+              th:if="${success != true and paymentStatus != 'SUCCESS' and paymentStatus != 'PAID'}"
+              >CHƯA XÁC ĐỊNH</span
+            >
+          </div>
+
+          <p class="pay-meta" th:if="${message != null}" th:text="${message}">
+            Thanh toán mock đã được xác nhận.
+          </p>
+          <p class="pay-meta" th:if="${message == null}">
+            Thanh toán mock đã được xác nhận.
+          </p>
+
+          <div class="pay-row">
+            <div class="pay-meta" th:if="${invoice != null}">
+              <b>Mã hóa đơn:</b> <span th:text="${invoice.id}">0</span>
+            </div>
+            <div class="pay-meta" th:if="${invoiceId != null}">
+              <b>Mã hóa đơn:</b> <span th:text="${invoiceId}">0</span>
+            </div>
+
+            <div
+              class="pay-meta"
+              th:if="${invoice != null and invoice.totalAmount != null}"
+            >
+              <b>Tổng tiền:</b>
+              <span
+                th:text="${#numbers.formatDecimal(invoice.totalAmount,0,'COMMA',0,'POINT')} + ' ₫'"
+                >0 ₫</span
+              >
+            </div>
+
+            <div class="pay-meta" th:if="${invoice != null}">
+              <b>Trạng thái:</b> <span th:text="${invoice.status}">UNPAID</span>
+            </div>
+          </div>
+
+          <div class="pay-actions">
+            <!-- Ưu tiên link theo invoice.id nếu có -->
+            <a
+              class="btn btn-primary"
+              th:if="${invoice != null}"
+              th:href="@{/invoice/{id}(id=${invoice.id})}"
+            >
+              Xem chi tiết hóa đơn
+            </a>
+
+            <!-- Fallback nếu chỉ có invoiceId -->
+            <a
+              class="btn btn-primary"
+              th:if="${invoice == null and invoiceId != null}"
+              th:href="@{/invoice/{id}(id=${invoiceId})}"
+            >
+              Xem chi tiết hóa đơn
+            </a>
+
+            <a class="btn" th:href="@{/invoice}">Danh sách hóa đơn</a>
+            <a class="btn" th:href="@{/dashboard}">Về Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kết quả thanh toán (Mock)</title>
+  </head>
+  <body>
+    <h2>Kết quả thanh toán (Mock)</h2>
+
+    <p>
+      <b>Invoice ID:</b>
+      <span th:text="${invoiceId}">123</span>
+    </p>
+
+    <hr />
+
+    <div th:if="${success}">
+      <h3 style="color: green">✅ Xác nhận thanh toán thành công (Mock)</h3>
+    </div>
+
+    <div th:if="${!success}">
+      <h3 style="color: red">❌ Xác nhận thanh toán thất bại (Mock)</h3>
+    </div>
+
+    <p>
+      <a th:href="@{/invoice/{id}(id=${invoiceId})}">
+        <button type="button">Xem hóa đơn</button>
+      </a>
+    </p>
+
+    <p>
+      <a th:href="@{/invoice}">Quay lại danh sách hóa đơn</a>
+    </p>
+  </body>
+</html>

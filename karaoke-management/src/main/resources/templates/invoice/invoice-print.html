@@ -1,0 +1,89 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>In hóa đơn</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 18px; }
+      .row { display: flex; justify-content: space-between; gap: 16px; }
+      .muted { color: #666; font-size: 12px; }
+      h1 { font-size: 18px; margin: 0 0 6px; }
+      h2 { font-size: 14px; margin: 16px 0 8px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border-bottom: 1px solid #e5e7eb; padding: 8px 6px; font-size: 12px; }
+      th { text-align: left; }
+      .right { text-align: right; }
+      .total { font-weight: 700; font-size: 13px; }
+      .btns { display:flex; gap:10px; margin-bottom: 12px; }
+      .btn { border: 1px solid #ddd; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: #111; background: #fff; font-size: 12px; }
+      @media print {
+        .btns { display: none; }
+        body { margin: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="btns">
+      <a class="btn" th:href="@{/invoice/{id}(id=${invoice.id})}">← Quay lại</a>
+      <button class="btn" onclick="window.print()">In</button>
+    </div>
+
+    <div class="row">
+      <div>
+        <h1>HÓA ĐƠN</h1>
+        <div class="muted">Invoice ID: <b th:text="${invoice.id}">1</b></div>
+        <div class="muted">Session: <b th:text="${invoice.roomSession != null ? invoice.roomSession.id : ''}">31</b></div>
+      </div>
+      <div style="text-align:right">
+        <div class="muted">Trạng thái: <b th:text="${invoice.status}">UNPAID</b></div>
+        <div class="muted" th:if="${invoice.paidAt != null}">Paid at: <b th:text="${#temporals.format(invoice.paidAt, 'HH:mm dd/MM/yyyy')}">--</b></div>
+      </div>
+    </div>
+
+    <h2>Chi tiết</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Loại</th>
+          <th>Mô tả</th>
+          <th class="right">SL</th>
+          <th class="right">Đơn giá</th>
+          <th class="right">Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="l : ${lines}">
+          <td th:text="${l.lineType}">ITEM</td>
+          <td>
+            <div th:text="${l.description}">Item</div>
+            <div class="muted" th:if="${l.note != null && !#strings.isEmpty(l.note)}" th:text="${l.note}">note</div>
+          </td>
+          <td class="right" th:text="${l.quantity != null ? l.quantity : ''}">1</td>
+          <td class="right" th:text="${l.unitPrice != null ? l.unitPrice : ''}">0</td>
+          <td class="right" th:text="${l.amount}">0</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Tổng kết</h2>
+    <table>
+      <tbody>
+        <tr>
+          <td>Tiền phòng</td>
+          <td class="right" th:text="${roomCharge}">0</td>
+        </tr>
+        <tr>
+          <td>Tiền gọi món</td>
+          <td class="right" th:text="${orderCharge}">0</td>
+        </tr>
+        <tr>
+          <td class="total">TỔNG CỘNG (VND)</td>
+          <td class="right total" th:text="${invoice.totalAmount}">0</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="muted" style="margin-top:14px">Cảm ơn quý khách!</div>
+  </body>
+</html>
