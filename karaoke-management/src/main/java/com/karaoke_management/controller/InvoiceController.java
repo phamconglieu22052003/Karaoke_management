@@ -120,6 +120,25 @@ public class InvoiceController {
         return "invoice/invoice-print";
     }
 
+    /**
+     * Thanh toán tiền mặt ngay tại trang chi tiết hóa đơn.
+     * POST: /invoice/{id}/pay-cash
+     */
+    @PostMapping("/{id}/pay-cash")
+    public String payCash(@PathVariable("id") Long invoiceId) {
+        Invoice inv = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+
+        // Chặn thanh toán lặp
+        if (inv.getStatus() == InvoiceStatus.PAID) {
+            return "redirect:/invoice/" + invoiceId;
+        }
+
+        // Đánh dấu đã thanh toán + trừ kho (idempotent)
+        invoiceService.markPaidAndDeductInventory(invoiceId, "CASH", null);
+        return "redirect:/invoice/" + invoiceId;
+    }
+
     private static BigDecimal sumByType(java.util.List<InvoiceLine> lines, InvoiceLineType type) {
         if (lines == null || lines.isEmpty()) return BigDecimal.ZERO;
         BigDecimal sum = BigDecimal.ZERO;

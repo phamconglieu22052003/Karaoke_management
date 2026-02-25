@@ -102,6 +102,19 @@
         >
           <div class="form-actions">
             <form
+              th:action="@{/invoice/{id}/pay-cash(id=${invoice.id})}"
+              method="post"
+              style="margin: 0"
+              onsubmit="
+                return confirm('Xác nhận thanh toán tiền mặt và trừ kho?');
+              "
+            >
+              <button type="submit" class="btn btn-primary">
+                💵 Thanh toán tiền mặt
+              </button>
+            </form>
+
+            <form
               th:action="@{/payment/vnpay/create}"
               method="post"
               style="margin: 0"

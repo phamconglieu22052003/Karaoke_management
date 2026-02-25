@@ -38,7 +38,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.math.BigDecimal;
 
 @Service
 public class InvoiceServiceImpl implements InvoiceService {
@@ -129,9 +128,12 @@ public class InvoiceServiceImpl implements InvoiceService {
         inv.setRoomSession(session);
         inv.setStatus(InvoiceStatus.UNPAID);
 
-        // FIX UNIQUE NULL (SQL Server unique không cho nhiều NULL)
+        // ✅ FIX UNIQUE NULL (SQL Server unique không cho nhiều NULL)
         inv.setVnpTxnRef("INV-" + roomSessionId + "-" + System.currentTimeMillis());
+
+        // ✅ FIX NOT NULL total_amount: DB không cho phép NULL, nên set tạm 0 trước khi save lần 1
         inv.setTotalAmount(BigDecimal.ZERO);
+
         inv = invoiceRepository.save(inv);
 
         // Snapshot lines + total
