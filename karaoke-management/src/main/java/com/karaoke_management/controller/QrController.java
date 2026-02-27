@@ -22,6 +22,10 @@ public class QrController {
 
     @GetMapping("/qr")
     public void qr(@RequestParam("data") String data, HttpServletResponse resp) throws IOException {
+        if (data == null || data.isBlank()) {
+            resp.sendError(400, "data is required");
+            return;
+        }
         resp.setContentType("image/png");
         try {
             // đảm bảo UTF-8 không bị lỗi khi đi qua URL

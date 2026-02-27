@@ -6,6 +6,7 @@ import com.karaoke_management.entity.User;
 import com.karaoke_management.repository.UserRepository;
 import java.util.HashSet;
 import java.util.Set;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +29,13 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         if (!user.isActive()) {
-            throw new UsernameNotFoundException("User is inactive");
+            // UC-AUTH-01 (E2): tài khoản bị khóa/vô hiệu hóa -> từ chối đăng nhập
+            throw new DisabledException("inactive");
+        }
+
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            // UC-AUTH-01 (E2): không có quyền/role -> từ chối đăng nhập
+            throw new DisabledException("noperm");
         }
 
         Set<GrantedAuthority> authorities = new HashSet<>();
@@ -60,6 +67,11 @@ public class CustomUserDetailsService implements UserDetailsService {
             for (Permission p : r.getPermissions()) {
                 authorities.add(new SimpleGrantedAuthority(p.getPermCode()));
             }
+        }
+
+        if (authorities.isEmpty()) {
+            // Trường hợp role tồn tại nhưng không sinh ra authority nào (DB lỗi)
+            throw new DisabledException("noperm");
         }
 
         return org.springframework.security.core.userdetails.User

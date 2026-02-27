@@ -18,7 +18,16 @@
 
       <div class="card">
         <div th:if="${param.error}" class="alert">
-          Sai tài khoản hoặc mật khẩu
+          <span th:if="${param.error[0] == 'inactive'}"
+            >Tài khoản đang bị khóa / không hoạt động</span
+          >
+          <span th:if="${param.error[0] == 'noperm'}"
+            >Tài khoản không có quyền truy cập hệ thống</span
+          >
+          <span
+            th:if="${param.error[0] != 'inactive' and param.error[0] != 'noperm'}"
+            >Sai tài khoản hoặc mật khẩu</span
+          >
         </div>
 
         <form th:action="@{/login}" method="post">
