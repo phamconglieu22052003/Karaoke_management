@@ -1,7 +1,7 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="layout/main-layout :: layout('Sản phẩm', 'products', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout('Sản phẩm', 'products', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead"></th:block>
 
@@ -21,13 +21,7 @@
       </div>
     </div>
 
-    <div
-      th:if="${msg != null}"
-      class="card"
-      style="padding: 12px; border-left: 4px solid var(--ok)"
-    >
-      <b th:text="${msg}">msg</b>
-    </div>
+    <div th:if="${msg != null}" class="alert success" th:text="${msg}"></div>
 
     <div class="grid" style="grid-template-columns: 1.1fr 1.9fr">
       <!-- Form -->
@@ -159,7 +153,11 @@
                 <td th:text="${p.category != null ? p.category.name : ''}">
                   Đồ uống
                 </td>
-                <td th:text="${p.price}">20000</td>
+                <td
+                  th:text="${p.price != null ? #numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                >
+                  20,000 ₫
+                </td>
                 <td th:text="${p.unit}">lon</td>
                 <td>
                   <span

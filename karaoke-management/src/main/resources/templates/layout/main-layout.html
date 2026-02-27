@@ -1,5 +1,6 @@
 <!doctype html>
 <html
+  lang="vi"
   xmlns:th="http://www.thymeleaf.org"
   xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
   th:fragment="layout(title, active, pageHead, content)"
@@ -7,7 +8,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <th:block th:replace="${pageHead}"></th:block>
     <title th:text="${title}">Karaoke Management</title>
 
     <link rel="stylesheet" th:href="@{/css/main.css}" />
@@ -86,6 +86,24 @@
             sec:authorize="hasAnyRole('ADMIN','MANAGER','WAREHOUSE')"
           >
             Kho
+          </a>
+
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'products' ? ' active' : ''"
+            th:href="@{/products}"
+            sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+          >
+            Sản phẩm
+          </a>
+
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'productCategories' ? ' active' : ''"
+            th:href="@{/product-categories}"
+            sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+          >
+            Danh mục SP
           </a>
 
           <a

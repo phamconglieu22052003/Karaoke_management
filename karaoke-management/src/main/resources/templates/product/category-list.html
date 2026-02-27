@@ -1,7 +1,7 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="layout/main-layout :: layout('Danh mục sản phẩm', 'productCategories', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout('Danh mục sản phẩm', 'productCategories', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead"></th:block>
 
@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <div th:if="${msg}" class="alert alert-ok" th:text="${msg}">OK</div>
+    <div th:if="${msg}" class="alert success" th:text="${msg}">OK</div>
 
     <div class="grid" style="grid-template-columns: 420px 1fr; gap: 14px">
       <div class="card">

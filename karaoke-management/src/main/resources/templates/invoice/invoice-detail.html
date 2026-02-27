@@ -1,7 +1,7 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="layout/main-layout :: layout('Chi tiết hóa đơn', 'invoices', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout('Chi tiết hóa đơn', 'invoices', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead"></th:block>
 
@@ -49,18 +49,31 @@
           <div class="kv-row">
             <div class="kv-k">Tổng tiền</div>
             <div class="kv-v">
-              <b th:text="${invoice.totalAmount}">0</b> VND
+              <b
+                th:text="${invoice.totalAmount != null ? #numbers.formatDecimal(invoice.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : '' }"
+                >0</b
+              >
             </div>
           </div>
 
           <div class="kv-row">
             <div class="kv-k">Tiền phòng</div>
-            <div class="kv-v"><b th:text="${roomCharge}">0</b> VND</div>
+            <div class="kv-v">
+              <b
+                th:text="${roomCharge != null ? #numbers.formatDecimal(roomCharge, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                >0 ₫</b
+              >
+            </div>
           </div>
 
           <div class="kv-row">
             <div class="kv-k">Tiền gọi món</div>
-            <div class="kv-v"><b th:text="${orderCharge}">0</b> VND</div>
+            <div class="kv-v">
+              <b
+                th:text="${orderCharge != null ? #numbers.formatDecimal(orderCharge, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                >0 ₫</b
+              >
+            </div>
           </div>
           <div class="kv-row">
             <div class="kv-k">Trạng thái</div>

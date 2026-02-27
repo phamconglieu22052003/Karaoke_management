@@ -2,46 +2,9 @@
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-  th:replace="layout/main-layout :: layout('Người dùng', 'users', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout('Người dùng', 'users', ~{::pageHead}, ~{::section})}"
 >
-  <th:block th:fragment="pageHead">
-    <style>
-      .badge {
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-weight: 800;
-        font-size: 12px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .badge-ok {
-        background: rgba(34, 197, 94, 0.12);
-        color: #15803d;
-        border: 1px solid rgba(34, 197, 94, 0.25);
-      }
-      .badge-muted {
-        background: rgba(107, 114, 128, 0.1);
-        color: #374151;
-        border: 1px solid rgba(107, 114, 128, 0.22);
-      }
-      .actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        background: rgba(0, 0, 0, 0.02);
-      }
-    </style>
-  </th:block>
+  <th:block th:fragment="pageHead"></th:block>
 
   <section>
     <div class="topbar">
@@ -55,16 +18,8 @@
       </div>
     </div>
 
-    <div th:if="${success}" class="card" style="margin-bottom: 12px">
-      <div style="padding: 12px; color: #15803d; font-weight: 800" th:text="${success}">
-        OK
-      </div>
-    </div>
-    <div th:if="${error}" class="card" style="margin-bottom: 12px">
-      <div style="padding: 12px; color: #b91c1c; font-weight: 800" th:text="${error}">
-        Error
-      </div>
-    </div>
+    <div th:if="${success}" class="alert success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
     <div class="card">
       <div class="table-wrap">
@@ -83,7 +38,10 @@
 
           <tbody>
             <tr th:if="${#lists.isEmpty(users)}">
-              <td colspan="7" style="text-align: center; color: #6b7280; padding: 18px">
+              <td
+                colspan="7"
+                style="text-align: center; color: #6b7280; padding: 18px"
+              >
                 Chưa có user.
               </td>
             </tr>
@@ -91,7 +49,9 @@
             <tr th:each="u : ${users}">
               <td th:text="${u.id}">1</td>
               <td>
-                <div style="font-weight: 900" th:text="${u.username}">admin</div>
+                <div style="font-weight: 900" th:text="${u.username}">
+                  admin
+                </div>
               </td>
               <td th:text="${u.fullName}">—</td>
               <td th:text="${u.phone}">—</td>
@@ -112,7 +72,11 @@
               </td>
               <td style="text-align: right">
                 <div class="actions">
-                  <a class="btn btn-outline btn-sm" th:href="@{/users/{id}/edit(id=${u.id})}">Sửa</a>
+                  <a
+                    class="btn btn-outline btn-sm"
+                    th:href="@{/users/{id}/edit(id=${u.id})}"
+                    >Sửa</a
+                  >
 
                   <form
                     th:action="@{/users/{id}/toggle(id=${u.id})}"
@@ -121,7 +85,9 @@
                     onsubmit="return confirm('Đổi trạng thái user này?');"
                   >
                     <button class="btn btn-outline btn-sm" type="submit">
-                      <span th:text="${u.active} ? 'Khóa' : 'Mở khóa'">Khóa</span>
+                      <span th:text="${u.active} ? 'Khóa' : 'Mở khóa'"
+                        >Khóa</span
+                      >
                     </button>
                   </form>
 
@@ -129,7 +95,11 @@
                     th:action="@{/users/{id}/reset-password(id=${u.id})}"
                     method="post"
                     style="display: inline"
-                    onsubmit="return confirm('Reset mật khẩu user này về giá trị nhập?');"
+                    onsubmit="
+                      return confirm(
+                        'Reset mật khẩu user này về giá trị nhập?',
+                      );
+                    "
                   >
                     <input
                       class="input"
@@ -140,7 +110,9 @@
                       style="width: 180px"
                       required
                     />
-                    <button class="btn btn-outline btn-sm" type="submit">Reset</button>
+                    <button class="btn btn-outline btn-sm" type="submit">
+                      Reset
+                    </button>
                   </form>
                 </div>
               </td>

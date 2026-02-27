@@ -1,7 +1,7 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="layout/main-layout :: layout(${booking.id == null ? 'Tạo đặt phòng' : 'Cập nhật đặt phòng'}, 'booking', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout(${booking.id == null ? 'Tạo đặt phòng' : 'Cập nhật đặt phòng'}, 'booking', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead">
     <!-- Flatpickr -->
@@ -30,7 +30,9 @@
     </div>
 
     <div class="card">
-      <div th:if="${error}" class="alert"><b th:text="${error}">Error</b></div>
+      <div th:if="${error}" class="alert danger">
+        <b th:text="${error}">Error</b>
+      </div>
 
       <form
         th:action="${booking.id == null ? '/booking/save' : '/booking/update'}"

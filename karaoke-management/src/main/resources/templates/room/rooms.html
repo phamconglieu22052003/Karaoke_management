@@ -1,7 +1,7 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="layout/main-layout :: layout('Danh sách phòng', 'rooms', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout('Danh sách phòng', 'rooms', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead">
     <style>

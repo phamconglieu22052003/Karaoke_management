@@ -1,7 +1,7 @@
 <!doctype html>
 <html
   xmlns:th="http://www.thymeleaf.org"
-  th:replace="layout/main-layout :: layout('Loại phòng', 'roomTypes', ~{::pageHead}, ~{::section})"
+  th:replace="~{layout/main-layout :: layout('Loại phòng', 'roomTypes', ~{::pageHead}, ~{::section})}"
 >
   <th:block th:fragment="pageHead"></th:block>
 
@@ -46,7 +46,11 @@
             <tr th:each="rt : ${roomTypes}">
               <td th:text="${rt.id}">1</td>
               <td th:text="${rt.name}">VIP</td>
-              <td th:text="${rt.pricePerHour}">100000</td>
+              <td
+                th:text="${rt.pricePerHour != null ? #numbers.formatDecimal(rt.pricePerHour, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+              >
+                100,000 ₫
+              </td>
               <td th:text="${rt.description}">...</td>
             </tr>
           </tbody>

@@ -531,3 +531,78 @@ tbody tr:hover {
   font-weight: 800;
   text-align: right;
 }
+
+/* ===== Shared UI helpers (standardized) ===== */
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.money {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.label,
+.form-label {
+  display: block;
+  font-weight: 800;
+  font-size: 13px;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.card-body {
+  /* keep default padding from .card */
+}
+
+.link {
+  color: var(--primary);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.badge-warn {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* Backward-compatible class name */
+.alert.alert-ok,
+.alert-ok {
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.25);
+}
