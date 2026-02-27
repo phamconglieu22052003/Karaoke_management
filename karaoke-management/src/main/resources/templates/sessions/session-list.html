@@ -68,7 +68,12 @@
                 >
               </td>
               <td th:text="${s.totalMinutes}">60</td>
-              <td th:text="${s.totalAmount}">100000</td>
+              <td>
+                <span
+                  th:text="${s.totalAmount != null ? #numbers.formatDecimal(s.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                  >100,000 ₫</span
+                >
+              </td>
               <td th:text="${s.createdBy}">admin</td>
               <td th:text="${s.checkedOutBy}">admin</td>
 

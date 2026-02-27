@@ -74,6 +74,9 @@ public class SecurityConfig {
                         // Invoice/payment (cashier-focused)
                         .requestMatchers("/invoice/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER")
 
+                        // Shift (cashier/manager/admin)
+                        .requestMatchers("/shift/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER")
+
                         // Room type (manager/admin)
                         .requestMatchers("/room-types/**").hasAnyRole("ADMIN", "MANAGER")
 

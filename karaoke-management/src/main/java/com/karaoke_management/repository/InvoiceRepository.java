@@ -1,6 +1,7 @@
 package com.karaoke_management.repository;
 
 import com.karaoke_management.entity.Invoice;
+import com.karaoke_management.entity.InvoiceStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +33,26 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("min") BigDecimal min,
             @Param("max") BigDecimal max,
             @Param("roomId") Long roomId
+    );
+
+    /**
+     * Dùng cho module ca làm (Shift): lấy các hóa đơn đã thanh toán trong khoảng thời gian,
+     * đồng thời fetch lines + room/session để hiển thị & tính breakdown.
+     */
+    @Query("""
+        select distinct i from Invoice i
+        left join fetch i.lines l
+        join fetch i.roomSession rs
+        join fetch rs.room r
+        where i.status = :status
+          and i.paidAt is not null
+          and i.paidAt >= :from
+          and i.paidAt <= :to
+        order by i.paidAt asc
+    """)
+    List<Invoice> findPaidWithLinesBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            @Param("status") InvoiceStatus status
     );
 }

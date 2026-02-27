@@ -1,0 +1,284 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/main-layout :: layout('Ca làm', 'shift', ~{::pageHead}, ~{::section})}"
+>
+  <th:block th:fragment="pageHead"></th:block>
+
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Chi tiết ca</h2>
+        <div class="help-text">
+          Báo cáo doanh thu theo ca — dựa trên các hóa đơn đã <b>PAID</b> trong
+          khoảng thời gian của ca.
+        </div>
+      </div>
+
+      <div
+        style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"
+      >
+        <a class="btn btn-outline" th:href="@{/shift/open}">Mở ca</a>
+        <a
+          class="btn btn-outline"
+          th:href="@{/shift/{id}/print(id=${shift.id})}"
+          target="_blank"
+          >In báo cáo</a
+        >
+      </div>
+    </div>
+
+    <div class="form-row">
+      <!-- Thông tin ca -->
+      <div class="card">
+        <h3 style="margin-top: 0">Thông tin ca</h3>
+        <div class="hr"></div>
+
+        <div class="kv">
+          <div class="kv-row">
+            <div class="kv-k">ID</div>
+            <div class="kv-v" th:text="${shift.id}">1</div>
+          </div>
+
+          <div class="kv-row">
+            <div class="kv-k">Trạng thái</div>
+            <div class="kv-v">
+              <span
+                class="badge"
+                th:classappend="${shift.status.name() == 'OPEN'} ? ' badge-ok' : ' badge-muted'"
+                th:text="${shift.status}"
+                >OPEN</span
+              >
+            </div>
+          </div>
+
+          <div class="kv-row">
+            <div class="kv-k">Mở lúc</div>
+            <div
+              class="kv-v"
+              th:text="${shift.openedAt != null ? #temporals.format(shift.openedAt, 'HH:mm dd/MM/yyyy') : '--'}"
+            >
+              --
+            </div>
+          </div>
+
+          <div class="kv-row">
+            <div class="kv-k">Mở bởi</div>
+            <div class="kv-v" th:text="${shift.openedBy}">admin</div>
+          </div>
+
+          <div class="kv-row">
+            <div class="kv-k">Tiền đầu ca</div>
+            <div class="kv-v"><b th:text="${shift.openingCash}">0</b> VND</div>
+          </div>
+
+          <div class="kv-row" th:if="${shift.closedAt != null}">
+            <div class="kv-k">Đóng lúc</div>
+            <div
+              class="kv-v"
+              th:text="${#temporals.format(shift.closedAt, 'HH:mm dd/MM/yyyy')}"
+            >
+              --
+            </div>
+          </div>
+
+          <div class="kv-row" th:if="${shift.closedBy != null}">
+            <div class="kv-k">Đóng bởi</div>
+            <div class="kv-v" th:text="${shift.closedBy}">admin</div>
+          </div>
+
+          <div class="kv-row" th:if="${shift.closingCashDeclared != null}">
+            <div class="kv-k">Tiền khai báo cuối ca</div>
+            <div class="kv-v">
+              <b th:text="${shift.closingCashDeclared}">0</b> VND
+            </div>
+          </div>
+
+          <div
+            class="kv-row"
+            th:if="${shift.note != null && !#strings.isEmpty(shift.note)}"
+          >
+            <div class="kv-k">Ghi chú</div>
+            <div class="kv-v" th:text="${shift.note}">note</div>
+          </div>
+
+          <div class="kv-row">
+            <div class="kv-k">Khoảng thống kê</div>
+            <div class="kv-v">
+              <span
+                th:text="${rangeFrom != null ? #temporals.format(rangeFrom, 'HH:mm dd/MM/yyyy') : '--'}"
+              ></span>
+              →
+              <span
+                th:text="${rangeTo != null ? #temporals.format(rangeTo, 'HH:mm dd/MM/yyyy') : '--'}"
+              ></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tổng kết -->
+      <div class="card">
+        <h3 style="margin-top: 0">Tổng kết</h3>
+        <div class="hr"></div>
+
+        <div class="kv">
+          <div class="kv-row">
+            <div class="kv-k">Số hóa đơn PAID</div>
+            <div class="kv-v" th:text="${summary.invoiceCount}">0</div>
+          </div>
+          <div class="kv-row">
+            <div class="kv-k">Tổng doanh thu</div>
+            <div class="kv-v">
+              <b th:text="${summary.totalAmount}">0</b> VND
+            </div>
+          </div>
+          <div class="kv-row">
+            <div class="kv-k">Tiền mặt</div>
+            <div class="kv-v"><b th:text="${summary.cashAmount}">0</b> VND</div>
+          </div>
+          <div class="kv-row">
+            <div class="kv-k">VNPay/khác</div>
+            <div class="kv-v">
+              <b th:text="${summary.vnpayAmount}">0</b> VND
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="kv-row">
+            <div class="kv-k">Doanh thu tiền phòng</div>
+            <div class="kv-v"><b th:text="${summary.roomAmount}">0</b> VND</div>
+          </div>
+          <div class="kv-row">
+            <div class="kv-k">Doanh thu gọi món</div>
+            <div class="kv-v"><b th:text="${summary.itemAmount}">0</b> VND</div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="kv-row">
+            <div class="kv-k">Tiền mặt kỳ vọng trong két</div>
+            <div class="kv-v">
+              <b th:text="${summary.expectedCashInDrawer}">0</b> VND
+            </div>
+          </div>
+          <div class="kv-row" th:if="${summary.cashDifference != null}">
+            <div class="kv-k">Chênh lệch (khai báo - kỳ vọng)</div>
+            <div class="kv-v">
+              <b th:text="${summary.cashDifference}">0</b> VND
+            </div>
+          </div>
+        </div>
+
+        <!-- Đóng ca -->
+        <div th:if="${shift.status.name() == 'OPEN'}">
+          <div class="hr"></div>
+          <h4 style="margin: 0 0 8px">Đóng ca</h4>
+          <form
+            th:action="@{/shift/{id}/close(id=${shift.id})}"
+            method="post"
+            onsubmit="return confirm('Xác nhận đóng ca?');"
+          >
+            <div class="form-row">
+              <div class="field">
+                <label>Tiền mặt khai báo cuối ca (tuỳ chọn)</label>
+                <input
+                  class="input"
+                  type="text"
+                  name="closingCashDeclared"
+                  placeholder="Ví dụ: 1500000"
+                />
+                <div class="help-text">
+                  Nếu nhập, hệ thống sẽ tính chênh lệch so với tiền kỳ vọng.
+                </div>
+              </div>
+              <div class="field">
+                <label>Ghi chú (tuỳ chọn)</label>
+                <input
+                  class="input"
+                  type="text"
+                  name="note"
+                  placeholder="Ví dụ: bàn giao ca"
+                />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-danger" type="submit">Đóng ca</button>
+              <a class="btn btn-outline" th:href="@{/shift/current}">Refresh</a>
+            </div>
+          </form>
+        </div>
+
+        <div th:if="${shift.status.name() == 'CLOSED'}">
+          <div class="alert" style="margin-top: 12px">
+            Ca đã đóng. Dữ liệu báo cáo được chốt theo thời điểm đóng ca.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách hóa đơn trong ca -->
+    <div class="card" style="margin-top: 16px">
+      <h3 style="margin-top: 0">Hóa đơn đã thanh toán trong ca</h3>
+      <div class="help-text" style="margin-top: 6px">
+        Chỉ lấy các hóa đơn có trạng thái <b>PAID</b> và thời gian <b>paidAt</b>
+        nằm trong khoảng thống kê.
+      </div>
+      <div class="hr"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 90px">Invoice</th>
+              <th style="width: 140px">Paid at</th>
+              <th style="width: 80px">Session</th>
+              <th>Phòng</th>
+              <th style="width: 130px; text-align: right">Tổng tiền</th>
+              <th style="width: 120px">Phương thức</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${invoices == null || #lists.isEmpty(invoices)}">
+              <td
+                colspan="6"
+                style="text-align: center; color: #6b7280; padding: 18px"
+              >
+                Chưa có hóa đơn PAID trong ca.
+              </td>
+            </tr>
+
+            <tr th:each="inv : ${invoices}">
+              <td>
+                <a th:href="@{/invoice/{id}(id=${inv.id})}" th:text="${inv.id}"
+                  >1</a
+                >
+              </td>
+              <td
+                th:text="${inv.paidAt != null ? #temporals.format(inv.paidAt, 'HH:mm dd/MM/yyyy') : '--'}"
+              >
+                --
+              </td>
+              <td
+                th:text="${inv.roomSession != null ? inv.roomSession.id : ''}"
+              >
+                1
+              </td>
+              <td
+                th:text="${inv.roomSession != null && inv.roomSession.room != null ? inv.roomSession.room.name : ''}"
+              >
+                P101
+              </td>
+              <td style="text-align: right">
+                <b th:text="${inv.totalAmount}">0</b>
+              </td>
+              <td th:text="${inv.paymentMethod}">CASH</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</html>

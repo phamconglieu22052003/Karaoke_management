@@ -4,6 +4,8 @@ import com.karaoke_management.entity.Invoice;
 import com.karaoke_management.entity.InvoiceStatus;
 import com.karaoke_management.payment.VnpayService;
 import com.karaoke_management.repository.InvoiceRepository;
+import com.karaoke_management.repository.ShiftRepository;
+import com.karaoke_management.enums.ShiftStatus;
 import com.karaoke_management.service.InvoiceService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -24,19 +27,28 @@ public class PaymentVnpayController {
     private final VnpayService vnpayService;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceService invoiceService;
+    private final ShiftRepository shiftRepository;
 
     public PaymentVnpayController(VnpayService vnpayService,
                                  InvoiceRepository invoiceRepository,
-                                 InvoiceService invoiceService) {
+                                 InvoiceService invoiceService,
+                                 ShiftRepository shiftRepository) {
         this.vnpayService = vnpayService;
         this.invoiceRepository = invoiceRepository;
         this.invoiceService = invoiceService;
+        this.shiftRepository = shiftRepository;
     }
 
     // ===================== A) CREATE PAYMENT URL =====================
     // Cho phép POST từ form hoặc GET từ link cho tiện test
     @RequestMapping(value = "/create", method = {RequestMethod.POST, RequestMethod.GET})
-    public String create(@RequestParam("invoiceId") Long invoiceId, HttpServletRequest req) {
+    public String create(@RequestParam("invoiceId") Long invoiceId, HttpServletRequest req, RedirectAttributes ra) {
+        // ✅ Yêu cầu mở ca trước khi tạo thanh toán
+        if (!shiftRepository.existsByStatus(ShiftStatus.OPEN)) {
+            ra.addFlashAttribute("error", "Bạn cần mở ca trước khi thanh toán.");
+            return "redirect:/shift/open?returnUrl=/invoice/" + invoiceId;
+        }
+
         Invoice inv = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
 

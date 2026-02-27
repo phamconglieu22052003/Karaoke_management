@@ -7,6 +7,8 @@ import com.karaoke_management.enums.InvoiceLineType;
 import com.karaoke_management.repository.InvoiceLineRepository;
 import com.karaoke_management.repository.InvoiceRepository;
 import com.karaoke_management.repository.RoomRepository;
+import com.karaoke_management.repository.ShiftRepository;
+import com.karaoke_management.enums.ShiftStatus;
 import com.karaoke_management.service.InvoiceService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
@@ -34,6 +37,7 @@ public class InvoiceController {
     private final InvoiceLineRepository invoiceLineRepository;
     private final InvoiceService invoiceService;
     private final RoomRepository roomRepository;
+    private final ShiftRepository shiftRepository;
 
     // ✅ Format VN: giờ/ngày/tháng/năm
     private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
@@ -41,11 +45,13 @@ public class InvoiceController {
     public InvoiceController(InvoiceRepository invoiceRepository,
                              InvoiceLineRepository invoiceLineRepository,
                              InvoiceService invoiceService,
-                             RoomRepository roomRepository) {
+                             RoomRepository roomRepository,
+                             ShiftRepository shiftRepository) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceLineRepository = invoiceLineRepository;
         this.invoiceService = invoiceService;
         this.roomRepository = roomRepository;
+        this.shiftRepository = shiftRepository;
     }
 
     // /invoice?from=...&to=...&min=...&max=...&roomId=...
@@ -92,6 +98,8 @@ public class InvoiceController {
         }
         model.addAttribute("invoice", inv);
 
+        model.addAttribute("hasOpenShift", shiftRepository.existsByStatus(ShiftStatus.OPEN));
+
         // Snapshot lines + breakdown
         var lines = invoiceLineRepository.findAllByInvoice_IdOrderByIdAsc(inv.getId());
         model.addAttribute("lines", lines);
@@ -125,9 +133,15 @@ public class InvoiceController {
      * POST: /invoice/{id}/pay-cash
      */
     @PostMapping("/{id}/pay-cash")
-    public String payCash(@PathVariable("id") Long invoiceId) {
+    public String payCash(@PathVariable("id") Long invoiceId, RedirectAttributes ra) {
         Invoice inv = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+
+        // ✅ Yêu cầu mở ca trước khi thanh toán
+        if (!shiftRepository.existsByStatus(ShiftStatus.OPEN)) {
+            ra.addFlashAttribute("error", "Bạn cần mở ca trước khi thanh toán.");
+            return "redirect:/shift/open?returnUrl=/invoice/" + invoiceId;
+        }
 
         // Chặn thanh toán lặp
         if (inv.getStatus() == InvoiceStatus.PAID) {
@@ -135,7 +149,12 @@ public class InvoiceController {
         }
 
         // Đánh dấu đã thanh toán + trừ kho (idempotent)
-        invoiceService.markPaidAndDeductInventory(invoiceId, "CASH", null);
+        try {
+            invoiceService.markPaidAndDeductInventory(invoiceId, "CASH", null);
+            ra.addFlashAttribute("success", "Thanh toán tiền mặt thành công.");
+        } catch (ResponseStatusException e) {
+            ra.addFlashAttribute("error", e.getReason() != null ? e.getReason() : "Thanh toán thất bại");
+        }
         return "redirect:/invoice/" + invoiceId;
     }
 

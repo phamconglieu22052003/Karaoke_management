@@ -36,6 +36,9 @@ public class RoomSessionController {
     public String close(@PathVariable("id") Long sessionId, Authentication auth) {
         String user = (auth != null) ? auth.getName() : "system";
         roomSessionService.checkOut(sessionId, user);
-        return "redirect:/room-sessions";
+
+        // ✅ Theo UC-SESSION-02 (Đóng phòng) có include UC-INVOICE-01 (Tạo/Xem hóa đơn):
+        // Đóng phòng xong thì chuyển luôn sang tạo/xem hóa đơn của session.
+        return "redirect:/invoice/create/" + sessionId;
     }
 }

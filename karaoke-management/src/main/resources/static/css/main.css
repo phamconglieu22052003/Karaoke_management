@@ -409,6 +409,18 @@ textarea:focus {
   margin-bottom: 12px;
 }
 
+.alert.success {
+  background: rgba(22, 163, 74, 0.08);
+  color: #166534;
+  border-color: rgba(22, 163, 74, 0.25);
+}
+
+.alert.danger {
+  background: rgba(220, 38, 38, 0.08);
+  color: #991b1b;
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
 /* ===== Table ===== */
 .table-wrap {
   overflow: auto;
@@ -488,4 +500,34 @@ tbody tr:hover {
   color: var(--muted);
   font-size: 12px;
   margin-left: auto;
+}
+
+/* ===== Key-Value block (invoice/shift detail) ===== */
+.kv {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kv-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.kv-row:last-child {
+  border-bottom: 0;
+}
+
+.kv-k {
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.kv-v {
+  font-weight: 800;
+  text-align: right;
 }

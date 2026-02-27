@@ -72,6 +72,15 @@
 
           <a
             class="nav-item"
+            th:classappend="${active} == 'shift' ? ' active' : ''"
+            th:href="@{/shift/open}"
+            sec:authorize="hasAnyRole('ADMIN','MANAGER','CASHIER')"
+          >
+            Ca làm
+          </a>
+
+          <a
+            class="nav-item"
             th:classappend="${active} == 'inventory' ? ' active' : ''"
             th:href="@{/inventory/stocks}"
             sec:authorize="hasAnyRole('ADMIN','MANAGER','WAREHOUSE')"

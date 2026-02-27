@@ -1,0 +1,86 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="~{layout/main-layout :: layout('Ca làm', 'shift', ~{::pageHead}, ~{::section})}"
+>
+  <th:block th:fragment="pageHead"></th:block>
+
+  <section>
+    <div class="topbar">
+      <div>
+        <h2 class="page-title">Mở ca</h2>
+        <div class="help-text">
+          Mở ca thu ngân để theo dõi doanh thu trong một khoảng thời gian.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a
+          class="btn btn-primary"
+          th:if="${returnUrl != null and !#strings.isEmpty(returnUrl)}"
+          th:href="${returnUrl}"
+          >← Quay lại</a
+        >
+        <a class="btn btn-outline" th:href="@{/dashboard}">← Dashboard</a>
+        <a
+          class="btn btn-outline"
+          th:if="${hasOpenShift}"
+          th:href="@{/shift/current}"
+          >Ca hiện tại</a
+        >
+      </div>
+    </div>
+
+    <div th:if="${success}" class="alert success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert danger" th:text="${error}"></div>
+
+    <!-- Nếu đã có ca mở -->
+    <div class="card" th:if="${hasOpenShift}">
+      <div class="alert" style="margin: 0">
+        Hiện đang có <b>ca đang mở</b>. Bạn không thể mở thêm ca mới.
+      </div>
+      <div class="form-actions" style="margin-top: 12px">
+        <a class="btn btn-primary" th:href="@{/shift/current}">
+          Đi tới ca hiện tại
+        </a>
+      </div>
+    </div>
+
+    <!-- Form mở ca -->
+    <div class="card" th:if="${!hasOpenShift}">
+      <h3 style="margin-top: 0">Thông tin mở ca</h3>
+      <div class="hr"></div>
+
+      <form th:action="@{/shift/open}" method="post">
+        <input type="hidden" name="returnUrl" th:value="${returnUrl}" />
+        <div class="form-row">
+          <div class="field">
+            <label>Tiền đầu ca (VND)</label>
+            <input
+              class="input"
+              type="text"
+              name="openingCash"
+              th:value="${openingCash}"
+              placeholder="0"
+            />
+            <div class="help-text">Có thể nhập 100000 hoặc 100,000.</div>
+          </div>
+          <div class="field">
+            <label>Ghi chú (tuỳ chọn)</label>
+            <input
+              class="input"
+              type="text"
+              name="note"
+              placeholder="Ví dụ: Mở ca chiều"
+            />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Mở ca</button>
+          <a class="btn btn-outline" th:href="@{/dashboard}">Hủy</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</html>

@@ -3,6 +3,8 @@ package com.karaoke_management.controller;
 import com.karaoke_management.entity.Invoice;
 import com.karaoke_management.entity.InvoiceStatus;
 import com.karaoke_management.repository.InvoiceRepository;
+import com.karaoke_management.repository.ShiftRepository;
+import com.karaoke_management.enums.ShiftStatus;
 import com.karaoke_management.service.InvoiceService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -23,10 +26,12 @@ public class PaymentVnpayMockQrController {
 
     private final InvoiceRepository invoiceRepository;
     private final InvoiceService invoiceService;
+    private final ShiftRepository shiftRepository;
 
-    public PaymentVnpayMockQrController(InvoiceRepository invoiceRepository, InvoiceService invoiceService) {
+    public PaymentVnpayMockQrController(InvoiceRepository invoiceRepository, InvoiceService invoiceService, ShiftRepository shiftRepository) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceService = invoiceService;
+        this.shiftRepository = shiftRepository;
     }
 
     /**
@@ -36,7 +41,14 @@ public class PaymentVnpayMockQrController {
     @GetMapping("/qr")
     public String showQr(@RequestParam("invoiceId") Long invoiceId,
                          HttpServletRequest request,
-                         Model model) {
+                         Model model,
+                         RedirectAttributes ra) {
+        // ✅ Yêu cầu mở ca trước khi tạo QR thanh toán
+        if (!shiftRepository.existsByStatus(ShiftStatus.OPEN)) {
+            ra.addFlashAttribute("error", "Bạn cần mở ca trước khi tạo QR thanh toán.");
+            return "redirect:/shift/open?returnUrl=/invoice/" + invoiceId;
+        }
+
 
         Invoice inv = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));

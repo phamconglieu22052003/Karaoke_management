@@ -24,6 +24,9 @@
       </div>
     </div>
 
+    <div th:if="${success}" class="alert success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert danger" th:text="${error}"></div>
+
     <div class="form-row">
       <div class="card">
         <h3 style="margin-top: 0">Thông tin hóa đơn</h3>
@@ -100,7 +103,21 @@
         <div
           th:if="${invoice.status != T(com.karaoke_management.entity.InvoiceStatus).PAID}"
         >
-          <div class="form-actions">
+          <div
+            class="alert danger"
+            th:if="${hasOpenShift == false}"
+            style="margin-top: 0"
+          >
+            Bạn chưa mở ca. Vui lòng
+            <a
+              class="link"
+              th:href="@{/shift/open(returnUrl=${'/invoice/' + invoice.id})}"
+              >mở ca</a
+            >
+            trước khi thanh toán.
+          </div>
+
+          <div class="form-actions" th:if="${hasOpenShift}">
             <form
               th:action="@{/invoice/{id}/pay-cash(id=${invoice.id})}"
               method="post"
@@ -133,7 +150,15 @@
             </a>
           </div>
 
-          <div class="help-text">
+          <div class="form-actions" th:if="${hasOpenShift == false}">
+            <a
+              class="btn btn-primary"
+              th:href="@{/shift/open(returnUrl=${'/invoice/' + invoice.id})}"
+              >Mở ca để thanh toán</a
+            >
+          </div>
+
+          <div class="help-text" th:if="${hasOpenShift}">
             Mẹo: Nếu bạn dùng QR (mock), trang sẽ tự refresh để cập nhật trạng
             thái sau khi quét.
           </div>
