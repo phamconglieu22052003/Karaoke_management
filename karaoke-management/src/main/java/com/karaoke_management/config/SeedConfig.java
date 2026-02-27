@@ -41,6 +41,14 @@ public class SeedConfig {
                     roomOpen, roomClose, paymentCreate, discountApply, bookingManage, roomTypeManage, reportView
             ));
 
+            // ===== Roles theo actor tài liệu demo =====
+            Role pos = upsertRole(roleRepo, "POS", "POS", Set.of(
+                    roomOpen, roomClose, paymentCreate, discountApply, reportView
+            ));
+            Role reception = upsertRole(roleRepo, "RECEPTION", "Lễ tân", Set.of(
+                    bookingManage, reportView
+            ));
+
             Role manager = upsertRole(roleRepo, "MANAGER", "Quản lý", Set.of(
                     roomOpen, roomClose, paymentCreate, discountApply, bookingManage, roomTypeManage, reportView
             ));
@@ -58,6 +66,8 @@ public class SeedConfig {
 
             // --- Users ---
             upsertUser(userRepo, encoder, "admin", "Admin", "", admin);
+            upsertUser(userRepo, encoder, "pos", "POS", "", pos);
+            upsertUser(userRepo, encoder, "reception", "Lễ tân", "", reception);
             upsertUser(userRepo, encoder, "manager", "Manager", "", manager);
             upsertUser(userRepo, encoder, "cashier", "Cashier", "", cashier);
             upsertUser(userRepo, encoder, "staff", "Staff", "", staff);

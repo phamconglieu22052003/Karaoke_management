@@ -66,4 +66,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    // ===== Dashboard KPI =====
+    long countByStartTimeBetweenAndStatusNot(LocalDateTime from, LocalDateTime to, BookingStatus status);
+
+    List<Booking> findTop5ByStartTimeAfterAndStatusNotOrderByStartTimeAsc(LocalDateTime now, BookingStatus status);
 }

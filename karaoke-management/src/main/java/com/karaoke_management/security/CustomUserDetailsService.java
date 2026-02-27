@@ -35,7 +35,27 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         for (Role r : user.getRoles()) {
             // ROLE_* for hasRole(...) / hasAnyRole(...)
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + r.getRoleCode()));
+            String code = r.getRoleCode();
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + code));
+
+            // ===== Role normalization for demo actors (Admin / POS / Lễ tân) =====
+            // - DB có thể đang dùng role cũ (MANAGER/CASHIER/STAFF/WAREHOUSE/TECH)
+            // - Tại tầng Security, map thêm authority để dùng thống nhất: ADMIN / POS / RECEPTION
+            if (code != null) {
+                switch (code) {
+                    case "ADMIN" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    case "MANAGER" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    case "CASHIER" -> authorities.add(new SimpleGrantedAuthority("ROLE_POS"));
+                    case "POS" -> authorities.add(new SimpleGrantedAuthority("ROLE_POS"));
+                    case "STAFF" -> authorities.add(new SimpleGrantedAuthority("ROLE_RECEPTION"));
+                    case "RECEPTION" -> authorities.add(new SimpleGrantedAuthority("ROLE_RECEPTION"));
+                    // các role khác (nếu có) coi như admin để demo nhanh
+                    case "WAREHOUSE", "TECH" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    default -> {
+                        // no-op
+                    }
+                }
+            }
             // Permissions (optional)
             for (Permission p : r.getPermissions()) {
                 authorities.add(new SimpleGrantedAuthority(p.getPermCode()));

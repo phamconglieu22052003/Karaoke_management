@@ -55,4 +55,37 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("to") LocalDateTime to,
             @Param("status") InvoiceStatus status
     );
+
+    // ===== Dashboard / Shift business rules =====
+
+    @Query("""
+        select coalesce(sum(i.totalAmount), 0)
+        from Invoice i
+        where i.status = :status
+          and i.paidAt is not null
+          and i.paidAt >= :from
+          and i.paidAt <= :to
+    """)
+    BigDecimal sumPaidAmountBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            @Param("status") InvoiceStatus status
+    );
+
+    long countByStatusInAndCreatedAtBetween(List<InvoiceStatus> statuses, LocalDateTime from, LocalDateTime to);
+
+    @Query("""
+        select i from Invoice i
+        join fetch i.roomSession rs
+        join fetch rs.room r
+        where i.status in :statuses
+          and i.createdAt >= :from
+          and i.createdAt <= :to
+        order by i.createdAt desc
+    """)
+    List<Invoice> findByStatusesCreatedBetweenFetchRoom(
+            @Param("statuses") List<InvoiceStatus> statuses,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
 }

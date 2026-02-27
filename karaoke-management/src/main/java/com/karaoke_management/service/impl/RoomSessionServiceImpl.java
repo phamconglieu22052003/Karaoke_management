@@ -100,4 +100,9 @@ public class RoomSessionServiceImpl implements RoomSessionService {
     public List<RoomSession> findAll() {
         return roomSessionRepository.findAllByOrderByStartTimeDesc();
     }
+
+    @Override
+    public List<RoomSession> filter(LocalDateTime from, LocalDateTime to, RoomSessionStatus status, Long roomId) {
+        return roomSessionRepository.filterSessions(from, to, status, roomId);
+    }
 }

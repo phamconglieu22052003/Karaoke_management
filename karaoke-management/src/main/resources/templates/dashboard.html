@@ -16,39 +16,209 @@
       </div>
     </div>
 
+    <!-- KPI thật -->
+    <div class="grid-kpis">
+      <div class="card">
+        <div class="kpi-title">Doanh thu hôm nay</div>
+        <div
+          class="kpi-value"
+          th:text="${revenueToday != null ? #numbers.formatDecimal(revenueToday, 0, 'COMMA', 0, 'POINT') + ' ₫' : '--'}"
+        >
+          --
+        </div>
+        <div class="kpi-sub">Tính theo hóa đơn <b>PAID</b> trong ngày</div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-title">Doanh thu ca hiện tại</div>
+        <div
+          class="kpi-value"
+          th:text="${openShift != null ? (#numbers.formatDecimal(revenueCurrentShift, 0, 'COMMA', 0, 'POINT') + ' ₫') : '--'}"
+        >
+          --
+        </div>
+        <div class="kpi-sub" th:if="${openShift != null}">
+          Ca đang mở: <b th:text="${openShift.shiftName}">Ca</b> (mở lúc
+          <b
+            th:text="${#temporals.format(openShift.openedAt, 'HH:mm dd/MM/yyyy')}"
+            >--</b
+          >)
+        </div>
+        <div class="kpi-sub" th:if="${openShift == null}">
+          Chưa có ca đang mở.
+          <a
+            th:href="@{/shift/open}"
+            style="color: var(--primary); font-weight: 800"
+            >Mở ca</a
+          >
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-title">Phòng đang sử dụng</div>
+        <div
+          class="kpi-value"
+          th:text="${occupiedRooms != null ? occupiedRooms : 0}"
+        >
+          0
+        </div>
+        <div class="kpi-sub">Số phòng trạng thái <b>OCCUPIED</b></div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-title">Booking sắp tới</div>
+        <div
+          class="kpi-value"
+          th:text="${upcomingBookingCount != null ? upcomingBookingCount : 0}"
+        >
+          0
+        </div>
+        <div class="kpi-sub">
+          Trong <b th:text="${upcomingHours}">24</b> giờ tới
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="card"
+      style="margin-top: 14px"
+      th:if="${upcomingBookings != null && !#lists.isEmpty(upcomingBookings)}"
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+        "
+      >
+        <div>
+          <div class="kpi-title">Booking gần nhất</div>
+          <div class="kpi-sub" style="margin-top: 6px">
+            Top 5 booking theo thời gian bắt đầu
+          </div>
+        </div>
+        <a class="btn btn-outline btn-sm" th:href="@{/booking}"
+          >Mở trang đặt phòng</a
+        >
+      </div>
+      <div class="hr"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px">ID</th>
+              <th>Khách</th>
+              <th>Phòng</th>
+              <th style="width: 180px">Bắt đầu</th>
+              <th style="width: 180px">Kết thúc</th>
+              <th style="width: 120px">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="b : ${upcomingBookings}">
+              <td>
+                <a th:href="@{/booking/edit/{id}(id=${b.id})}" th:text="${b.id}"
+                  >1</a
+                >
+              </td>
+              <td>
+                <div><b th:text="${b.customerName}">Khách</b></div>
+                <div
+                  class="help-text"
+                  style="margin-top: 0"
+                  th:text="${b.customerPhone}"
+                >
+                  0909...
+                </div>
+              </td>
+              <td th:text="${b.room != null ? b.room.name : ''}">P101</td>
+              <td
+                th:text="${b.startTime != null ? #temporals.format(b.startTime, 'HH:mm dd/MM/yyyy') : '--'}"
+              >
+                --
+              </td>
+              <td
+                th:text="${b.endTime != null ? #temporals.format(b.endTime, 'HH:mm dd/MM/yyyy') : '--'}"
+              >
+                --
+              </td>
+              <td>
+                <span class="badge badge-muted" th:text="${b.status}"
+                  >BOOKED</span
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="grid-cards">
-      <a class="card card-link" th:href="@{/rooms}">
+      <a
+        class="card card-link"
+        th:href="@{/rooms}"
+        sec:authorize="hasAnyRole('ADMIN','POS')"
+      >
         <div class="card-kpi">
           <div class="kpi-title">Quản lý phòng</div>
           <div class="kpi-sub">Xem trạng thái, mở phòng, theo dõi</div>
         </div>
       </a>
 
-      <a class="card card-link" th:href="@{/room-types}">
+      <a
+        class="card card-link"
+        th:href="@{/room-types}"
+        sec:authorize="hasRole('ADMIN')"
+      >
         <div class="card-kpi">
           <div class="kpi-title">Loại phòng</div>
           <div class="kpi-sub">Thiết lập loại phòng & giá/giờ</div>
         </div>
       </a>
 
-      <a class="card card-link" th:href="@{/booking}">
+      <a
+        class="card card-link"
+        th:href="@{/booking}"
+        sec:authorize="hasAnyRole('ADMIN','RECEPTION')"
+      >
         <div class="card-kpi">
           <div class="kpi-title">Đặt phòng</div>
           <div class="kpi-sub">Tạo booking, lọc theo thời gian</div>
         </div>
       </a>
 
-      <a class="card card-link" th:href="@{/room-sessions}">
+      <a
+        class="card card-link"
+        th:href="@{/room-sessions}"
+        sec:authorize="hasAnyRole('ADMIN','POS')"
+      >
         <div class="card-kpi">
           <div class="kpi-title">Mở/đóng phòng</div>
           <div class="kpi-sub">Check-in/out, tạo hóa đơn theo session</div>
         </div>
       </a>
 
-      <a class="card card-link" th:href="@{/invoice}">
+      <a
+        class="card card-link"
+        th:href="@{/invoice}"
+        sec:authorize="hasAnyRole('ADMIN','POS')"
+      >
         <div class="card-kpi">
           <div class="kpi-title">Hóa đơn</div>
           <div class="kpi-sub">Tra cứu, lọc, xem chi tiết hóa đơn</div>
+        </div>
+      </a>
+
+      <a
+        class="card card-link"
+        th:href="@{/shift/history}"
+        sec:authorize="hasAnyRole('ADMIN','POS')"
+      >
+        <div class="card-kpi">
+          <div class="kpi-title">Ca làm</div>
+          <div class="kpi-sub">Mở/đóng ca, xem lịch sử & in báo cáo</div>
         </div>
       </a>
     </div>

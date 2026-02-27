@@ -38,6 +38,7 @@
             class="nav-item"
             th:classappend="${active} == 'rooms' ? ' active' : ''"
             th:href="@{/rooms}"
+            sec:authorize="hasAnyRole('ADMIN','POS')"
           >
             Phòng
           </a>
@@ -45,6 +46,7 @@
             class="nav-item"
             th:classappend="${active} == 'roomTypes' ? ' active' : ''"
             th:href="@{/room-types}"
+            sec:authorize="hasRole('ADMIN')"
           >
             Loại phòng
           </a>
@@ -52,6 +54,7 @@
             class="nav-item"
             th:classappend="${active} == 'booking' ? ' active' : ''"
             th:href="@{/booking}"
+            sec:authorize="hasAnyRole('ADMIN','RECEPTION')"
           >
             Đặt phòng
           </a>
@@ -59,6 +62,7 @@
             class="nav-item"
             th:classappend="${active} == 'sessions' ? ' active' : ''"
             th:href="@{/room-sessions}"
+            sec:authorize="hasAnyRole('ADMIN','POS')"
           >
             Mở/đóng phòng
           </a>
@@ -66,6 +70,7 @@
             class="nav-item"
             th:classappend="${active} == 'invoices' ? ' active' : ''"
             th:href="@{/invoice}"
+            sec:authorize="hasAnyRole('ADMIN','POS')"
           >
             Hóa đơn
           </a>
@@ -73,8 +78,8 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'shift' ? ' active' : ''"
-            th:href="@{/shift/open}"
-            sec:authorize="hasAnyRole('ADMIN','MANAGER','CASHIER')"
+            th:href="@{/shift/history}"
+            sec:authorize="hasAnyRole('ADMIN','POS')"
           >
             Ca làm
           </a>
@@ -83,7 +88,7 @@
             class="nav-item"
             th:classappend="${active} == 'inventory' ? ' active' : ''"
             th:href="@{/inventory/stocks}"
-            sec:authorize="hasAnyRole('ADMIN','MANAGER','WAREHOUSE')"
+            sec:authorize="hasRole('ADMIN')"
           >
             Kho
           </a>
@@ -92,7 +97,7 @@
             class="nav-item"
             th:classappend="${active} == 'products' ? ' active' : ''"
             th:href="@{/products}"
-            sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+            sec:authorize="hasRole('ADMIN')"
           >
             Sản phẩm
           </a>
@@ -101,7 +106,7 @@
             class="nav-item"
             th:classappend="${active} == 'productCategories' ? ' active' : ''"
             th:href="@{/product-categories}"
-            sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+            sec:authorize="hasRole('ADMIN')"
           >
             Danh mục SP
           </a>
@@ -110,7 +115,7 @@
             class="nav-item"
             th:classappend="${active} == 'users' ? ' active' : ''"
             th:href="@{/users}"
-            sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+            sec:authorize="hasRole('ADMIN')"
           >
             Người dùng
           </a>

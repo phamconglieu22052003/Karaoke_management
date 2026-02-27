@@ -4,9 +4,12 @@ import com.karaoke_management.entity.Invoice;
 import com.karaoke_management.entity.InvoiceLine;
 import com.karaoke_management.enums.InvoiceLineType;
 import com.karaoke_management.entity.InvoiceStatus;
+import com.karaoke_management.entity.RoomSession;
+import com.karaoke_management.entity.RoomSessionStatus;
 import com.karaoke_management.entity.Shift;
 import com.karaoke_management.enums.ShiftStatus;
 import com.karaoke_management.repository.InvoiceRepository;
+import com.karaoke_management.repository.RoomSessionRepository;
 import com.karaoke_management.repository.ShiftRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -14,11 +17,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Controller
@@ -27,10 +33,17 @@ public class ShiftController {
 
     private final ShiftRepository shiftRepository;
     private final InvoiceRepository invoiceRepository;
+    private final RoomSessionRepository roomSessionRepository;
 
-    public ShiftController(ShiftRepository shiftRepository, InvoiceRepository invoiceRepository) {
+    private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+    private static final DateTimeFormatter VN_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    public ShiftController(ShiftRepository shiftRepository,
+                           InvoiceRepository invoiceRepository,
+                           RoomSessionRepository roomSessionRepository) {
         this.shiftRepository = shiftRepository;
         this.invoiceRepository = invoiceRepository;
+        this.roomSessionRepository = roomSessionRepository;
     }
 
     // ====== Open shift ======
@@ -94,6 +107,25 @@ public class ShiftController {
         return detail(shift.getId(), model);
     }
 
+    // ====== History ======
+    @GetMapping("/history")
+    public String history(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) ShiftStatus status,
+            Model model
+    ) {
+        LocalDateTime fromDt = parseVnDateOrDateTimeOrNull(from, true);
+        LocalDateTime toDt = parseVnDateOrDateTimeOrNull(to, false);
+
+        model.addAttribute("shifts", shiftRepository.filterShifts(fromDt, toDt, status));
+        model.addAttribute("from", from == null ? "" : from);
+        model.addAttribute("to", to == null ? "" : to);
+        model.addAttribute("status", status);
+        model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
+        return "shift/shift-history";
+    }
+
     @GetMapping("/{id}")
     public String detail(@PathVariable("id") Long id, Model model) {
         Shift shift = shiftRepository.findById(id)
@@ -105,11 +137,32 @@ public class ShiftController {
         List<Invoice> invoices = invoiceRepository.findPaidWithLinesBetween(from, to, InvoiceStatus.PAID);
         ShiftSummary summary = buildSummary(shift, invoices);
 
+        // ===== Business rules: chặn đóng ca khi còn dang dở =====
+        List<RoomSessionStatus> runningStatuses = List.of(RoomSessionStatus.OPEN, RoomSessionStatus.ACTIVE);
+        List<RoomSession> openSessions = roomSessionRepository.findByStatusInOrderByStartTimeDesc(runningStatuses);
+
+        // Session đã đóng nhưng chưa lập hóa đơn (nếu bỏ sót sẽ làm lệch doanh thu ca)
+        List<RoomSession> closedNoInvoiceSessions = roomSessionRepository
+                .findClosedWithoutInvoiceBetween(RoomSessionStatus.CLOSED, from, to);
+
+        List<InvoiceStatus> pendingStatuses = List.of(InvoiceStatus.UNPAID, InvoiceStatus.FAILED);
+        List<Invoice> pendingInvoices = invoiceRepository.findByStatusesCreatedBetweenFetchRoom(pendingStatuses, from, to);
+
+        boolean canClose = shift.getStatus() == ShiftStatus.OPEN
+                && (openSessions == null || openSessions.isEmpty())
+                && (pendingInvoices == null || pendingInvoices.isEmpty())
+                && (closedNoInvoiceSessions == null || closedNoInvoiceSessions.isEmpty());
+
         model.addAttribute("shift", shift);
         model.addAttribute("summary", summary);
         model.addAttribute("invoices", invoices);
         model.addAttribute("rangeFrom", from);
         model.addAttribute("rangeTo", to);
+
+        model.addAttribute("openSessions", openSessions);
+        model.addAttribute("closedNoInvoiceSessions", closedNoInvoiceSessions);
+        model.addAttribute("pendingInvoices", pendingInvoices);
+        model.addAttribute("canClose", canClose);
         return "shift/shift-detail";
     }
 
@@ -119,12 +172,41 @@ public class ShiftController {
             @PathVariable("id") Long id,
             @RequestParam(value = "closingCashDeclared", required = false) String closingCashDeclared,
             @RequestParam(value = "note", required = false) String note,
-            Authentication authentication
+            Authentication authentication,
+            RedirectAttributes ra
     ) {
         Shift shift = shiftRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ca"));
 
         if (shift.getStatus() == ShiftStatus.CLOSED) {
+            return "redirect:/shift/" + id;
+        }
+
+        // ===== Business rules: chặn đóng ca khi còn session / invoice dang dở =====
+        LocalDateTime from = shift.getOpenedAt();
+        LocalDateTime to = LocalDateTime.now();
+
+        List<RoomSessionStatus> runningStatuses = List.of(RoomSessionStatus.OPEN, RoomSessionStatus.ACTIVE);
+        long openSessionCount = roomSessionRepository.countByStatusIn(runningStatuses);
+
+        long closedNoInvoiceCount = roomSessionRepository.countClosedWithoutInvoiceBetween(RoomSessionStatus.CLOSED, from, to);
+
+        List<InvoiceStatus> pendingStatuses = List.of(InvoiceStatus.UNPAID, InvoiceStatus.FAILED);
+        long pendingInvoiceCount = invoiceRepository.countByStatusInAndCreatedAtBetween(pendingStatuses, from, to);
+
+        if (openSessionCount > 0 || pendingInvoiceCount > 0 || closedNoInvoiceCount > 0) {
+            StringBuilder msg = new StringBuilder("Không thể đóng ca vì còn nghiệp vụ dang dở: ");
+            if (openSessionCount > 0) {
+                msg.append(openSessionCount).append(" phòng đang mở; ");
+            }
+            if (closedNoInvoiceCount > 0) {
+                msg.append(closedNoInvoiceCount).append(" session đã đóng nhưng chưa lập hóa đơn; ");
+            }
+            if (pendingInvoiceCount > 0) {
+                msg.append(pendingInvoiceCount).append(" hóa đơn chưa thanh toán/thất bại trong ca; ");
+            }
+            msg.append("Hãy xử lý dứt điểm trước khi đóng ca.");
+            ra.addFlashAttribute("error", msg.toString());
             return "redirect:/shift/" + id;
         }
 
@@ -142,6 +224,7 @@ public class ShiftController {
             shift.setNote(note.trim());
         }
         shiftRepository.save(shift);
+        ra.addFlashAttribute("success", "Đã đóng ca thành công.");
         return "redirect:/shift/" + id;
     }
 
@@ -242,6 +325,28 @@ public class ShiftController {
         if (s.startsWith("//")) return "";
         if (s.contains("://")) return "";
         return s;
+    }
+
+    /**
+     * Parse thời gian theo 2 dạng:
+     * - "HH:mm dd/MM/yyyy"
+     * - "dd/MM/yyyy" (lọc nhanh theo ngày)
+     */
+    private static LocalDateTime parseVnDateOrDateTimeOrNull(String s, boolean isFrom) {
+        if (s == null) return null;
+        String v = s.trim();
+        if (v.isEmpty()) return null;
+        try {
+            return LocalDateTime.parse(v, VN_DTF);
+        } catch (DateTimeParseException ignore) {
+            // fallback date-only
+        }
+        try {
+            LocalDate d = LocalDate.parse(v, VN_DATE);
+            return isFrom ? d.atStartOfDay() : d.atTime(LocalTime.MAX);
+        } catch (DateTimeParseException ignore) {
+            return null;
+        }
     }
 
     public static class ShiftSummary {

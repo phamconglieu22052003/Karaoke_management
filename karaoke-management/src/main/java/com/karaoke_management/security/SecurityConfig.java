@@ -2,6 +2,7 @@ package com.karaoke_management.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -62,29 +63,42 @@ public class SecurityConfig {
                                 "/payment/vnpay/mock/**"
                         ).permitAll()
 
-                        // Dashboard (all staff roles)
-                        .requestMatchers("/", "/dashboard").hasAnyRole("ADMIN", "MANAGER", "CASHIER", "STAFF", "WAREHOUSE", "TECH")
+                        // ===== Chuẩn hoá theo actor trong tài liệu: Admin / POS / Lễ tân =====
+                        // Dashboard: ai cũng xem được sau khi login
+                        .requestMatchers("/", "/dashboard").hasAnyRole("ADMIN", "POS", "RECEPTION")
 
-                        // Rooms & sessions (operation)
-                        .requestMatchers("/rooms/**", "/room-sessions/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER", "STAFF")
+                        // Rooms: POS cần xem để mở/đóng phòng; Admin quản trị CRUD
+                        .requestMatchers(HttpMethod.GET, "/rooms", "/rooms/").hasAnyRole("ADMIN", "POS")
+                        .requestMatchers(HttpMethod.GET, "/rooms/new", "/rooms/edit/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/rooms", "/rooms/update", "/rooms/delete/**").hasRole("ADMIN")
+                        // fallback: mọi endpoint khác dưới /rooms/** chỉ cho Admin
+                        .requestMatchers("/rooms/**").hasRole("ADMIN")
 
-                        // Booking (operation)
-                        .requestMatchers("/booking/**", "/bookings/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER", "STAFF")
+                        // Room types: Admin quản trị
+                        .requestMatchers("/room-types/**").hasRole("ADMIN")
 
-                        // Invoice/payment (cashier-focused)
-                        .requestMatchers("/invoice/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER")
+                        // Session open/close + lịch sử: POS
+                        .requestMatchers("/room-sessions/**").hasAnyRole("ADMIN", "POS")
 
-                        // Shift (cashier/manager/admin)
-                        .requestMatchers("/shift/**").hasAnyRole("ADMIN", "MANAGER", "CASHIER")
+                        // POS order
+                        .requestMatchers("/pos/**").hasAnyRole("ADMIN", "POS")
 
-                        // Room type (manager/admin)
-                        .requestMatchers("/room-types/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Booking: Lễ tân + Admin
+                        .requestMatchers("/booking/**", "/bookings/**").hasAnyRole("ADMIN", "RECEPTION")
 
-                        // Users (admin/manager)
-                        .requestMatchers("/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Invoice: POS + Admin
+                        .requestMatchers("/invoice/**").hasAnyRole("ADMIN", "POS")
 
-                        // QR demo
-                        .requestMatchers("/qr").permitAll()
+                        // Shift: POS + Admin
+                        .requestMatchers("/shift/**").hasAnyRole("ADMIN", "POS")
+
+                        // Product + category + inventory + users: Admin
+                        .requestMatchers("/products/**", "/product-categories/**").hasRole("ADMIN")
+                        .requestMatchers("/inventory/**").hasRole("ADMIN")
+                        .requestMatchers("/users/**").hasRole("ADMIN")
+
+                        // QR generate: nội bộ (POS/Admin)
+                        .requestMatchers("/qr").hasAnyRole("ADMIN", "POS")
 
                         .anyRequest().authenticated()
                 )
