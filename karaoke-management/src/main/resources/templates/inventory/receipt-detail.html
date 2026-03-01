@@ -6,11 +6,30 @@
 >
   <th:block th:fragment="pageHead">
     <style>
-      .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.08); background:rgba(0,0,0,.02); }
-      .muted{ color:#6b7280; }
-      .tbl td, .tbl th { vertical-align: middle; }
-      .danger { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.25); }
-      .ok { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.25); }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(0, 0, 0, 0.02);
+      }
+      .muted {
+        color: #6b7280;
+      }
+      .tbl td,
+      .tbl th {
+        vertical-align: middle;
+      }
+      .danger {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.25);
+      }
+      .ok {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: rgba(34, 197, 94, 0.25);
+      }
     </style>
   </th:block>
 
@@ -22,29 +41,39 @@
           <div class="muted">
             <span class="pill" th:text="${receipt.type}"></span>
             <span class="pill" th:text="${receipt.status}"></span>
-            <span th:text="${#temporals.format(receipt.createdAt, 'HH:mm dd/MM/yyyy')}"></span>
+            <span
+              th:text="${#temporals.format(receipt.createdAt, 'HH:mm dd/MM/yyyy')}"
+            ></span>
           </div>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
           <a class="btn" th:href="@{/inventory/receipts}">Danh sách</a>
-          <a class="btn" th:if="${receipt.status.name()=='DRAFT'}" th:href="@{/inventory/receipts/{id}/edit(id=${receipt.id})}">Sửa</a>
+          <a
+            class="btn"
+            th:if="${receipt.status.name()=='DRAFT'}"
+            th:href="@{/inventory/receipts/{id}/edit(id=${receipt.id})}"
+            >Sửa</a
+          >
         </div>
       </div>
 
       <div th:if="${msg}" class="alert success" th:text="${msg}"></div>
 
-      <div style="margin-top:10px;">
+      <div style="margin-top: 10px">
         <div><b>Ghi chú:</b> <span th:text="${receipt.note}"></span></div>
-        <div th:if="${receipt.rejectedReason}"><b>Lý do từ chối:</b> <span th:text="${receipt.rejectedReason}"></span></div>
+        <div th:if="${receipt.rejectedReason}">
+          <b>Lý do từ chối:</b>
+          <span th:text="${receipt.rejectedReason}"></span>
+        </div>
       </div>
 
-      <div class="table-wrap" style="margin-top:12px;">
+      <div class="table-wrap" style="margin-top: 12px">
         <table class="tbl">
           <thead>
             <tr>
               <th>Sản phẩm</th>
-              <th style="width:140px;">Số lượng</th>
-              <th style="width:200px;">Đơn giá</th>
+              <th style="width: 140px">Số lượng</th>
+              <th style="width: 200px">Đơn giá</th>
             </tr>
           </thead>
           <tbody>
@@ -60,12 +89,29 @@
         </table>
       </div>
 
-      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;" sec:authorize="hasAnyRole('ADMIN','MANAGER')">
-        <form th:if="${receipt.status.name()=='PENDING'}" th:action="@{/inventory/receipts/{id}/approve(id=${receipt.id})}" method="post">
+      <div
+        style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap"
+        sec:authorize="hasAnyRole('MANAGER','STOREKEEPER')"
+      >
+        <form
+          th:if="${receipt.status.name()=='PENDING'}"
+          th:action="@{/inventory/receipts/{id}/approve(id=${receipt.id})}"
+          method="post"
+        >
           <button class="btn primary" type="submit">Duyệt</button>
         </form>
-        <form th:if="${receipt.status.name()=='PENDING'}" th:action="@{/inventory/receipts/{id}/reject(id=${receipt.id})}" method="post" style="display:flex; gap:8px; align-items:center;">
-          <input class="input" type="text" name="reason" placeholder="Lý do từ chối" />
+        <form
+          th:if="${receipt.status.name()=='PENDING'}"
+          th:action="@{/inventory/receipts/{id}/reject(id=${receipt.id})}"
+          method="post"
+          style="display: flex; gap: 8px; align-items: center"
+        >
+          <input
+            class="input"
+            type="text"
+            name="reason"
+            placeholder="Lý do từ chối"
+          />
           <button class="btn" type="submit">Từ chối</button>
         </form>
       </div>

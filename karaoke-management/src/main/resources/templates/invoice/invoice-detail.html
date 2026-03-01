@@ -187,6 +187,51 @@
             Hóa đơn đã thanh toán.
           </div>
         </div>
+
+        <div class="hr" style="margin-top: 14px"></div>
+        <h3 style="margin-top: 0">Link/QR cho khách hàng</h3>
+        <div class="help-text" style="margin-top: 6px">
+          Dùng để khách quét và mở trang thanh toán công khai. Trang khách hàng
+          <b>chỉ hiển thị</b> QR/thông tin, không tự đánh dấu <b>PAID</b>.
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-top: 12px;
+          "
+        >
+          <div>
+            <img
+              th:src="@{/qr(data=${customerPayUrl})}"
+              alt="QR Link"
+              style="
+                width: 200px;
+                height: 200px;
+                background: #fff;
+                padding: 8px;
+                border-radius: 12px;
+              "
+            />
+          </div>
+          <div style="flex: 1; min-width: 240px">
+            <div class="form-group">
+              <label class="form-label">Link thanh toán</label>
+              <input
+                class="input"
+                type="text"
+                th:value="${customerPayUrl}"
+                readonly
+              />
+            </div>
+            <div class="help-text">
+              Bạn có thể copy link này hoặc cho khách quét QR.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

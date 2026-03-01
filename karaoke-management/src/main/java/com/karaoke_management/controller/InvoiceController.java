@@ -9,6 +9,7 @@ import com.karaoke_management.repository.InvoiceRepository;
 import com.karaoke_management.repository.RoomRepository;
 import com.karaoke_management.repository.ShiftRepository;
 import com.karaoke_management.enums.ShiftStatus;
+import com.karaoke_management.service.CustomerPayLinkService;
 import com.karaoke_management.service.InvoiceService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -38,6 +39,7 @@ public class InvoiceController {
     private final InvoiceService invoiceService;
     private final RoomRepository roomRepository;
     private final ShiftRepository shiftRepository;
+    private final CustomerPayLinkService customerPayLinkService;
 
     // ✅ Format VN: giờ/ngày/tháng/năm
     private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
@@ -46,12 +48,14 @@ public class InvoiceController {
                              InvoiceLineRepository invoiceLineRepository,
                              InvoiceService invoiceService,
                              RoomRepository roomRepository,
-                             ShiftRepository shiftRepository) {
+                             ShiftRepository shiftRepository,
+                             CustomerPayLinkService customerPayLinkService) {
         this.invoiceRepository = invoiceRepository;
         this.invoiceLineRepository = invoiceLineRepository;
         this.invoiceService = invoiceService;
         this.roomRepository = roomRepository;
         this.shiftRepository = shiftRepository;
+        this.customerPayLinkService = customerPayLinkService;
     }
 
     // /invoice?from=...&to=...&min=...&max=...&roomId=...
@@ -99,6 +103,9 @@ public class InvoiceController {
         model.addAttribute("invoice", inv);
 
         model.addAttribute("hasOpenShift", shiftRepository.existsByStatus(ShiftStatus.OPEN));
+
+        // ✅ Link công khai cho khách hàng (chỉ xem QR, không tự mark PAID)
+        model.addAttribute("customerPayUrl", customerPayLinkService.buildCustomerPayUrl(inv.getId()));
 
         // Snapshot lines + breakdown
         var lines = invoiceLineRepository.findAllByInvoice_IdOrderByIdAsc(inv.getId());

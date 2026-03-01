@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Đặt phòng online</title>
+  <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+<div class="container" style="max-width:720px;margin:24px auto;">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Đặt phòng online</div>
+      <div class="muted">Khách hàng điền thông tin để gửi yêu cầu đặt phòng.</div>
+    </div>
+    <div class="card-body">
+
+      <div th:if="${error}" class="alert danger" th:text="${error}"></div>
+
+      <form method="post" th:action="@{/customer/booking}">
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div class="form-label">Họ tên</div>
+            <input class="form-control" name="customerName" th:value="${customerName}" placeholder="Nguyễn Văn A" required/>
+          </div>
+          <div>
+            <div class="form-label">Số điện thoại</div>
+            <input class="form-control" name="phone" th:value="${phone}" placeholder="09xxxxxxxx" required/>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <div class="form-label">Chọn phòng</div>
+          <select class="form-control" name="roomId" required>
+            <option value="" disabled th:selected="${roomId == null}">-- Chọn phòng --</option>
+            <option th:each="r : ${rooms}" th:value="${r.id}" th:selected="${roomId != null and r.id == roomId}"
+                    th:text="${r.name + ' (' + r.status + ')'}"></option>
+          </select>
+          <div class="muted" style="margin-top:6px;">Lưu ý: nếu phòng đang được đặt trùng giờ, hệ thống sẽ báo lỗi.</div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+          <div>
+            <div class="form-label">Giờ bắt đầu</div>
+            <input class="form-control" name="startTime" th:value="${startTime}" placeholder="20:00 26/01/2026" required/>
+            <div class="muted">Định dạng: <span th:text="${dtPattern}"></span></div>
+          </div>
+          <div>
+            <div class="form-label">Giờ kết thúc</div>
+            <input class="form-control" name="endTime" th:value="${endTime}" placeholder="22:00 26/01/2026" required/>
+            <div class="muted">Định dạng: <span th:text="${dtPattern}"></span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
+          <button class="btn btn-primary" type="submit">Gửi yêu cầu đặt phòng</button>
+          <a class="link" th:href="@{/login}">Đăng nhập nhân viên</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

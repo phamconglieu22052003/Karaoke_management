@@ -36,43 +36,45 @@ public class SeedConfig {
             Permission roomTypeManage = upsertPermission(permRepo, "ROOMTYPE_MANAGE", "Quản lý loại phòng", "ROOM");
             Permission reportView = upsertPermission(permRepo, "REPORT_VIEW", "Xem báo cáo", "REPORT");
 
-            // --- Roles ---
-            Role admin = upsertRole(roleRepo, "ADMIN", "Quản trị", Set.of(
-                    roomOpen, roomClose, paymentCreate, discountApply, bookingManage, roomTypeManage, reportView
-            ));
-
-            // ===== Roles theo actor tài liệu demo =====
-            Role pos = upsertRole(roleRepo, "POS", "POS", Set.of(
-                    roomOpen, roomClose, paymentCreate, discountApply, reportView
-            ));
-            Role reception = upsertRole(roleRepo, "RECEPTION", "Lễ tân", Set.of(
-                    bookingManage, reportView
-            ));
-
+            // --- Roles (theo actor tài liệu, phân quyền thật) ---
             Role manager = upsertRole(roleRepo, "MANAGER", "Quản lý", Set.of(
                     roomOpen, roomClose, paymentCreate, discountApply, bookingManage, roomTypeManage, reportView
             ));
 
             Role cashier = upsertRole(roleRepo, "CASHIER", "Thu ngân", Set.of(
-                    roomOpen, roomClose, paymentCreate, discountApply, bookingManage
+                    roomOpen, roomClose, paymentCreate, discountApply, bookingManage, reportView
             ));
 
-            Role staff = upsertRole(roleRepo, "STAFF", "Nhân viên", Set.of(
-                    roomOpen, roomClose, bookingManage
+            Role storekeeper = upsertRole(roleRepo, "STOREKEEPER", "Nhân viên kho", Set.of(
+                    reportView
             ));
 
-            Role warehouse = upsertRole(roleRepo, "WAREHOUSE", "Kho", Set.of(reportView));
-            Role tech = upsertRole(roleRepo, "TECH", "Kỹ thuật", Set.of(reportView));
+            Role waiter = upsertRole(roleRepo, "WAITER", "Nhân viên phục vụ", Set.of(
+                    reportView
+            ));
 
-            // --- Users ---
+            Role technician = upsertRole(roleRepo, "TECHNICIAN", "Kỹ thuật", Set.of(
+                    reportView
+            ));
+
+            // --- (Tùy chọn) Giữ lại role cũ để không gãy dữ liệu demo trước đây ---
+            Role admin = upsertRole(roleRepo, "ADMIN", "Quản trị (legacy)", Set.of(
+                    roomOpen, roomClose, paymentCreate, discountApply, bookingManage, roomTypeManage, reportView
+            ));
+            upsertRole(roleRepo, "POS", "POS (legacy)", Set.of(roomOpen, roomClose, paymentCreate, reportView));
+            upsertRole(roleRepo, "WAREHOUSE", "Kho (legacy)", Set.of(reportView));
+            upsertRole(roleRepo, "TECH", "Kỹ thuật (legacy)", Set.of(reportView));
+            upsertRole(roleRepo, "STAFF", "Nhân viên (legacy)", Set.of(reportView));
+
+            // --- Users demo (password: 123456) ---
+            upsertUser(userRepo, encoder, "manager", "Quản lý", "", manager);
+            upsertUser(userRepo, encoder, "cashier", "Thu ngân", "", cashier);
+            upsertUser(userRepo, encoder, "storekeeper", "Nhân viên kho", "", storekeeper);
+            upsertUser(userRepo, encoder, "waiter", "Nhân viên phục vụ", "", waiter);
+            upsertUser(userRepo, encoder, "technician", "Kỹ thuật", "", technician);
+
+            // Giữ user admin để tiện quản trị kỹ thuật
             upsertUser(userRepo, encoder, "admin", "Admin", "", admin);
-            upsertUser(userRepo, encoder, "pos", "POS", "", pos);
-            upsertUser(userRepo, encoder, "reception", "Lễ tân", "", reception);
-            upsertUser(userRepo, encoder, "manager", "Manager", "", manager);
-            upsertUser(userRepo, encoder, "cashier", "Cashier", "", cashier);
-            upsertUser(userRepo, encoder, "staff", "Staff", "", staff);
-            upsertUser(userRepo, encoder, "warehouse", "Warehouse", "", warehouse);
-            upsertUser(userRepo, encoder, "tech", "Tech", "", tech);
         };
     }
 

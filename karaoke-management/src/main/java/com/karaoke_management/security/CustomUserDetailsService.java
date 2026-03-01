@@ -45,19 +45,21 @@ public class CustomUserDetailsService implements UserDetailsService {
             String code = r.getRoleCode();
             authorities.add(new SimpleGrantedAuthority("ROLE_" + code));
 
-            // ===== Role normalization for demo actors (Admin / POS / Lễ tân) =====
-            // - DB có thể đang dùng role cũ (MANAGER/CASHIER/STAFF/WAREHOUSE/TECH)
-            // - Tại tầng Security, map thêm authority để dùng thống nhất: ADMIN / POS / RECEPTION
+            // ===== Role normalization (để tương thích dữ liệu cũ) =====
+            // Mục tiêu: phân quyền thật theo actor tài liệu
+            // - MANAGER (Quản lý)
+            // - CASHIER (Thu ngân)
+            // - STOREKEEPER (Nhân viên kho)
+            // - WAITER (Nhân viên phục vụ)
+            // - TECHNICIAN (Kỹ thuật)
+            // Nếu DB còn role cũ (ADMIN/POS/WAREHOUSE/STAFF/TECH) thì map sang role mới.
             if (code != null) {
                 switch (code) {
-                    case "ADMIN" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    case "MANAGER" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    case "CASHIER" -> authorities.add(new SimpleGrantedAuthority("ROLE_POS"));
-                    case "POS" -> authorities.add(new SimpleGrantedAuthority("ROLE_POS"));
-                    case "STAFF" -> authorities.add(new SimpleGrantedAuthority("ROLE_RECEPTION"));
-                    case "RECEPTION" -> authorities.add(new SimpleGrantedAuthority("ROLE_RECEPTION"));
-                    // các role khác (nếu có) coi như admin để demo nhanh
-                    case "WAREHOUSE", "TECH" -> authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    case "ADMIN", "MANAGER" -> authorities.add(new SimpleGrantedAuthority("ROLE_MANAGER"));
+                    case "POS", "CASHIER" -> authorities.add(new SimpleGrantedAuthority("ROLE_CASHIER"));
+                    case "WAREHOUSE", "STOREKEEPER" -> authorities.add(new SimpleGrantedAuthority("ROLE_STOREKEEPER"));
+                    case "STAFF", "WAITER" -> authorities.add(new SimpleGrantedAuthority("ROLE_WAITER"));
+                    case "TECH", "TECHNICIAN" -> authorities.add(new SimpleGrantedAuthority("ROLE_TECHNICIAN"));
                     default -> {
                         // no-op
                     }

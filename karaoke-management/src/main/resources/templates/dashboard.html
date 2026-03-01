@@ -159,7 +159,7 @@
       <a
         class="card card-link"
         th:href="@{/rooms}"
-        sec:authorize="hasAnyRole('ADMIN','POS')"
+        sec:authorize="hasAnyRole('MANAGER','CASHIER','WAITER')"
       >
         <div class="card-kpi">
           <div class="kpi-title">Quản lý phòng</div>
@@ -170,7 +170,7 @@
       <a
         class="card card-link"
         th:href="@{/room-types}"
-        sec:authorize="hasRole('ADMIN')"
+        sec:authorize="hasRole('MANAGER')"
       >
         <div class="card-kpi">
           <div class="kpi-title">Loại phòng</div>
@@ -181,7 +181,7 @@
       <a
         class="card card-link"
         th:href="@{/booking}"
-        sec:authorize="hasAnyRole('ADMIN','RECEPTION')"
+        sec:authorize="hasAnyRole('MANAGER','CASHIER')"
       >
         <div class="card-kpi">
           <div class="kpi-title">Đặt phòng</div>
@@ -192,7 +192,7 @@
       <a
         class="card card-link"
         th:href="@{/room-sessions}"
-        sec:authorize="hasAnyRole('ADMIN','POS')"
+        sec:authorize="hasAnyRole('MANAGER','CASHIER','WAITER')"
       >
         <div class="card-kpi">
           <div class="kpi-title">Mở/đóng phòng</div>
@@ -203,7 +203,7 @@
       <a
         class="card card-link"
         th:href="@{/invoice}"
-        sec:authorize="hasAnyRole('ADMIN','POS')"
+        sec:authorize="hasAnyRole('MANAGER','CASHIER')"
       >
         <div class="card-kpi">
           <div class="kpi-title">Hóa đơn</div>
@@ -214,11 +214,22 @@
       <a
         class="card card-link"
         th:href="@{/shift/history}"
-        sec:authorize="hasAnyRole('ADMIN','POS')"
+        sec:authorize="hasAnyRole('MANAGER','CASHIER')"
       >
         <div class="card-kpi">
           <div class="kpi-title">Ca làm</div>
           <div class="kpi-sub">Mở/đóng ca, xem lịch sử & in báo cáo</div>
+        </div>
+      </a>
+
+      <a
+        class="card card-link"
+        th:href="@{/tech/rooms}"
+        sec:authorize="hasAnyRole('MANAGER','TECHNICIAN')"
+      >
+        <div class="card-kpi">
+          <div class="kpi-title">Kỹ thuật</div>
+          <div class="kpi-sub">Theo dõi trạng thái phòng, chuyển bảo trì</div>
         </div>
       </a>
     </div>

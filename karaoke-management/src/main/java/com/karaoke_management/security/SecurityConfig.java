@@ -57,6 +57,12 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
                         .requestMatchers("/login").permitAll()
 
+                        // Public (Khách hàng)
+                        .requestMatchers("/customer/**").permitAll()
+
+                        // QR image endpoint can be used in public pages (payment/booking link)
+                        .requestMatchers("/qr").permitAll()
+
                         // VNPay endpoints MUST be public
                         .requestMatchers(
                                 "/payment/vnpay/ipn",
@@ -65,42 +71,60 @@ public class SecurityConfig {
                                 "/payment/vnpay/mock/**"
                         ).permitAll()
 
-                        // ===== Chuẩn hoá theo actor trong tài liệu: Admin / POS / Lễ tân =====
-                        // Dashboard: ai cũng xem được sau khi login
-                        .requestMatchers("/", "/dashboard").hasAnyRole("ADMIN", "POS", "RECEPTION")
+                        // ===== Phân quyền thật theo actor tài liệu =====
+                        // Quản lý        -> MANAGER
+                        // Thu ngân       -> CASHIER
+                        // Nhân viên kho  -> STOREKEEPER
+                        // Nhân viên phục vụ -> WAITER
+                        // Kỹ thuật       -> TECHNICIAN
 
-                        // Rooms: POS cần xem để mở/đóng phòng; Admin quản trị CRUD
-                        .requestMatchers(HttpMethod.GET, "/rooms", "/rooms/").hasAnyRole("ADMIN", "POS")
-                        .requestMatchers(HttpMethod.GET, "/rooms/new", "/rooms/edit/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/rooms", "/rooms/update", "/rooms/delete/**").hasRole("ADMIN")
-                        // fallback: mọi endpoint khác dưới /rooms/** chỉ cho Admin
-                        .requestMatchers("/rooms/**").hasRole("ADMIN")
+                        // Dashboard: tất cả nhân sự nội bộ xem được sau khi login
+                        .requestMatchers("/", "/dashboard")
+                        .hasAnyRole("MANAGER", "CASHIER", "STOREKEEPER", "WAITER", "TECHNICIAN")
 
-                        // Room types: Admin quản trị
-                        .requestMatchers("/room-types/**").hasRole("ADMIN")
+                        // Rooms: phục vụ/thu ngân cần xem để thao tác; quản lý quản trị CRUD
+                        .requestMatchers(HttpMethod.GET, "/rooms", "/rooms/")
+                        .hasAnyRole("MANAGER", "CASHIER", "WAITER")
+                        .requestMatchers(HttpMethod.GET, "/rooms/new", "/rooms/edit/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/rooms", "/rooms/update", "/rooms/delete/**").hasRole("MANAGER")
+                        // fallback: mọi endpoint khác dưới /rooms/** chỉ cho quản lý
+                        .requestMatchers("/rooms/**").hasRole("MANAGER")
 
-                        // Session open/close + lịch sử: POS
-                        .requestMatchers("/room-sessions/**").hasAnyRole("ADMIN", "POS")
+                        // Room types: quản lý
+                        .requestMatchers("/room-types/**").hasRole("MANAGER")
 
-                        // POS order
-                        .requestMatchers("/pos/**").hasAnyRole("ADMIN", "POS")
+                        // Session: thu ngân/quản lý mở-đóng; phục vụ xem lịch sử
+                        .requestMatchers(HttpMethod.GET, "/room-sessions/**")
+                        .hasAnyRole("MANAGER", "CASHIER", "WAITER")
+                        .requestMatchers(HttpMethod.POST, "/room-sessions/**")
+                        .hasAnyRole("MANAGER", "CASHIER")
 
-                        // Booking: Lễ tân + Admin
-                        .requestMatchers("/booking/**", "/bookings/**").hasAnyRole("ADMIN", "RECEPTION")
+                        // POS order: phục vụ + thu ngân + quản lý
+                        .requestMatchers("/pos/**").hasAnyRole("MANAGER", "CASHIER", "WAITER")
 
-                        // Invoice: POS + Admin
-                        .requestMatchers("/invoice/**").hasAnyRole("ADMIN", "POS")
+                        // Booking: thu ngân + quản lý
+                        .requestMatchers("/booking/**", "/bookings/**").hasAnyRole("MANAGER", "CASHIER")
 
-                        // Shift: POS + Admin
-                        .requestMatchers("/shift/**").hasAnyRole("ADMIN", "POS")
+                        // Invoice: thu ngân + quản lý
+                        .requestMatchers("/invoice/**").hasAnyRole("MANAGER", "CASHIER")
 
-                        // Product + category + inventory + users: Admin
-                        .requestMatchers("/products/**", "/product-categories/**").hasRole("ADMIN")
-                        .requestMatchers("/inventory/**").hasRole("ADMIN")
-                        .requestMatchers("/users/**").hasRole("ADMIN")
+                        // Shift: thu ngân + quản lý
+                        .requestMatchers("/shift/**").hasAnyRole("MANAGER", "CASHIER")
 
-                        // QR generate: nội bộ (POS/Admin)
-                        .requestMatchers("/qr").hasAnyRole("ADMIN", "POS")
+                        // Technician module
+                        .requestMatchers("/tech/**").hasAnyRole("MANAGER", "TECHNICIAN")
+
+                        // Inventory: nhân viên kho + quản lý
+                        .requestMatchers("/inventory/**").hasAnyRole("MANAGER", "STOREKEEPER")
+
+                        // Product + category: quản lý (và nhân viên kho được xem danh sách)
+                        .requestMatchers(HttpMethod.GET,
+                                "/products", "/products/", "/product-categories", "/product-categories/")
+                        .hasAnyRole("MANAGER", "STOREKEEPER")
+                        .requestMatchers("/products/**", "/product-categories/**").hasRole("MANAGER")
+
+                        // Users: quản lý
+                        .requestMatchers("/users/**").hasRole("MANAGER")
 
                         .anyRequest().authenticated()
                 )
