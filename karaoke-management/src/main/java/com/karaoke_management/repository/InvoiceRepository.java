@@ -18,14 +18,14 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("""
         select i from Invoice i
-        join i.roomSession rs
-        join rs.room r
+        left join i.roomSession rs
+        left join rs.room r
         where (:from is null or i.createdAt >= :from)
           and (:to is null or i.createdAt <= :to)
           and (:min is null or i.totalAmount >= :min)
           and (:max is null or i.totalAmount <= :max)
           and (:roomId is null or r.id = :roomId)
-        order by i.id desc
+        order by i.createdAt desc, i.id desc
     """)
     List<Invoice> filterInvoices(
             @Param("from") LocalDateTime from,

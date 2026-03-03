@@ -12,7 +12,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.karaoke_management.util.FilterUtils;
+
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -41,15 +45,15 @@ public class BookingController {
             @RequestParam(required = false) String to,
             Model model
     ) {
-        LocalDateTime fromDt = parseVnDateTimeOrNull(from);
-        LocalDateTime toDt = parseVnDateTimeOrNull(to);
+        LocalDateTime fromDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(from, true);
+        LocalDateTime toDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(to, false);
 
-        List<Booking> bookings;
-        if (fromDt == null && toDt == null) {
-            bookings = bookingRepository.findAll();
-        } else {
-            bookings = bookingRepository.filterByTimeRange(fromDt, toDt);
-        }
+        // Default: xem lịch 7 ngày tới nếu bỏ trống cả 2
+        LocalDateTime defaultFrom = LocalDate.now().atStartOfDay();
+        LocalDateTime defaultTo = LocalDate.now().plusDays(7).atTime(LocalTime.MAX);
+        var range = FilterUtils.normalizeDateTimeRange(fromDt, toDt, defaultFrom, defaultTo);
+
+        List<Booking> bookings = bookingRepository.filterByTimeRange(range.from(), range.to());
 
         model.addAttribute("bookings", bookings);
 

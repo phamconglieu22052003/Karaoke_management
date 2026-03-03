@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap");
+
 :root {
   --bg: #0b1220;
   --card: rgba(255, 255, 255, 0.08);
@@ -21,11 +23,11 @@ body {
 body {
   margin: 0;
   font-family:
+    "Roboto",
     ui-sans-serif,
     system-ui,
     -apple-system,
-    Segoe UI,
-    Roboto,
+    "Segoe UI",
     Arial;
   background:
     radial-gradient(
@@ -43,6 +45,13 @@ body {
   display: grid;
   place-items: center;
   padding: 24px;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 .login-wrap {

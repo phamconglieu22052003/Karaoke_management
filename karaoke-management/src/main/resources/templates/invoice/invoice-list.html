@@ -5,6 +5,12 @@
 >
   <th:block th:fragment="pageHead">
     <link rel="stylesheet" th:href="@{/css/invoice-list.css}" />
+    <!-- Flatpickr date-time picker (CDN) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   </th:block>
 
   <section>
@@ -22,9 +28,10 @@
           <div class="fg-3">
             <div class="f-label">Từ</div>
             <input
-              class="f-input mono"
+              class="f-input mono datetime-picker"
               type="text"
               name="from"
+              autocomplete="off"
               th:value="${from}"
               placeholder="HH:mm dd/MM/yyyy"
             />
@@ -33,9 +40,10 @@
           <div class="fg-3">
             <div class="f-label">Đến</div>
             <input
-              class="f-input mono"
+              class="f-input mono datetime-picker"
               type="text"
               name="to"
+              autocomplete="off"
               th:value="${to}"
               placeholder="HH:mm dd/MM/yyyy"
             />
@@ -103,12 +111,6 @@
                 Xuất CSV
               </a>
             </div>
-
-            <div class="hint">
-              Định dạng: <b th:text="${dtPattern}">HH:mm dd/MM/yyyy</b> (VD:
-              20:30 26/01/2026)
-            </div>
-
             <!-- Chips: hiển thị điều kiện đang lọc -->
             <div class="chips">
               <span class="chip" th:if="${from != null and !from.isBlank()}">
@@ -227,5 +229,18 @@
         </table>
       </div>
     </div>
+    <script>
+      // Flatpickr for time-range filters
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof flatpickr !== "undefined") {
+          flatpickr(".datetime-picker", {
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: "H:i d/m/Y",
+            allowInput: true,
+          });
+        }
+      });
+    </script>
   </section>
 </html>

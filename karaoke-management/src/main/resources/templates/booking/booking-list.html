@@ -141,11 +141,16 @@
     </div>
 
     <script>
-      flatpickr(".datetime-picker", {
-        enableTime: true,
-        time_24hr: true,
-        dateFormat: " H:i d/m/Y",
-        allowInput: false,
+      // Flatpickr for time-range filters
+      document.addEventListener("DOMContentLoaded", function () {
+        if (typeof flatpickr !== "undefined") {
+          flatpickr(".datetime-picker", {
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: "H:i d/m/Y",
+            allowInput: true,
+          });
+        }
       });
     </script>
   </section>

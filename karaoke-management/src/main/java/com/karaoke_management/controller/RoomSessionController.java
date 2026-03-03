@@ -3,16 +3,15 @@ package com.karaoke_management.controller;
 import com.karaoke_management.entity.RoomSessionStatus;
 import com.karaoke_management.repository.RoomRepository;
 import com.karaoke_management.service.RoomSessionService;
+import com.karaoke_management.util.FilterUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/room-sessions")
@@ -38,10 +37,15 @@ public class RoomSessionController {
             @RequestParam(required = false) Long roomId,
             Model model
     ) {
-        LocalDateTime fromDt = parseVnDateOrDateTimeOrNull(from, true);
-        LocalDateTime toDt = parseVnDateOrDateTimeOrNull(to, false);
+        LocalDateTime fromDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(from, true);
+        LocalDateTime toDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(to, false);
 
-        model.addAttribute("sessions", roomSessionService.filter(fromDt, toDt, status, roomId));
+        // Default 30 ngày gần nhất nếu bỏ trống cả 2
+        LocalDateTime defaultFrom = LocalDate.now().minusDays(30).atStartOfDay();
+        LocalDateTime defaultTo = LocalDateTime.now();
+        var range = FilterUtils.normalizeDateTimeRange(fromDt, toDt, defaultFrom, defaultTo);
+
+        model.addAttribute("sessions", roomSessionService.filter(range.from(), range.to(), status, roomId));
         model.addAttribute("from", from == null ? "" : from);
         model.addAttribute("to", to == null ? "" : to);
         model.addAttribute("status", status);
@@ -70,25 +74,5 @@ public class RoomSessionController {
         return "redirect:/invoice/create/" + sessionId;
     }
 
-    /**
-     * Parse thời gian theo 2 dạng:
-     * - "HH:mm dd/MM/yyyy" (đúng chuẩn input invoice)
-     * - "dd/MM/yyyy" (để lọc nhanh theo ngày)
-     */
-    private static LocalDateTime parseVnDateOrDateTimeOrNull(String s, boolean isFrom) {
-        if (s == null) return null;
-        String v = s.trim();
-        if (v.isEmpty()) return null;
-        try {
-            return LocalDateTime.parse(v, VN_DTF);
-        } catch (DateTimeParseException ignore) {
-            // fallback date-only
-        }
-        try {
-            LocalDate d = LocalDate.parse(v, VN_DATE);
-            return isFrom ? d.atStartOfDay() : d.atTime(LocalTime.MAX);
-        } catch (DateTimeParseException ignore) {
-            return null;
-        }
-    }
+    // parse/filter helpers moved to FilterUtils
 }

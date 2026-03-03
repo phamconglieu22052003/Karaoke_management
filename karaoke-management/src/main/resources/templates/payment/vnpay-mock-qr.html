@@ -10,8 +10,6 @@
     <p>Hóa đơn: <b th:text="${invoice.id}">0</b></p>
     <p>Trạng thái hiện tại: <b th:text="${invoice.status}">UNPAID</b></p>
 
-    <p>Khách dùng điện thoại quét QR bên dưới:</p>
-
     <img
       th:src="@{/qr(data=${confirmUrl})}"
       alt="QR thanh toán"

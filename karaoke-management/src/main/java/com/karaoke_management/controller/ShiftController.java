@@ -11,6 +11,7 @@ import com.karaoke_management.enums.ShiftStatus;
 import com.karaoke_management.repository.InvoiceRepository;
 import com.karaoke_management.repository.RoomSessionRepository;
 import com.karaoke_management.repository.ShiftRepository;
+import com.karaoke_management.util.FilterUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -24,7 +25,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Controller
@@ -115,10 +115,15 @@ public class ShiftController {
             @RequestParam(required = false) ShiftStatus status,
             Model model
     ) {
-        LocalDateTime fromDt = parseVnDateOrDateTimeOrNull(from, true);
-        LocalDateTime toDt = parseVnDateOrDateTimeOrNull(to, false);
+        LocalDateTime fromDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(from, true);
+        LocalDateTime toDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(to, false);
 
-        model.addAttribute("shifts", shiftRepository.filterShifts(fromDt, toDt, status));
+        // Default 30 ngày gần nhất nếu bỏ trống cả 2
+        LocalDateTime defaultFrom = LocalDate.now().minusDays(30).atStartOfDay();
+        LocalDateTime defaultTo = LocalDateTime.now();
+        var range = FilterUtils.normalizeDateTimeRange(fromDt, toDt, defaultFrom, defaultTo);
+
+        model.addAttribute("shifts", shiftRepository.filterShifts(range.from(), range.to(), status));
         model.addAttribute("from", from == null ? "" : from);
         model.addAttribute("to", to == null ? "" : to);
         model.addAttribute("status", status);
@@ -327,27 +332,7 @@ public class ShiftController {
         return s;
     }
 
-    /**
-     * Parse thời gian theo 2 dạng:
-     * - "HH:mm dd/MM/yyyy"
-     * - "dd/MM/yyyy" (lọc nhanh theo ngày)
-     */
-    private static LocalDateTime parseVnDateOrDateTimeOrNull(String s, boolean isFrom) {
-        if (s == null) return null;
-        String v = s.trim();
-        if (v.isEmpty()) return null;
-        try {
-            return LocalDateTime.parse(v, VN_DTF);
-        } catch (DateTimeParseException ignore) {
-            // fallback date-only
-        }
-        try {
-            LocalDate d = LocalDate.parse(v, VN_DATE);
-            return isFrom ? d.atStartOfDay() : d.atTime(LocalTime.MAX);
-        } catch (DateTimeParseException ignore) {
-            return null;
-        }
-    }
+    // Parse/filter helpers đã gom về com.karaoke_management.util.FilterUtils
 
     public static class ShiftSummary {
         public Long shiftId;

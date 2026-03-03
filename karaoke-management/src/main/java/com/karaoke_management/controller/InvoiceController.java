@@ -26,9 +26,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+
+import com.karaoke_management.util.FilterUtils;
 
 @Controller
 @RequestMapping("/invoice")
@@ -68,17 +70,24 @@ public class InvoiceController {
             @RequestParam(required = false) Long roomId,
             Model model
     ) {
-        LocalDateTime fromDt = parseVnDateTimeOrNull(from);
-        LocalDateTime toDt = parseVnDateTimeOrNull(to);
+        LocalDateTime fromDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(from, true);
+        LocalDateTime toDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(to, false);
+
+        // Default 30 ngày gần nhất nếu bỏ trống cả 2
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime defaultFrom = LocalDate.now().minusDays(30).atStartOfDay();
+        var range = FilterUtils.normalizeDateTimeRange(fromDt, toDt, defaultFrom, now);
+
+        var mm = FilterUtils.normalizeMinMax(min, max);
 
         model.addAttribute("invoices",
-                invoiceRepository.filterInvoices(fromDt, toDt, min, max, roomId)
+                invoiceRepository.filterInvoices(range.from(), range.to(), mm.min(), mm.max(), roomId)
         );
 
         model.addAttribute("from", from == null ? "" : from);
         model.addAttribute("to", to == null ? "" : to);
-        model.addAttribute("min", min);
-        model.addAttribute("max", max);
+        model.addAttribute("min", mm.min());
+        model.addAttribute("max", mm.max());
         model.addAttribute("roomId", roomId);
 
         // danh sách phòng cho dropdown filter
@@ -191,10 +200,14 @@ public class InvoiceController {
             @RequestParam(required = false) BigDecimal max,
             @RequestParam(required = false) Long roomId
     ) {
-        LocalDateTime fromDt = parseVnDateTimeOrNull(from);
-        LocalDateTime toDt = parseVnDateTimeOrNull(to);
+        LocalDateTime fromDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(from, true);
+        LocalDateTime toDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(to, false);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime defaultFrom = LocalDate.now().minusDays(30).atStartOfDay();
+        var range = FilterUtils.normalizeDateTimeRange(fromDt, toDt, defaultFrom, now);
+        var mm = FilterUtils.normalizeMinMax(min, max);
 
-        var invoices = invoiceRepository.filterInvoices(fromDt, toDt, min, max, roomId);
+        var invoices = invoiceRepository.filterInvoices(range.from(), range.to(), mm.min(), mm.max(), roomId);
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
@@ -251,10 +264,14 @@ public class InvoiceController {
             @RequestParam(required = false) BigDecimal max,
             @RequestParam(required = false) Long roomId
     ) {
-        LocalDateTime fromDt = parseVnDateTimeOrNull(from);
-        LocalDateTime toDt = parseVnDateTimeOrNull(to);
+        LocalDateTime fromDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(from, true);
+        LocalDateTime toDt = FilterUtils.parseFlexibleDateOrDateTimeOrNull(to, false);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime defaultFrom = LocalDate.now().minusDays(30).atStartOfDay();
+        var range = FilterUtils.normalizeDateTimeRange(fromDt, toDt, defaultFrom, now);
+        var mm = FilterUtils.normalizeMinMax(min, max);
 
-        var invoices = invoiceRepository.filterInvoices(fromDt, toDt, min, max, roomId);
+        var invoices = invoiceRepository.filterInvoices(range.from(), range.to(), mm.min(), mm.max(), roomId);
 
         try (Workbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
@@ -362,14 +379,5 @@ public class InvoiceController {
     public String createBySessionQueryPost(@RequestParam("roomSessionId") Long roomSessionId) {
         Invoice inv = invoiceService.createOrGetBySession(roomSessionId);
         return "redirect:/invoice/" + inv.getId();
-    }
-
-    private LocalDateTime parseVnDateTimeOrNull(String s) {
-        if (s == null || s.isBlank()) return null;
-        try {
-            return LocalDateTime.parse(s.trim(), VN_DTF);
-        } catch (DateTimeParseException ex) {
-            return null;
-        }
     }
 }

@@ -3,7 +3,14 @@
   xmlns:th="http://www.thymeleaf.org"
   th:replace="~{layout/main-layout :: layout('Lịch sử ca', 'shift', ~{::pageHead}, ~{::section})}"
 >
-  <th:block th:fragment="pageHead"></th:block>
+  <th:block th:fragment="pageHead">
+    <!-- Flatpickr -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  </th:block>
 
   <section>
     <div class="topbar">
@@ -26,7 +33,7 @@
           <div class="field">
             <label class="form-label">Từ</label>
             <input
-              class="input"
+              class="input datetime-picker"
               type="text"
               name="from"
               th:value="${from}"
@@ -37,7 +44,7 @@
           <div class="field">
             <label class="form-label">Đến</label>
             <input
-              class="input"
+              class="input datetime-picker"
               type="text"
               name="to"
               th:value="${to}"
@@ -49,17 +56,24 @@
             <label class="form-label">Trạng thái</label>
             <select class="input" name="status">
               <option value="" th:selected="${status == null}">Tất cả</option>
-              <option value="OPEN" th:selected="${status != null && status.name() == 'OPEN'}">OPEN</option>
-              <option value="CLOSED" th:selected="${status != null && status.name() == 'CLOSED'}">CLOSED</option>
+              <option
+                value="OPEN"
+                th:selected="${status != null && status.name() == 'OPEN'}"
+              >
+                OPEN
+              </option>
+              <option
+                value="CLOSED"
+                th:selected="${status != null && status.name() == 'CLOSED'}"
+              >
+                CLOSED
+              </option>
             </select>
           </div>
         </div>
         <div class="form-actions">
           <button class="btn btn-primary" type="submit">Lọc</button>
           <a class="btn btn-outline" th:href="@{/shift/history}">Xoá lọc</a>
-        </div>
-        <div class="help-text" style="margin-top: 8px">
-          Gợi ý: nhập nhanh theo ngày <b>dd/MM/yyyy</b> hoặc theo chuẩn <b th:text="${dtPattern}">HH:mm dd/MM/yyyy</b>.
         </div>
       </form>
     </div>
@@ -83,7 +97,10 @@
           </thead>
           <tbody>
             <tr th:if="${shifts == null || #lists.isEmpty(shifts)}">
-              <td colspan="10" style="text-align: center; color: #6b7280; padding: 18px">
+              <td
+                colspan="10"
+                style="text-align: center; color: #6b7280; padding: 18px"
+              >
                 Chưa có ca nào
               </td>
             </tr>
@@ -96,21 +113,62 @@
                   class="badge"
                   th:classappend="${s.status.name() == 'OPEN'} ? ' badge-ok' : ' badge-muted'"
                   th:text="${s.status}"
-                >OPEN</span>
+                  >OPEN</span
+                >
               </td>
-              <td th:text="${s.openedAt != null ? #temporals.format(s.openedAt, 'HH:mm dd/MM/yyyy') : '--'}">--</td>
+              <td
+                th:text="${s.openedAt != null ? #temporals.format(s.openedAt, 'HH:mm dd/MM/yyyy') : '--'}"
+              >
+                --
+              </td>
               <td th:text="${s.openedBy}">admin</td>
-              <td th:text="${s.closedAt != null ? #temporals.format(s.closedAt, 'HH:mm dd/MM/yyyy') : '--'}">--</td>
+              <td
+                th:text="${s.closedAt != null ? #temporals.format(s.closedAt, 'HH:mm dd/MM/yyyy') : '--'}"
+              >
+                --
+              </td>
               <td th:text="${s.closedBy != null ? s.closedBy : '--'}">--</td>
-              <td style="text-align: right" th:text="${s.openingCash != null ? #numbers.formatDecimal(s.openingCash, 0, 'COMMA', 0, 'POINT') + ' ₫' : '--'}">0 ₫</td>
-              <td style="text-align: right" th:text="${s.closingCashDeclared != null ? #numbers.formatDecimal(s.closingCashDeclared, 0, 'COMMA', 0, 'POINT') + ' ₫' : '--'}">--</td>
+              <td
+                style="text-align: right"
+                th:text="${s.openingCash != null ? #numbers.formatDecimal(s.openingCash, 0, 'COMMA', 0, 'POINT') + ' ₫' : '--'}"
+              >
+                0 ₫
+              </td>
+              <td
+                style="text-align: right"
+                th:text="${s.closingCashDeclared != null ? #numbers.formatDecimal(s.closingCashDeclared, 0, 'COMMA', 0, 'POINT') + ' ₫' : '--'}"
+              >
+                --
+              </td>
               <td>
-                <a class="btn btn-outline btn-sm" th:href="@{/shift/{id}(id=${s.id})}">Xem</a>
-                <a class="btn btn-outline btn-sm" th:href="@{/shift/{id}/print(id=${s.id})}" target="_blank">In</a>
+                <a
+                  class="btn btn-outline btn-sm"
+                  th:href="@{/shift/{id}(id=${s.id})}"
+                  >Xem</a
+                >
+                <a
+                  class="btn btn-outline btn-sm"
+                  th:href="@{/shift/{id}/print(id=${s.id})}"
+                  target="_blank"
+                  >In</a
+                >
               </td>
             </tr>
           </tbody>
         </table>
+        <script>
+          // Flatpickr for time-range filters
+          document.addEventListener("DOMContentLoaded", function () {
+            if (typeof flatpickr !== "undefined") {
+              flatpickr(".datetime-picker", {
+                enableTime: true,
+                time_24hr: true,
+                dateFormat: "H:i d/m/Y",
+                allowInput: true,
+              });
+            }
+          });
+        </script>
       </div>
     </div>
   </section>

@@ -9,7 +9,6 @@
     <div class="topbar">
       <div>
         <h2 class="page-title">Kỹ thuật - Trạng thái phòng</h2>
-        <div class="help-text">Chuyển phòng sang <b>Bảo trì</b> hoặc <b>Trống</b> sau khi xử lý.</div>
       </div>
     </div>
 
@@ -31,18 +30,29 @@
               <td th:text="${r.name}"></td>
               <td th:text="${r.capacity}"></td>
               <td><span class="pill" th:text="${r.status}"></span></td>
-              <td style="display:flex;gap:8px;">
-                <form th:action="@{'/tech/rooms/' + ${r.id} + '/maintenance'}" method="post">
-                  <button class="btn" type="submit" th:disabled="${r.status.name() == 'OCCUPIED'}">Bảo trì</button>
+              <td style="display: flex; gap: 8px">
+                <form
+                  th:action="@{'/tech/rooms/' + ${r.id} + '/maintenance'}"
+                  method="post"
+                >
+                  <button
+                    class="btn"
+                    type="submit"
+                    th:disabled="${r.status.name() == 'OCCUPIED'}"
+                  >
+                    Bảo trì
+                  </button>
                 </form>
-                <form th:action="@{'/tech/rooms/' + ${r.id} + '/available'}" method="post">
+                <form
+                  th:action="@{'/tech/rooms/' + ${r.id} + '/available'}"
+                  method="post"
+                >
                   <button class="btn" type="submit">Trống</button>
                 </form>
               </td>
             </tr>
           </tbody>
         </table>
-        <div class="muted" style="margin-top:10px;">* Không cho chuyển sang Bảo trì nếu phòng đang OCCUPIED.</div>
       </div>
     </div>
   </section>
