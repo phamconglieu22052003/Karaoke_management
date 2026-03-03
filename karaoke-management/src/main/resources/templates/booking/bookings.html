@@ -58,7 +58,7 @@
           <td
             th:text="${#temporals.format(b.endTime, 'HH:mm dd/MM/yyyy')}"
           ></td>
-          <td th:text="${b.status}"></td>
+          <td th:text="${b.status.label}"></td>
         </tr>
       </tbody>
     </table>

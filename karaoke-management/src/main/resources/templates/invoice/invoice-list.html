@@ -11,6 +11,9 @@
       href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
     />
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"
+    ></script>
   </th:block>
 
   <section>
@@ -111,6 +114,12 @@
                 Xuất CSV
               </a>
             </div>
+
+            <div class="hint">
+              Định dạng: <b th:text="${dtPattern}">HH:mm dd/MM/yyyy</b> (VD:
+              20:30 26/01/2026)
+            </div>
+
             <!-- Chips: hiển thị điều kiện đang lọc -->
             <div class="chips">
               <span class="chip" th:if="${from != null and !from.isBlank()}">
@@ -237,6 +246,7 @@
             enableTime: true,
             time_24hr: true,
             dateFormat: "H:i d/m/Y",
+            locale: "vn",
             allowInput: true,
           });
         }

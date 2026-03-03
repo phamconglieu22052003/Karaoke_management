@@ -81,7 +81,7 @@
               <span
                 class="badge"
                 th:classappend="${invoice.status.name() == 'PAID'} ? ' badge-ok' : ' badge-muted'"
-                th:text="${invoice.status}"
+                th:text="${invoice.status.label}"
               >
                 UNPAID
               </span>
@@ -140,7 +140,7 @@
               "
             >
               <button type="submit" class="btn btn-primary">
-                💵 Thanh toán tiền mặt
+                Thanh toán tiền mặt
               </button>
             </form>
 

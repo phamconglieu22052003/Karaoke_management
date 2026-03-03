@@ -166,7 +166,7 @@
             <tr
               th:each="r : ${rooms}"
               class="room-row"
-              th:attr="data-name=${r.name},data-status=${r.status}"
+              th:attr="data-name=${r.name},data-status=${r.status.name()}"
             >
               <td th:text="${r.id}">1</td>
 
@@ -205,7 +205,7 @@
                     ${r.status.name() == 'AVAILABLE'} ? ' badge-ok' :
                     (${r.status.name() == 'OCCUPIED'} ? ' badge-warn' : ' badge-muted')
                   "
-                  th:text="${r.status}"
+                  th:text="${r.status.label}"
                   >AVAILABLE</span
                 >
               </td>

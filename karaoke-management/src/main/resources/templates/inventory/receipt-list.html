@@ -67,7 +67,7 @@
                 <span class="pill" th:text="${r.type}"></span>
               </td>
               <td>
-                <span class="pill" th:text="${r.status}"></span>
+                <span class="pill" th:text="${r.status.label}"></span>
               </td>
               <td th:text="${#temporals.format(r.createdAt, 'HH:mm dd/MM/yyyy')}"></td>
               <td th:text="${r.note}"></td>

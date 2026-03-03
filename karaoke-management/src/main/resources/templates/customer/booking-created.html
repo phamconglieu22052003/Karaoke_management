@@ -1,41 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/>
-  <title>Đặt phòng thành công</title>
-  <link rel="stylesheet" th:href="@{/css/main.css}"/>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Đặt phòng thành công</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+  </head>
+  <body>
+    <div class="container" style="max-width: 720px; margin: 24px auto">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Đã gửi yêu cầu đặt phòng</div>
+          <div class="muted">Vui lòng lưu mã đặt phòng để tra cứu.</div>
+        </div>
+        <div class="card-body">
+          <div class="alert success">
+            Mã đặt phòng của bạn: <b th:text="${booking.id}"></b>
+          </div>
 
-<div class="container" style="max-width:720px;margin:24px auto;">
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title">Đã gửi yêu cầu đặt phòng</div>
-      <div class="muted">Vui lòng lưu mã đặt phòng để tra cứu.</div>
+          <div class="kv">
+            <div class="kv-row">
+              <div class="kv-k">Khách</div>
+              <div class="kv-v" th:text="${booking.customerName}"></div>
+            </div>
+            <div class="kv-row">
+              <div class="kv-k">SĐT</div>
+              <div
+                class="kv-v"
+                th:text="${booking.phone != null ? booking.phone : booking.customerPhone}"
+              ></div>
+            </div>
+            <div class="kv-row">
+              <div class="kv-k">Phòng</div>
+              <div
+                class="kv-v"
+                th:text="${booking.room != null ? booking.room.name : ''}"
+              ></div>
+            </div>
+            <div class="kv-row">
+              <div class="kv-k">Bắt đầu</div>
+              <div
+                class="kv-v"
+                th:text="${booking.startTime != null ? dt.format(booking.startTime) : ''}"
+              ></div>
+            </div>
+            <div class="kv-row">
+              <div class="kv-k">Kết thúc</div>
+              <div
+                class="kv-v"
+                th:text="${booking.endTime != null ? dt.format(booking.endTime) : ''}"
+              ></div>
+            </div>
+            <div class="kv-row">
+              <div class="kv-k">Trạng thái</div>
+              <div class="kv-v" th:text="${booking.status.label}"></div>
+            </div>
+          </div>
+
+          <div
+            style="
+              margin-top: 16px;
+              display: flex;
+              gap: 10px;
+              align-items: center;
+            "
+          >
+            <a class="btn" th:href="@{/customer/booking/new}">Đặt tiếp</a>
+            <a
+              class="btn btn-primary"
+              th:href="@{'/customer/booking/' + ${booking.id} + '?phone=' + (booking.phone != null ? booking.phone : booking.customerPhone)}"
+              >Tra cứu ngay</a
+            >
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-
-      <div class="alert success">
-        Mã đặt phòng của bạn: <b th:text="${booking.id}"></b>
-      </div>
-
-      <div class="kv">
-        <div class="kv-row"><div class="kv-k">Khách</div><div class="kv-v" th:text="${booking.customerName}"></div></div>
-        <div class="kv-row"><div class="kv-k">SĐT</div><div class="kv-v" th:text="${booking.phone != null ? booking.phone : booking.customerPhone}"></div></div>
-        <div class="kv-row"><div class="kv-k">Phòng</div><div class="kv-v" th:text="${booking.room != null ? booking.room.name : ''}"></div></div>
-        <div class="kv-row"><div class="kv-k">Bắt đầu</div><div class="kv-v" th:text="${booking.startTime != null ? dt.format(booking.startTime) : ''}"></div></div>
-        <div class="kv-row"><div class="kv-k">Kết thúc</div><div class="kv-v" th:text="${booking.endTime != null ? dt.format(booking.endTime) : ''}"></div></div>
-        <div class="kv-row"><div class="kv-k">Trạng thái</div><div class="kv-v" th:text="${booking.status}"></div></div>
-      </div>
-
-      <div style="margin-top:16px;display:flex;gap:10px;align-items:center;">
-        <a class="btn" th:href="@{/customer/booking/new}">Đặt tiếp</a>
-        <a class="btn btn-primary" th:href="@{'/customer/booking/' + ${booking.id} + '?phone=' + (booking.phone != null ? booking.phone : booking.customerPhone)}">Tra cứu ngay</a>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-</body>
+  </body>
 </html>

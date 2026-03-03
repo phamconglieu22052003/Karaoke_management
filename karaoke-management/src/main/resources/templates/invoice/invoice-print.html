@@ -36,7 +36,7 @@
         <div class="muted">Session: <b th:text="${invoice.roomSession != null ? invoice.roomSession.id : ''}">31</b></div>
       </div>
       <div style="text-align:right">
-        <div class="muted">Trạng thái: <b th:text="${invoice.status}">UNPAID</b></div>
+        <div class="muted">Trạng thái: <b th:text="${invoice.status.label}">UNPAID</b></div>
         <div class="muted" th:if="${invoice.paidAt != null}">Paid at: <b th:text="${#temporals.format(invoice.paidAt, 'HH:mm dd/MM/yyyy')}">--</b></div>
       </div>
     </div>

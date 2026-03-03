@@ -58,8 +58,9 @@
               <td>
                 <span
                   class="pill"
-                  th:text="${u.roles != null && !u.roles.isEmpty() ? u.roles.iterator().next().roleCode : ''}"
-                  >ADMIN</span
+                  th:with="_roleRaw=${u.roles != null && !u.roles.isEmpty() ? (u.roles.iterator().next().roleName != null && u.roles.iterator().next().roleName != '' ? u.roles.iterator().next().roleName : u.roles.iterator().next().roleCode) : ''}"
+                  th:text="${#strings.trim(#strings.replace(_roleRaw,'(legacy)',''))}"
+                  >Quyền</span
                 >
               </td>
               <td>

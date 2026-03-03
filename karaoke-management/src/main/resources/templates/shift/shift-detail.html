@@ -50,7 +50,7 @@
               <span
                 class="badge"
                 th:classappend="${shift.status.name() == 'OPEN'} ? ' badge-ok' : ' badge-muted'"
-                th:text="${shift.status}"
+                th:text="${shift.status.label}"
                 >OPEN</span
               >
             </div>
@@ -224,7 +224,9 @@
                         --
                       </td>
                       <td>
-                        <span class="badge badge-ok" th:text="${rs.status}"
+                        <span
+                          class="badge badge-ok"
+                          th:text="${rs.status.label}"
                           >OPEN</span
                         >
                       </td>
@@ -358,7 +360,9 @@
                         --
                       </td>
                       <td>
-                        <span class="badge badge-muted" th:text="${inv.status}"
+                        <span
+                          class="badge badge-muted"
+                          th:text="${inv.status.label}"
                           >UNPAID</span
                         >
                       </td>

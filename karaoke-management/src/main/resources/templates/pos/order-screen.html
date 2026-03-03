@@ -316,12 +316,13 @@
             >
           </div>
           <div class="pill">
-            Trạng thái session: <b th:text="${roomSession.status}">OPEN</b>
+            Trạng thái session:
+            <b th:text="${roomSession.status.label}">OPEN</b>
           </div>
 
           <div class="pill" th:if="${order != null}">
             Order: <b th:text="${order.id}">11</b> •
-            <b th:text="${order.status}">OPEN</b>
+            <b th:text="${order.status.label}">OPEN</b>
           </div>
 
           <div class="pill" th:if="${readOnly}">
@@ -680,7 +681,7 @@
               <div style="font-weight: 900">Order đã chốt gần nhất</div>
               <div class="tiny muted">
                 ID: <b th:text="${lastClosedOrder.id}">0</b> • Trạng thái:
-                <b th:text="${lastClosedOrder.status}">CLOSED</b>
+                <b th:text="${lastClosedOrder.status.label}">CLOSED</b>
               </div>
             </div>
             <div class="pill">Tổng: <b th:text="${lastClosedTotal}">0</b></div>
