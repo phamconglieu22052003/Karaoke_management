@@ -6,12 +6,37 @@
 >
   <th:block th:fragment="pageHead">
     <style>
-      .muted{ color:#6b7280; }
-      .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.08); background:rgba(0,0,0,.02); }
-      .danger { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.25); }
-      .ok { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.25); }
-      .toolbar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
-      .tbl td, .tbl th { vertical-align: middle; }
+      .muted {
+        color: #6b7280;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(0, 0, 0, 0.02);
+      }
+      .danger {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.25);
+      }
+      .ok {
+        background: rgba(34, 197, 94, 0.1);
+        border-color: rgba(34, 197, 94, 0.25);
+      }
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .tbl td,
+      .tbl th {
+        vertical-align: middle;
+      }
     </style>
   </th:block>
 
@@ -20,44 +45,64 @@
       <div class="card-head">
         <div>
           <h2>Lịch sử xuất/nhập</h2>
-          <div class="muted">Theo dõi biến động tồn kho theo phiếu nhập/xuất.</div>
+          <div class="muted">
+            Theo dõi biến động tồn kho theo phiếu nhập/xuất.
+          </div>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
           <a class="btn" th:href="@{/inventory/stocks}">Tồn kho</a>
           <a class="btn" th:href="@{/inventory/receipts}">Phiếu</a>
         </div>
       </div>
 
-      <div class="toolbar" style="margin-top: 8px;">
-        <form method="get" th:action="@{/inventory/movements}" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div class="toolbar" style="margin-top: 8px">
+        <form
+          method="get"
+          th:action="@{/inventory/movements}"
+          style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap"
+        >
           <label class="muted">Sản phẩm</label>
           <select class="input" name="productId" onchange="this.form.submit()">
             <option value="" th:selected="${productId == null}">Tất cả</option>
-            <option th:each="p : ${products}" th:value="${p.id}" th:selected="${productId != null and p.id == productId}" th:text="${p.name}"></option>
+            <option
+              th:each="p : ${products}"
+              th:value="${p.id}"
+              th:selected="${productId != null and p.id == productId}"
+              th:text="${p.name}"
+            ></option>
           </select>
         </form>
       </div>
 
-      <div class="table-wrap" style="margin-top:12px;">
-        <table class="tbl">
+      <div class="table-wrap" style="margin-top: 12px">
+        <table data-paginate="10" class="tbl">
           <thead>
             <tr>
               <th>Thời gian</th>
               <th>Sản phẩm</th>
-              <th style="width:140px;">Biến động</th>
+              <th style="width: 140px">Biến động</th>
               <th>Tham chiếu</th>
               <th>Ghi chú</th>
             </tr>
           </thead>
           <tbody>
             <tr th:each="m : ${movements}">
-              <td th:text="${#temporals.format(m.createdAt, 'HH:mm dd/MM/yyyy')}"></td>
+              <td
+                th:text="${#temporals.format(m.createdAt, 'HH:mm dd/MM/yyyy')}"
+              ></td>
               <td>
-                <div style="font-weight:800" th:text="${m.product.name}"></div>
-                <div class="muted" th:text="${m.product.category != null ? m.product.category.name : ''}"></div>
+                <div style="font-weight: 800" th:text="${m.product.name}"></div>
+                <div
+                  class="muted"
+                  th:text="${m.product.category != null ? m.product.category.name : ''}"
+                ></div>
               </td>
               <td>
-                <span class="pill" th:classappend="${m.changeQty} &lt; 0 ? ' danger' : ' ok'" th:text="${m.changeQty}"></span>
+                <span
+                  class="pill"
+                  th:classappend="${m.changeQty} &lt; 0 ? ' danger' : ' ok'"
+                  th:text="${m.changeQty}"
+                ></span>
               </td>
               <td>
                 <span class="pill" th:text="${m.refType}"></span>

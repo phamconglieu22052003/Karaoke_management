@@ -2,19 +2,145 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Đặt phòng thành công</title>
     <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <style>
+      body {
+        background: linear-gradient(180deg, #f8fbff 0%, #f3f6fb 100%);
+      }
+      .booking-success-wrap {
+        max-width: 820px;
+        margin: 32px auto;
+        padding: 0 16px;
+      }
+      .booking-success-card {
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+      }
+      .booking-success-hero {
+        padding: 28px 28px 20px;
+        background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+        color: #fff;
+      }
+      .booking-success-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .booking-success-hero h1 {
+        margin: 14px 0 10px;
+        font-size: 32px;
+        line-height: 1.15;
+      }
+      .booking-success-hero p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.88);
+        line-height: 1.6;
+      }
+      .booking-success-body {
+        padding: 24px 28px 28px;
+      }
+      .booking-success-alert {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: linear-gradient(
+          135deg,
+          rgba(34, 197, 94, 0.12),
+          rgba(59, 130, 246, 0.1)
+        );
+        border: 1px solid rgba(34, 197, 94, 0.18);
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      .booking-success-alert strong {
+        display: block;
+        font-size: 22px;
+        color: #166534;
+      }
+      .booking-success-id {
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px dashed rgba(37, 99, 235, 0.35);
+        font-size: 15px;
+      }
+      .booking-success-id b {
+        font-size: 28px;
+        color: #1d4ed8;
+      }
+      .booking-status-note {
+        margin: 0 0 18px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: #eff6ff;
+        color: #1e3a8a;
+        border: 1px solid rgba(37, 99, 235, 0.14);
+      }
+      .booking-success-actions {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .booking-success-actions .btn {
+        min-height: 46px;
+        border-radius: 14px;
+      }
+      @media (max-width: 640px) {
+        .booking-success-hero,
+        .booking-success-body {
+          padding: 20px;
+        }
+        .booking-success-hero h1 {
+          font-size: 26px;
+        }
+        .booking-success-id {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div class="container" style="max-width: 720px; margin: 24px auto">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">Đã gửi yêu cầu đặt phòng</div>
-          <div class="muted">Vui lòng lưu mã đặt phòng để tra cứu.</div>
+    <div class="booking-success-wrap">
+      <div class="booking-success-card">
+        <div class="booking-success-hero">
+          <div class="booking-success-badge">✅ Đặt phòng thành công</div>
+          <h1>Yêu cầu đặt phòng của bạn đã được ghi nhận</h1>
+          <p>
+            Cảm ơn bạn đã đặt phòng. Vui lòng lưu mã đặt phòng bên dưới để tra
+            cứu lại khi cần.
+          </p>
         </div>
-        <div class="card-body">
-          <div class="alert success">
-            Mã đặt phòng của bạn: <b th:text="${booking.id}"></b>
+
+        <div class="booking-success-body">
+          <div class="booking-success-alert">
+            <div>
+              <strong>Gửi yêu cầu thành công</strong>
+              <div>Mã đặt phòng của bạn đã được tạo trong hệ thống.</div>
+            </div>
+            <div class="booking-success-id">
+              Mã đặt phòng<br />
+              <b th:text="${booking.id}"></b>
+            </div>
+          </div>
+
+          <div class="booking-status-note">
+            Trạng thái hiện tại: <b th:text="${booking.status.label}"></b>. Bạn
+            có thể dùng mã đặt phòng và số điện thoại để tra cứu lại chi tiết
+            đặt phòng.
           </div>
 
           <div class="kv">
@@ -56,14 +182,7 @@
             </div>
           </div>
 
-          <div
-            style="
-              margin-top: 16px;
-              display: flex;
-              gap: 10px;
-              align-items: center;
-            "
-          >
+          <div class="booking-success-actions">
             <a class="btn" th:href="@{/customer/booking/new}">Đặt tiếp</a>
             <a
               class="btn btn-primary"
@@ -74,5 +193,15 @@
         </div>
       </div>
     </div>
+
+    <script>
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          alert(
+            "Đặt phòng thành công. Vui lòng lưu lại mã đặt phòng để tra cứu sau.",
+          );
+        }, 200);
+      });
+    </script>
   </body>
 </html>

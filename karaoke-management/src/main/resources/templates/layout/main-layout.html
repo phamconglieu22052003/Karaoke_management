@@ -30,6 +30,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'dashboard' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'dashboard' ? 'page' : null"
             th:href="@{/dashboard}"
           >
             Dashboard
@@ -37,6 +38,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'rooms' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'rooms' ? 'page' : null"
             th:href="@{/rooms}"
             sec:authorize="hasAnyRole('MANAGER','CASHIER','WAITER')"
           >
@@ -45,6 +47,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'roomTypes' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'roomTypes' ? 'page' : null"
             th:href="@{/room-types}"
             sec:authorize="hasRole('MANAGER')"
           >
@@ -53,6 +56,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'booking' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'booking' ? 'page' : null"
             th:href="@{/booking}"
             sec:authorize="hasAnyRole('MANAGER','CASHIER')"
           >
@@ -61,6 +65,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'sessions' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'sessions' ? 'page' : null"
             th:href="@{/room-sessions}"
             sec:authorize="hasAnyRole('MANAGER','CASHIER','WAITER')"
           >
@@ -69,6 +74,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'invoices' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'invoices' ? 'page' : null"
             th:href="@{/invoice}"
             sec:authorize="hasAnyRole('MANAGER','CASHIER')"
           >
@@ -78,6 +84,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'shift' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'shift' ? 'page' : null"
             th:href="@{/shift/history}"
             sec:authorize="hasAnyRole('MANAGER','CASHIER')"
           >
@@ -87,6 +94,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'inventory' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'inventory' ? 'page' : null"
             th:href="@{/inventory/stocks}"
             sec:authorize="hasAnyRole('MANAGER','STOREKEEPER')"
           >
@@ -96,6 +104,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'tech' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'tech' ? 'page' : null"
             th:href="@{/tech/rooms}"
             sec:authorize="hasAnyRole('MANAGER','TECHNICIAN')"
           >
@@ -105,6 +114,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'products' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'products' ? 'page' : null"
             th:href="@{/products}"
             sec:authorize="hasAnyRole('MANAGER','STOREKEEPER')"
           >
@@ -114,6 +124,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'productCategories' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'productCategories' ? 'page' : null"
             th:href="@{/product-categories}"
             sec:authorize="hasAnyRole('MANAGER','STOREKEEPER')"
           >
@@ -123,6 +134,7 @@
           <a
             class="nav-item"
             th:classappend="${active} == 'users' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'users' ? 'page' : null"
             th:href="@{/users}"
             sec:authorize="hasRole('MANAGER')"
           >
@@ -165,6 +177,14 @@
             <div class="subtitle">Quản lý vận hành quán karaoke</div>
           </div>
 
+          <div
+            class="current-page-badge"
+            th:if="${title != null}"
+            th:text="'Trang đang chọn: ' + ${title}"
+          >
+            Trang đang chọn: Dashboard
+          </div>
+
           <div class="app-header-actions">
             <a class="btn btn-outline btn-sm" th:href="@{/dashboard}"
               >Trang chủ</a
@@ -197,5 +217,7 @@
         if (!clickedInside) sidebar.classList.remove("open");
       });
     </script>
+
+    <script th:src="@{/js/table-pagination.js}"></script>
   </body>
 </html>

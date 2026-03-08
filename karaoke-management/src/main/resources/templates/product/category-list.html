@@ -5,116 +5,136 @@
 >
   <th:block th:fragment="pageHead"></th:block>
 
-  <section>
-    <div class="topbar">
+  <section class="pc-page">
+    <div class="topbar pc-topbar">
       <div>
         <h2 class="page-title">Danh mục sản phẩm</h2>
-        <div class="help-text">Quản lý mặt hàng</div>
+        <div class="help-text">
+          Quản lý mặt hàng, nhóm sản phẩm và trạng thái sử dụng.
+        </div>
       </div>
-      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      <div class="pc-topbar-actions">
         <a class="btn btn-outline" th:href="@{/products}">→ Sản phẩm</a>
       </div>
     </div>
 
     <div th:if="${msg}" class="alert success" th:text="${msg}">OK</div>
 
-    <div class="grid" style="grid-template-columns: 420px 1fr; gap: 14px">
-      <div class="card">
-        <div class="card-head">
+    <div class="card pc-form-card pc-form-card-top">
+      <div class="card-head pc-form-head pc-form-head-top">
+        <div>
           <div
             class="card-title"
             th:text="${editing != null and editing} ? 'Cập nhật danh mục' : 'Thêm danh mục'"
           >
             Thêm danh mục
           </div>
+          <div class="help-text pc-card-help">
+            Nhập tên danh mục ngắn gọn, dễ nhận biết khi tạo sản phẩm.
+          </div>
         </div>
+      </div>
 
-        <div class="card-body">
-          <form th:action="@{/product-categories/save}" method="post">
-            <input type="hidden" name="id" th:value="${category.id}" />
+      <div class="card-body">
+        <form
+          th:action="@{/product-categories/save}"
+          method="post"
+          class="pc-form pc-form-top"
+        >
+          <input type="hidden" name="id" th:value="${category.id}" />
 
-            <label class="label">Tên danh mục</label>
-            <input
-              class="input"
-              type="text"
-              name="name"
-              th:value="${category.name}"
-              placeholder="VD: Đồ uống"
-              required
-            />
+          <div class="pc-form-grid">
+            <div>
+              <label class="label">Tên danh mục</label>
+              <input
+                class="input"
+                type="text"
+                name="name"
+                th:value="${category.name}"
+                placeholder="VD: Đồ uống"
+                required
+              />
+            </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 12px">
+            <div class="form-actions pc-form-actions pc-form-actions-inline">
               <button class="btn btn-primary" type="submit">Lưu</button>
               <a class="btn btn-outline" th:href="@{/product-categories}"
                 >Làm mới</a
               >
             </div>
-          </form>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card pc-list-card pc-list-card-full">
+      <div class="card-head pc-list-head">
+        <div>
+          <div class="card-title">Danh sách danh mục</div>
+          <div class="help-text pc-card-help">
+            Theo dõi tên danh mục, trạng thái và thao tác cập nhật nhanh.
+          </div>
+        </div>
+        <div class="pc-count" th:text="'Tổng: ' + ${#lists.size(categories)}">
+          Tổng: 0
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">Danh sách</div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 80px">ID</th>
-                <th>Tên</th>
-                <th style="width: 120px">Trạng thái</th>
-                <th style="width: 220px">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:if="${#lists.isEmpty(categories)}">
-                <td
-                  colspan="4"
-                  style="text-align: center; color: #6b7280; padding: 18px"
-                >
-                  Chưa có danh mục
-                </td>
-              </tr>
+      <div class="table-wrap pc-table-wrap">
+        <table data-paginate="10" data-page-key="product-categories">
+          <thead>
+            <tr>
+              <th style="width: 90px">ID</th>
+              <th>Tên danh mục</th>
+              <th style="width: 140px">Trạng thái</th>
+              <th style="width: 220px">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${#lists.isEmpty(categories)}" data-empty-row>
+              <td
+                colspan="4"
+                style="text-align: center; color: #6b7280; padding: 22px"
+              >
+                Chưa có danh mục
+              </td>
+            </tr>
 
-              <tr th:each="c : ${categories}">
-                <td th:text="${c.id}">1</td>
-                <td>
-                  <div style="font-weight: 900" th:text="${c.name}">
-                    Đồ uống
-                  </div>
-                </td>
-                <td>
-                  <span
-                    class="badge"
-                    th:classappend="${c.active} ? ' badge-ok' : ' badge-muted'"
-                    th:text="${c.active} ? 'ACTIVE' : 'INACTIVE'"
-                    >ACTIVE</span
+            <tr th:each="c : ${categories}">
+              <td th:text="${c.id}">1</td>
+              <td>
+                <div class="pc-name" th:text="${c.name}">Đồ uống</div>
+              </td>
+              <td>
+                <span
+                  class="badge"
+                  th:classappend="${c.active} ? ' badge-ok' : ' badge-muted'"
+                  th:text="${c.active} ? 'ACTIVE' : 'INACTIVE'"
+                  >ACTIVE</span
+                >
+              </td>
+              <td>
+                <div class="actions pc-actions">
+                  <a
+                    class="btn btn-outline btn-sm"
+                    th:href="@{/product-categories/edit/{id}(id=${c.id})}"
+                    >Sửa</a
                   >
-                </td>
-                <td>
-                  <div class="actions">
-                    <a
-                      class="btn btn-outline btn-sm"
-                      th:href="@{/product-categories/edit/{id}(id=${c.id})}"
-                      >Sửa</a
-                    >
-                    <form
-                      th:action="@{/product-categories/toggle/{id}(id=${c.id})}"
-                      method="post"
-                      style="display: inline"
-                      onsubmit="return confirm('Đổi trạng thái danh mục?');"
-                    >
-                      <button class="btn btn-danger btn-sm" type="submit">
-                        Đổi trạng thái
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <form
+                    th:action="@{/product-categories/toggle/{id}(id=${c.id})}"
+                    method="post"
+                    style="display: inline"
+                    onsubmit="return confirm('Đổi trạng thái danh mục?');"
+                  >
+                    <button class="btn btn-danger btn-sm" type="submit">
+                      Đổi trạng thái
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>

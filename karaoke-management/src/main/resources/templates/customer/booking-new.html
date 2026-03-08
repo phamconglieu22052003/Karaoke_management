@@ -2,115 +2,489 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Đặt phòng online</title>
     <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <style>
+      .booking-public-shell {
+        min-height: 100vh;
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(37, 99, 235, 0.1),
+            transparent 30%
+          ),
+          linear-gradient(180deg, #f8fbff 0%, #f4f6fb 100%);
+        padding: 32px 16px;
+      }
+      .booking-public-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+      }
+      .booking-public-card {
+        display: block;
+      }
+      .booking-form-card {
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 22px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        padding: 24px;
+      }
+      .booking-form-head {
+        margin-bottom: 18px;
+      }
+      .booking-form-head h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .booking-form-head p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .booking-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .booking-form-grid .full {
+        grid-column: 1 / -1;
+      }
+      .booking-input-wrap {
+        position: relative;
+      }
+      .booking-input-hint {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .booking-note {
+        margin-top: 10px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(37, 99, 235, 0.06);
+        border: 1px solid rgba(37, 99, 235, 0.12);
+        color: #1e3a8a;
+        font-size: 13px;
+      }
+      .booking-success {
+        margin-bottom: 18px;
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: linear-gradient(
+          180deg,
+          rgba(34, 197, 94, 0.1),
+          rgba(34, 197, 94, 0.05)
+        );
+        border: 1px solid rgba(34, 197, 94, 0.26);
+        color: #166534;
+      }
+      .booking-success strong {
+        display: block;
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+      .booking-success-meta {
+        margin-top: 8px;
+        font-size: 14px;
+        color: #166534;
+      }
+      .booking-room-meta {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .booking-room-chip {
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid var(--line);
+      }
+      .booking-room-chip span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+      .booking-time-box {
+        padding: 14px;
+        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+      .booking-time-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .booking-form-card .form-control {
+        width: 100%;
+        min-height: 48px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: 15px;
+        outline: none;
+        transition: 0.15s;
+      }
+      .booking-form-card .form-control:focus {
+        border-color: rgba(37, 99, 235, 0.55);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      }
+      .booking-form-card
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+      }
+      .booking-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+      }
+      .booking-actions .btn {
+        min-width: 210px;
+        min-height: 48px;
+        border-radius: 14px;
+      }
+      .booking-login-link {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 800;
+      }
+      @media (max-width: 640px) {
+        .booking-form-grid,
+        .booking-time-grid,
+        .booking-room-meta {
+          grid-template-columns: 1fr;
+        }
+        .booking-form-grid .full {
+          grid-column: auto;
+        }
+        .booking-public-hero {
+          padding: 22px;
+        }
+        .booking-form-card {
+          padding: 18px;
+        }
+        .booking-actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div class="container" style="max-width: 720px; margin: 24px auto">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">Đặt phòng online</div>
-          <div class="muted">
-            Khách hàng điền thông tin để gửi yêu cầu đặt phòng.
-          </div>
-        </div>
-        <div class="card-body">
-          <div th:if="${error}" class="alert danger" th:text="${error}"></div>
+    <div class="booking-public-shell">
+      <div class="booking-public-wrap">
+        <div class="booking-public-card">
+          <section class="booking-form-card">
+            <div class="booking-form-head">
+              <h2>Thông tin đặt phòng</h2>
+              <p>
+                Chọn phòng, ngày và giờ bắt đầu, ngày và giờ kết thúc. Mọi
+                trường có dấu <strong>*</strong> là bắt buộc.
+              </p>
+            </div>
 
-          <form method="post" th:action="@{/customer/booking}">
-            <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px">
+            <div th:if="${successBooking != null}" class="booking-success">
+              <strong>Đặt phòng thành công</strong>
               <div>
-                <div class="form-label">Họ tên</div>
-                <input
-                  class="form-control"
-                  name="customerName"
-                  th:value="${customerName}"
-                  placeholder="Nguyễn Văn A"
-                  required
-                />
+                Yêu cầu đặt phòng của bạn đã được ghi nhận. Nhân viên sẽ xác
+                nhận lại trong thời gian sớm nhất.
               </div>
-              <div>
-                <div class="form-label">Số điện thoại</div>
-                <input
-                  class="form-control"
-                  name="phone"
-                  th:value="${phone}"
-                  placeholder="09xxxxxxxx"
-                  required
-                />
+              <div class="booking-success-meta">
+                Mã đặt phòng: <b th:text="${successBooking.id}"></b> · Phòng:
+                <b th:text="${successBooking.room.name}"></b>
               </div>
             </div>
 
-            <div style="margin-top: 12px">
-              <div class="form-label">Chọn phòng</div>
-              <select class="form-control" name="roomId" required>
-                <option value="" disabled th:selected="${roomId == null}">
-                  -- Chọn phòng --
-                </option>
-                <option
-                  th:each="r : ${rooms}"
-                  th:value="${r.id}"
-                  th:selected="${roomId != null and r.id == roomId}"
-                  th:text="${r.name + ' (' + r.status.label + ')'}"
-                ></option>
-              </select>
-              <div class="muted" style="margin-top: 6px">
-                Lưu ý: nếu phòng đang được đặt trùng giờ, hệ thống sẽ báo lỗi.
-              </div>
-            </div>
+            <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
-            <div
-              class="grid"
-              style="
-                grid-template-columns: 1fr 1fr;
-                gap: 12px;
-                margin-top: 12px;
-              "
-            >
-              <div>
-                <div class="form-label">Giờ bắt đầu</div>
-                <input
-                  class="form-control"
-                  name="startTime"
-                  th:value="${startTime}"
-                  placeholder="20:00 26/01/2026"
-                  required
-                />
-                <div class="muted">
-                  Định dạng: <span th:text="${dtPattern}"></span>
+            <form method="post" th:action="@{/customer/booking}">
+              <div class="booking-form-grid">
+                <div>
+                  <label class="form-label">Họ tên *</label>
+                  <input
+                    class="form-control"
+                    name="customerName"
+                    th:value="${customerName}"
+                    placeholder="Nguyễn Văn A"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="form-label">Số điện thoại *</label>
+                  <input
+                    class="form-control"
+                    name="phone"
+                    th:value="${phone}"
+                    placeholder="09xxxxxxxx"
+                    inputmode="numeric"
+                    pattern="0[0-9]{9,10}"
+                    required
+                  />
+                </div>
+
+                <div class="full">
+                  <label class="form-label">Chọn phòng *</label>
+                  <select
+                    id="roomId"
+                    class="form-control"
+                    name="roomId"
+                    required
+                  >
+                    <option value="" disabled th:selected="${roomId == null}">
+                      -- Chọn phòng --
+                    </option>
+                    <option
+                      th:each="r : ${rooms}"
+                      th:value="${r.id}"
+                      th:selected="${roomId != null and r.id == roomId}"
+                      th:attr="data-capacity=${r.capacity},data-status=${r.status.label}"
+                      th:text="${r.name + ' • Sức chứa ' + r.capacity + ' người • ' + r.status.label}"
+                    ></option>
+                  </select>
+                  <div class="booking-room-meta">
+                    <div class="booking-room-chip">
+                      <span>Sức chứa</span>
+                      <strong id="roomCapacityText">Chọn phòng để xem</strong>
+                    </div>
+                    <div class="booking-room-chip">
+                      <span>Trạng thái</span>
+                      <strong id="roomStatusText">Chưa chọn phòng</strong>
+                    </div>
+                  </div>
+                  <div class="booking-note">
+                    Nếu phòng đã có người đặt trong cùng khung giờ, hệ thống sẽ
+                    báo để bạn chọn thời gian khác.
+                  </div>
+                </div>
+
+                <div class="full booking-time-box">
+                  <div class="booking-time-grid">
+                    <div>
+                      <label class="form-label">Ngày bắt đầu *</label>
+                      <input
+                        id="startDate"
+                        type="date"
+                        class="form-control"
+                        th:value="${startDate}"
+                        th:min="${minDate}"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label class="form-label">Giờ bắt đầu *</label>
+                      <input
+                        id="startClock"
+                        type="time"
+                        class="form-control"
+                        th:value="${startClock}"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label class="form-label">Ngày kết thúc *</label>
+                      <input
+                        id="endDate"
+                        type="date"
+                        class="form-control"
+                        th:value="${endDate}"
+                        th:min="${minDate}"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label class="form-label">Giờ kết thúc *</label>
+                      <input
+                        id="endClock"
+                        type="time"
+                        class="form-control"
+                        th:value="${endClock}"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <input
+                    id="startTime"
+                    type="hidden"
+                    name="startTime"
+                    th:value="${startTime}"
+                  />
+                  <input
+                    id="endTime"
+                    type="hidden"
+                    name="endTime"
+                    th:value="${endTime}"
+                  />
+                  <div class="booking-input-hint">
+                    Chọn riêng ngày và giờ để dễ thao tác hơn. Không thể chọn
+                    giờ bắt đầu trong quá khứ.
+                  </div>
                 </div>
               </div>
-              <div>
-                <div class="form-label">Giờ kết thúc</div>
-                <input
-                  class="form-control"
-                  name="endTime"
-                  th:value="${endTime}"
-                  placeholder="22:00 26/01/2026"
-                  required
-                />
-                <div class="muted">
-                  Định dạng: <span th:text="${dtPattern}"></span>
-                </div>
-              </div>
-            </div>
 
-            <div
-              style="
-                margin-top: 16px;
-                display: flex;
-                gap: 10px;
-                align-items: center;
-              "
-            >
-              <button class="btn btn-primary" type="submit">
-                Gửi yêu cầu đặt phòng
-              </button>
-              <a class="link" th:href="@{/login}">Đăng nhập nhân viên</a>
-            </div>
-          </form>
+              <div class="booking-actions">
+                <button class="btn btn-primary" type="submit">
+                  Gửi yêu cầu đặt phòng
+                </button>
+                <a class="link booking-login-link" th:href="@{/login}">
+                  Đăng nhập nhân viên
+                </a>
+              </div>
+            </form>
+          </section>
         </div>
       </div>
     </div>
+
+    <script th:inline="javascript">
+      const roomSelect = document.getElementById("roomId");
+      const roomCapacityText = document.getElementById("roomCapacityText");
+      const roomStatusText = document.getElementById("roomStatusText");
+      const startDateInput = document.getElementById("startDate");
+      const startClockInput = document.getElementById("startClock");
+      const endDateInput = document.getElementById("endDate");
+      const endClockInput = document.getElementById("endClock");
+      const startInput = document.getElementById("startTime");
+      const endInput = document.getElementById("endTime");
+      const minDateTime = /*[[${minDateTime}]]*/ "";
+      const minDate = /*[[${minDate}]]*/ "";
+      const minTimeToday = /*[[${minTimeToday}]]*/ "";
+
+      const combineDateTime = (date, time) =>
+        date && time ? `${date}T${time}` : "";
+      const toDate = (value) => {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? null : date;
+      };
+      const formatDate = (date) => {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      };
+      const formatTime = (date) => {
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mi = String(date.getMinutes()).padStart(2, "0");
+        return `${hh}:${mi}`;
+      };
+      const plusHours = (dateValue, timeValue, hours) => {
+        const base = toDate(combineDateTime(dateValue, timeValue));
+        if (!base) return null;
+        base.setHours(base.getHours() + hours);
+        return { date: formatDate(base), time: formatTime(base) };
+      };
+
+      const syncRoomMeta = () => {
+        const selected = roomSelect?.selectedOptions?.[0];
+        if (!selected || !selected.value) {
+          roomCapacityText.textContent = "Chọn phòng để xem";
+          roomStatusText.textContent = "Chưa chọn phòng";
+          return;
+        }
+        roomCapacityText.textContent = `${selected.dataset.capacity || "?"} người`;
+        roomStatusText.textContent = selected.dataset.status || "Không rõ";
+      };
+
+      const syncHiddenFields = () => {
+        startInput.value = combineDateTime(
+          startDateInput.value,
+          startClockInput.value,
+        );
+        endInput.value = combineDateTime(
+          endDateInput.value,
+          endClockInput.value,
+        );
+      };
+
+      const enforceStartMin = () => {
+        if (!startDateInput.value || startDateInput.value <= minDate) {
+          startDateInput.value = minDate;
+        }
+        startClockInput.min =
+          startDateInput.value === minDate ? minTimeToday : "00:00";
+        if (
+          startDateInput.value === minDate &&
+          startClockInput.value &&
+          startClockInput.value < minTimeToday
+        ) {
+          startClockInput.value = minTimeToday;
+        }
+      };
+
+      const syncEndMin = () => {
+        enforceStartMin();
+        const startValue = combineDateTime(
+          startDateInput.value,
+          startClockInput.value,
+        );
+        const minEnd = plusHours(
+          startDateInput.value,
+          startClockInput.value,
+          2,
+        );
+        if (!minEnd) return;
+
+        endDateInput.min = startDateInput.value || minDate;
+        if (!endDateInput.value || endDateInput.value < endDateInput.min) {
+          endDateInput.value = minEnd.date;
+        }
+
+        endClockInput.min =
+          endDateInput.value === minEnd.date ? minEnd.time : "00:00";
+        const endValue = combineDateTime(
+          endDateInput.value,
+          endClockInput.value,
+        );
+
+        if (!endValue || endValue <= startValue) {
+          endDateInput.value = minEnd.date;
+          endClockInput.value = minEnd.time;
+        } else if (
+          endDateInput.value === minEnd.date &&
+          endClockInput.value < minEnd.time
+        ) {
+          endClockInput.value = minEnd.time;
+        }
+        syncHiddenFields();
+      };
+
+      [startDateInput, startClockInput, endDateInput, endClockInput].forEach(
+        (input) => {
+          input?.addEventListener("change", syncEndMin);
+        },
+      );
+      roomSelect?.addEventListener("change", syncRoomMeta);
+      document.querySelector("form")?.addEventListener("submit", (event) => {
+        syncEndMin();
+        const startValue = combineDateTime(
+          startDateInput.value,
+          startClockInput.value,
+        );
+        const endValue = combineDateTime(
+          endDateInput.value,
+          endClockInput.value,
+        );
+        if (
+          !startValue ||
+          !endValue ||
+          endValue <= startValue ||
+          startValue < minDateTime
+        ) {
+          event.preventDefault();
+          alert(
+            "Vui lòng chọn ngày và giờ hợp lệ. Giờ kết thúc phải sau giờ bắt đầu và giờ bắt đầu không được ở quá khứ.",
+          );
+        }
+      });
+
+      syncRoomMeta();
+      syncEndMin();
+      syncHiddenFields();
+    </script>
   </body>
 </html>

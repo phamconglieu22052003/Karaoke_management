@@ -6,11 +6,35 @@
 >
   <th:block th:fragment="pageHead">
     <style>
-      .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.08); background:rgba(0,0,0,.02); }
-      .muted{ color:#6b7280; }
-      .toolbar{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
-      .filters{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-      .tbl td, .tbl th { vertical-align: middle; }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(0, 0, 0, 0.02);
+      }
+      .muted {
+        color: #6b7280;
+      }
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .tbl td,
+      .tbl th {
+        vertical-align: middle;
+      }
     </style>
   </th:block>
 
@@ -19,9 +43,11 @@
       <div class="card-head">
         <div>
           <h2>Phiếu nhập/xuất</h2>
-          <div class="muted">Tạo phiếu nhập/xuất, gửi duyệt, duyệt/từ chối.</div>
+          <div class="muted">
+            Tạo phiếu nhập/xuất, gửi duyệt, duyệt/từ chối.
+          </div>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
           <a class="btn" th:href="@{/inventory/stocks}">Tồn kho</a>
           <a class="btn" th:href="@{/inventory/movements}">Lịch sử</a>
         </div>
@@ -29,27 +55,43 @@
 
       <div th:if="${msg}" class="alert success" th:text="${msg}"></div>
 
-      <div class="toolbar" style="margin-top: 8px;">
+      <div class="toolbar" style="margin-top: 8px">
         <div class="filters">
-          <form method="get" th:action="@{/inventory/receipts}" style="display:flex; gap:10px; align-items:center;">
+          <form
+            method="get"
+            th:action="@{/inventory/receipts}"
+            style="display: flex; gap: 10px; align-items: center"
+          >
             <label class="muted">Trạng thái</label>
             <select class="input" name="status" onchange="this.form.submit()">
               <option value="ALL" th:selected="${status}=='ALL'">Tất cả</option>
-              <option value="DRAFT" th:selected="${status}=='DRAFT'">DRAFT</option>
-              <option value="PENDING" th:selected="${status}=='PENDING'">PENDING</option>
-              <option value="APPROVED" th:selected="${status}=='APPROVED'">APPROVED</option>
-              <option value="REJECTED" th:selected="${status}=='REJECTED'">REJECTED</option>
+              <option value="DRAFT" th:selected="${status}=='DRAFT'">
+                DRAFT
+              </option>
+              <option value="PENDING" th:selected="${status}=='PENDING'">
+                PENDING
+              </option>
+              <option value="APPROVED" th:selected="${status}=='APPROVED'">
+                APPROVED
+              </option>
+              <option value="REJECTED" th:selected="${status}=='REJECTED'">
+                REJECTED
+              </option>
             </select>
           </form>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <a class="btn" th:href="@{/inventory/receipts/new(type='IN')}">+ Phiếu nhập</a>
-          <a class="btn" th:href="@{/inventory/receipts/new(type='OUT')}">+ Phiếu xuất</a>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          <a class="btn" th:href="@{/inventory/receipts/new(type='IN')}"
+            >+ Phiếu nhập</a
+          >
+          <a class="btn" th:href="@{/inventory/receipts/new(type='OUT')}"
+            >+ Phiếu xuất</a
+          >
         </div>
       </div>
 
-      <div class="table-wrap" style="margin-top: 12px;">
-        <table class="tbl">
+      <div class="table-wrap" style="margin-top: 12px">
+        <table data-paginate="10" class="tbl">
           <thead>
             <tr>
               <th>ID</th>
@@ -57,7 +99,7 @@
               <th>Trạng thái</th>
               <th>Ngày tạo</th>
               <th>Ghi chú</th>
-              <th style="width:160px;">Thao tác</th>
+              <th style="width: 160px">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -69,11 +111,20 @@
               <td>
                 <span class="pill" th:text="${r.status.label}"></span>
               </td>
-              <td th:text="${#temporals.format(r.createdAt, 'HH:mm dd/MM/yyyy')}"></td>
+              <td
+                th:text="${#temporals.format(r.createdAt, 'HH:mm dd/MM/yyyy')}"
+              ></td>
               <td th:text="${r.note}"></td>
               <td>
-                <a class="btn" th:href="@{/inventory/receipts/{id}(id=${r.id})}">Xem</a>
-                <a class="btn" th:if="${r.status.name()=='DRAFT'}" th:href="@{/inventory/receipts/{id}/edit(id=${r.id})}">Sửa</a>
+                <a class="btn" th:href="@{/inventory/receipts/{id}(id=${r.id})}"
+                  >Xem</a
+                >
+                <a
+                  class="btn"
+                  th:if="${r.status.name()=='DRAFT'}"
+                  th:href="@{/inventory/receipts/{id}/edit(id=${r.id})}"
+                  >Sửa</a
+                >
               </td>
             </tr>
             <tr th:if="${#lists.isEmpty(receipts)}">

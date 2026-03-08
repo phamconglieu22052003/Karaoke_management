@@ -6,11 +6,29 @@
 >
   <th:block th:fragment="pageHead">
     <style>
-      .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; border:1px solid rgba(0,0,0,.08); background:rgba(0,0,0,.02); }
-      .danger { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.25); }
-      .muted{ color:#6b7280; }
-      .tbl td, .tbl th { vertical-align: middle; }
-      .mini { width: 110px; }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(0, 0, 0, 0.02);
+      }
+      .danger {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.25);
+      }
+      .muted {
+        color: #6b7280;
+      }
+      .tbl td,
+      .tbl th {
+        vertical-align: middle;
+      }
+      .mini {
+        width: 110px;
+      }
     </style>
   </th:block>
 
@@ -19,9 +37,13 @@
       <div class="card-head">
         <div>
           <h2>Tồn kho</h2>
-          <div class="muted">Xem tồn theo sản phẩm, cấu hình mức tồn tối thiểu để cảnh báo.</div>
+          <div class="muted">
+            Xem tồn theo sản phẩm, cấu hình mức tồn tối thiểu để cảnh báo.
+          </div>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <div
+          style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center"
+        >
           <a class="btn" th:href="@{/inventory/receipts}">Phiếu nhập/xuất</a>
           <a class="btn" th:href="@{/inventory/movements}">Lịch sử xuất/nhập</a>
         </div>
@@ -30,35 +52,57 @@
       <div th:if="${msg}" class="alert success" th:text="${msg}"></div>
 
       <div class="table-wrap">
-        <table class="tbl">
+        <table data-paginate="10" class="tbl">
           <thead>
             <tr>
               <th>Sản phẩm</th>
               <th>Danh mục</th>
-              <th style="width:120px;">Tồn</th>
-              <th style="width:160px;">Tồn tối thiểu</th>
-              <th style="width:160px;">Cảnh báo</th>
+              <th style="width: 120px">Tồn</th>
+              <th style="width: 160px">Tồn tối thiểu</th>
+              <th style="width: 160px">Cảnh báo</th>
             </tr>
           </thead>
           <tbody>
             <tr th:each="s : ${stocks}">
               <td>
-                <div style="font-weight:800" th:text="${s.product.name}"></div>
+                <div style="font-weight: 800" th:text="${s.product.name}"></div>
                 <div class="muted" th:text="${s.product.unit}"></div>
               </td>
-              <td th:text="${s.product.category != null ? s.product.category.name : ''}"></td>
+              <td
+                th:text="${s.product.category != null ? s.product.category.name : ''}"
+              ></td>
               <td>
-                <span class="pill" th:classappend="${s.qtyOnHand} &lt; ${s.minQty} ? ' danger' : ''" th:text="${s.qtyOnHand}"></span>
+                <span
+                  class="pill"
+                  th:classappend="${s.qtyOnHand} &lt; ${s.minQty} ? ' danger' : ''"
+                  th:text="${s.qtyOnHand}"
+                ></span>
               </td>
               <td>
-                <form th:action="@{/inventory/stocks/{id}/min(id=${s.id})}" method="post" style="display:flex; gap:8px; align-items:center;">
-                  <input class="input mini" type="number" min="0" name="minQty" th:value="${s.minQty}" />
+                <form
+                  th:action="@{/inventory/stocks/{id}/min(id=${s.id})}"
+                  method="post"
+                  style="display: flex; gap: 8px; align-items: center"
+                >
+                  <input
+                    class="input mini"
+                    type="number"
+                    min="0"
+                    name="minQty"
+                    th:value="${s.minQty}"
+                  />
                   <button class="btn" type="submit">Lưu</button>
                 </form>
               </td>
               <td>
-                <span th:if="${s.qtyOnHand} &lt; ${s.minQty}" class="pill danger">Dưới mức tối thiểu</span>
-                <span th:if="${s.qtyOnHand} &gt;= ${s.minQty}" class="pill">OK</span>
+                <span
+                  th:if="${s.qtyOnHand} &lt; ${s.minQty}"
+                  class="pill danger"
+                  >Dưới mức tối thiểu</span
+                >
+                <span th:if="${s.qtyOnHand} &gt;= ${s.minQty}" class="pill"
+                  >OK</span
+                >
               </td>
             </tr>
           </tbody>

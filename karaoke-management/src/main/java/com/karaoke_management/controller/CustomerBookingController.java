@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
+import java.util.Map;
 
 /**
  * Public (anonymous) booking flow for "Khách hàng".
@@ -31,6 +33,7 @@ public class CustomerBookingController {
     private final RoomRepository roomRepository;
 
     private static final DateTimeFormatter VN_DTF = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
+    private static final DateTimeFormatter HTML_DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
     public CustomerBookingController(BookingRepository bookingRepository, RoomRepository roomRepository) {
         this.bookingRepository = bookingRepository;
@@ -38,9 +41,12 @@ public class CustomerBookingController {
     }
 
     @GetMapping("/new")
-    public String newForm(Model model) {
+    public String newForm(@RequestParam(name = "success", required = false) Long successId, Model model) {
         model.addAttribute("rooms", roomRepository.findAll());
-        model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
+        if (successId != null) {
+            bookingRepository.findById(successId).ifPresent(booking -> model.addAttribute("successBooking", booking));
+        }
+        populateFormState(model, "", "", null, null, null);
         return "customer/booking-new";
     }
 
@@ -61,10 +67,14 @@ public class CustomerBookingController {
             return backWithError("Vui lòng nhập số điện thoại", model, customerName, phone, roomId, startTime, endTime);
         }
 
-        LocalDateTime startDt = parseVnDateTimeOrNull(startTime);
-        LocalDateTime endDt = parseVnDateTimeOrNull(endTime);
+        LocalDateTime startDt = parseCustomerDateTimeOrNull(startTime);
+        LocalDateTime endDt = parseCustomerDateTimeOrNull(endTime);
         if (startDt == null || endDt == null) {
-            return backWithError("Sai định dạng thời gian. Đúng: HH:mm dd/MM/yyyy (VD: 20:30 26/01/2026)", model,
+            return backWithError("Vui lòng chọn ngày giờ hợp lệ", model,
+                    customerName, phone, roomId, startTime, endTime);
+        }
+        if (startDt.isBefore(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES))) {
+            return backWithError("Không thể chọn giờ bắt đầu trong quá khứ", model,
                     customerName, phone, roomId, startTime, endTime);
         }
         if (!endDt.isAfter(startDt)) {
@@ -92,7 +102,7 @@ public class CustomerBookingController {
         b.setStatus(BookingStatus.BOOKED);
 
         bookingRepository.save(b);
-        return "redirect:/customer/booking/created/" + b.getId();
+        return "redirect:/customer/booking/new?success=" + b.getId();
     }
 
     @GetMapping("/created/{id}")
@@ -127,21 +137,59 @@ public class CustomerBookingController {
                                  String startTime, String endTime) {
         model.addAttribute("error", error);
         model.addAttribute("rooms", roomRepository.findAll());
-        model.addAttribute("dtPattern", "HH:mm dd/MM/yyyy");
-        model.addAttribute("customerName", customerName == null ? "" : customerName);
-        model.addAttribute("phone", phone == null ? "" : phone);
-        model.addAttribute("roomId", roomId);
-        model.addAttribute("startTime", startTime == null ? "" : startTime);
-        model.addAttribute("endTime", endTime == null ? "" : endTime);
+        populateFormState(model, customerName, phone, roomId, startTime, endTime);
         return "customer/booking-new";
     }
 
-    private LocalDateTime parseVnDateTimeOrNull(String s) {
+    private void populateFormState(Model model, String customerName, String phone, Long roomId,
+                                   String startTime, String endTime) {
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime suggestedStart = now.plusMinutes(30 - (now.getMinute() % 30 == 0 ? 0 : now.getMinute() % 30));
+        if (suggestedStart.isBefore(now)) {
+            suggestedStart = now.plusMinutes(30);
+        }
+        LocalDateTime suggestedEnd = suggestedStart.plusHours(2);
+
+        String resolvedStartTime = (startTime == null || startTime.isBlank()) ? HTML_DTF.format(suggestedStart) : startTime;
+        String resolvedEndTime = (endTime == null || endTime.isBlank()) ? HTML_DTF.format(suggestedEnd) : endTime;
+        Map<String, String> startParts = splitDateTimeValue(resolvedStartTime, suggestedStart);
+        Map<String, String> endParts = splitDateTimeValue(resolvedEndTime, suggestedEnd);
+
+        model.addAttribute("customerName", customerName == null ? "" : customerName);
+        model.addAttribute("phone", phone == null ? "" : phone);
+        model.addAttribute("roomId", roomId);
+        model.addAttribute("startTime", resolvedStartTime);
+        model.addAttribute("endTime", resolvedEndTime);
+        model.addAttribute("startDate", startParts.get("date"));
+        model.addAttribute("startClock", startParts.get("time"));
+        model.addAttribute("endDate", endParts.get("date"));
+        model.addAttribute("endClock", endParts.get("time"));
+        model.addAttribute("minDateTime", HTML_DTF.format(now));
+        model.addAttribute("minDate", now.toLocalDate().toString());
+        model.addAttribute("minTimeToday", now.toLocalTime().toString().substring(0, 5));
+    }
+
+    private LocalDateTime parseCustomerDateTimeOrNull(String s) {
         if (s == null || s.isBlank()) return null;
         try {
-            return LocalDateTime.parse(s.trim(), VN_DTF);
-        } catch (DateTimeParseException ex) {
-            return null;
+            return LocalDateTime.parse(s.trim(), HTML_DTF);
+        } catch (DateTimeParseException ignored) {
+            try {
+                return LocalDateTime.parse(s.trim(), VN_DTF);
+            } catch (DateTimeParseException ex) {
+                return null;
+            }
         }
+    }
+
+    private Map<String, String> splitDateTimeValue(String rawValue, LocalDateTime fallback) {
+        LocalDateTime parsed = parseCustomerDateTimeOrNull(rawValue);
+        if (parsed == null) {
+            parsed = fallback;
+        }
+        return Map.of(
+                "date", parsed.toLocalDate().toString(),
+                "time", parsed.toLocalTime().toString().substring(0, 5)
+        );
     }
 }

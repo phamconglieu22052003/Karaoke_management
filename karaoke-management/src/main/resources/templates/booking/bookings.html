@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Danh sách đặt phòng</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
   </head>
   <body>
     <div
@@ -29,7 +30,13 @@
       <a th:href="@{/booking/new}">+ Đặt phòng</a>
     </p>
 
-    <table border="1" cellpadding="8" cellspacing="0" width="100%">
+    <table
+      data-paginate="10"
+      border="1"
+      cellpadding="8"
+      cellspacing="0"
+      width="100%"
+    >
       <thead>
         <tr>
           <th>ID</th>
@@ -62,5 +69,6 @@
         </tr>
       </tbody>
     </table>
+    <script th:src="@{/js/table-pagination.js}"></script>
   </body>
 </html>

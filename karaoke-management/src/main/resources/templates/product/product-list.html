@@ -3,7 +3,75 @@
   xmlns:th="http://www.thymeleaf.org"
   th:replace="~{layout/main-layout :: layout('Sản phẩm', 'products', ~{::pageHead}, ~{::section})}"
 >
-  <th:block th:fragment="pageHead"></th:block>
+  <th:block th:fragment="pageHead">
+    <style>
+      .product-page-stack {
+        display: grid;
+        gap: 18px;
+      }
+
+      .product-form-card {
+        padding: 18px;
+      }
+
+      .product-form-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr 1fr auto;
+        gap: 12px;
+        align-items: end;
+      }
+
+      .product-status-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 10px;
+      }
+
+      .product-form-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        align-items: center;
+      }
+
+      .product-list-card {
+        padding: 14px;
+      }
+
+      .product-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      @media (max-width: 1100px) {
+        .product-form-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .product-form-actions {
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .product-form-grid,
+        .product-list-header {
+          grid-template-columns: 1fr;
+          display: grid;
+        }
+
+        .product-status-row,
+        .product-form-actions {
+          justify-content: flex-start;
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </th:block>
 
   <section>
     <div class="topbar">
@@ -23,29 +91,48 @@
 
     <div th:if="${msg != null}" class="alert success" th:text="${msg}"></div>
 
-    <div class="grid" style="grid-template-columns: 1.1fr 1.9fr">
-      <!-- Form -->
-      <div class="card" style="padding: 16px">
-        <h3
-          style="margin: 0 0 10px"
-          th:text="${editing != null and editing} ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'"
+    <div class="product-page-stack">
+      <div class="card product-form-card">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+          "
         >
-          Thêm sản phẩm
-        </h3>
+          <div>
+            <h3
+              style="margin: 0 0 6px"
+              th:text="${editing != null and editing} ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'"
+            >
+              Thêm sản phẩm
+            </h3>
+            <div class="help-text">
+              Nhập nhanh thông tin sản phẩm rồi lưu, danh sách sẽ hiển thị ngay
+              bên dưới.
+            </div>
+          </div>
+        </div>
+
         <form th:action="@{/products/save}" method="post">
           <input type="hidden" name="id" th:value="${product.id}" />
 
-          <label class="form-label">Tên sản phẩm</label>
-          <input
-            class="input"
-            type="text"
-            name="name"
-            th:value="${product.name}"
-            placeholder="VD: Bia Tiger"
-            required
-          />
+          <div class="product-form-grid">
+            <div>
+              <label class="form-label">Tên sản phẩm</label>
+              <input
+                class="input"
+                type="text"
+                name="name"
+                th:value="${product.name}"
+                placeholder="VD: Bia Tiger"
+                required
+              />
+            </div>
 
-          <div class="grid" style="grid-template-columns: 1fr 1fr">
             <div>
               <label class="form-label">Giá</label>
               <input
@@ -57,6 +144,7 @@
                 required
               />
             </div>
+
             <div>
               <label class="form-label">Đơn vị</label>
               <input
@@ -67,66 +155,66 @@
                 placeholder="lon / chai / đĩa"
               />
             </div>
+
+            <div>
+              <label class="form-label">Danh mục</label>
+              <select class="input" name="categoryId">
+                <option value="">-- Không chọn --</option>
+                <option
+                  th:each="c : ${categories}"
+                  th:value="${c.id}"
+                  th:text="${c.name}"
+                  th:selected="${product.category != null && product.category.id == c.id}"
+                >
+                  Food
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label">Trạng thái</label>
+              <label class="product-status-row">
+                <input
+                  type="checkbox"
+                  name="active"
+                  value="true"
+                  th:checked="${product.active == null || product.active}"
+                />
+                <span style="font-weight: 800">Đang bán</span>
+              </label>
+            </div>
           </div>
 
-          <label class="form-label">Danh mục</label>
-          <select class="input" name="categoryId">
-            <option value="">-- Không chọn --</option>
-            <option
-              th:each="c : ${categories}"
-              th:value="${c.id}"
-              th:text="${c.name}"
-              th:selected="${product.category != null && product.category.id == c.id}"
+          <div class="product-form-actions" style="margin-top: 14px">
+            <a
+              class="btn btn-outline"
+              th:if="${editing != null and editing}"
+              th:href="@{/products}"
+              >Hủy</a
             >
-              Food
-            </option>
-          </select>
-
-          <div
-            class="grid"
-            style="grid-template-columns: 1fr 1fr; align-items: center"
-          >
-            <label
-              style="
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-weight: 800;
-                margin-top: 10px;
-              "
-            >
-              <input
-                type="checkbox"
-                name="active"
-                value="true"
-                th:checked="${product.active == null || product.active}"
-              />
-              Đang bán
-            </label>
-            <div
-              style="
-                display: flex;
-                justify-content: flex-end;
-                gap: 10px;
-                margin-top: 10px;
-              "
-            >
-              <a
-                class="btn btn-outline"
-                th:if="${editing != null and editing}"
-                th:href="@{/products}"
-                >Hủy</a
-              >
-              <button class="btn btn-primary" type="submit">Lưu</button>
-            </div>
+            <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
           </div>
         </form>
       </div>
 
-      <!-- Table -->
-      <div class="card">
+      <div class="card product-list-card">
+        <div class="product-list-header">
+          <div>
+            <h3 style="margin: 0 0 4px">Danh sách sản phẩm</h3>
+            <div class="help-text">
+              Theo dõi, chỉnh sửa và đổi trạng thái sản phẩm tại đây.
+            </div>
+          </div>
+          <div
+            class="help-text"
+            th:text="'Tổng số: ' + ${#lists.size(products)} + ' sản phẩm'"
+          >
+            Tổng số: 0 sản phẩm
+          </div>
+        </div>
+
         <div class="table-wrap">
-          <table>
+          <table data-paginate="10">
             <thead>
               <tr>
                 <th style="width: 70px">ID</th>
