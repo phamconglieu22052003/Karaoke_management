@@ -45,7 +45,6 @@
               placeholder="VD: P101"
               required
             />
-            <div class="help-text">Tên phòng phải duy nhất (không trùng).</div>
           </div>
 
           <div>
@@ -71,15 +70,12 @@
                 th:text="${s}"
               ></option>
             </select>
-            <div class="help-text">
-              Để đặt phòng được, phòng nên ở trạng thái AVAILABLE.
-            </div>
           </div>
 
           <div>
             <label class="label">Loại phòng</label>
 
-            <!-- ✅ Binding chuẩn, tránh lỗi lưu sai room_type_id -->
+            <!-- Binding chuẩn, tránh lỗi lưu sai room_type_id -->
             <select class="input" th:field="*{roomType.id}" required>
               <option value="" disabled th:selected="${room.roomType == null}">
                 -- Chọn loại phòng --
@@ -90,10 +86,6 @@
                 th:text="${rt.name}"
               ></option>
             </select>
-
-            <div class="help-text">
-              Loại phòng lấy từ danh sách “Loại phòng”.
-            </div>
           </div>
         </div>
 

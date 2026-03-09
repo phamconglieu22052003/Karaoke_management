@@ -288,6 +288,7 @@
           <div class="order-total-box" th:if="${order != null}">
             <span>Tổng tiền hiện tại</span>
             <strong
+              id="js-order-total"
               th:text="${#numbers.formatDecimal(orderTotal, 0, 'POINT', 0, 'COMMA')}"
               >0</strong
             >
@@ -349,6 +350,7 @@
                   class="text-strong"
                   data-label="Đơn giá"
                   th:text="${#numbers.formatDecimal(it.unitPrice, 0, 'POINT', 0, 'COMMA')}"
+                  th:attr="data-unit-price=${it.unitPrice}"
                 >
                   20000
                 </td>
@@ -372,6 +374,7 @@
                       name="quantity"
                       min="1"
                       th:value="${it.quantity}"
+                      th:attr="data-item-id=${it.id}"
                     />
                   </form>
                   <div
@@ -383,9 +386,10 @@
                   </div>
                 </td>
                 <td
-                  class="text-strong"
+                  class="text-strong js-line-amount"
                   data-label="Thành tiền"
-                  th:text="${#numbers.formatDecimal(it.lineAmount, 0, 'POINT', 0, 'COMMA')}"
+                  th:attr="data-item-id=${it.id}"
+                  th:text="${#numbers.formatDecimal(it.unitPrice * it.quantity, 0, 'POINT', 0, 'COMMA')}"
                 >
                   20000
                 </td>
@@ -413,6 +417,7 @@
                       class="btn btn-outline btn-sm"
                       type="submit"
                       form="[[${'upd__' + it.id}]]"
+                      th:attr="data-save-btn=${it.id}"
                     >
                       Lưu
                     </button>

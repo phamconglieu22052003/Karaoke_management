@@ -76,6 +76,10 @@ public class InventoryServiceImpl implements InventoryService {
         User creator = userRepository.findById(createdByUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // Xác định quyền quản lý (để cho phép override trong một số trường hợp)
+        boolean isManager = creator.getRoles() != null && creator.getRoles().stream()
+                .anyMatch(r -> r != null && r.getRoleCode() != null && "MANAGER".equalsIgnoreCase(r.getRoleCode()));
+
         InventoryReceipt receipt;
         if (receiptId == null) {
             receipt = new InventoryReceipt();
@@ -85,6 +89,15 @@ public class InventoryServiceImpl implements InventoryService {
         } else {
             receipt = receiptRepository.findById(receiptId)
                     .orElseThrow(() -> new IllegalArgumentException("Receipt not found"));
+
+            // Nghiệp vụ: NVK chỉ được sửa/gửi duyệt khi phiếu ở DRAFT và là người tạo phiếu.
+            // Quản lý có thể xem/duyệt/từ chối; nếu cần quản lý sửa phiếu thì bật isManager.
+            if (!isManager) {
+                if (receipt.getCreatedBy() == null || receipt.getCreatedBy().getId() == null
+                        || !receipt.getCreatedBy().getId().equals(createdByUserId)) {
+                    throw new IllegalStateException("Bạn không có quyền sửa phiếu này");
+                }
+            }
             if (receipt.getStatus() != InventoryReceiptStatus.DRAFT) {
                 throw new IllegalStateException("Chỉ được sửa phiếu ở trạng thái DRAFT");
             }
@@ -102,6 +115,9 @@ public class InventoryServiceImpl implements InventoryService {
         }
 
         if (submit) {
+            if (receipt.getStatus() != InventoryReceiptStatus.DRAFT) {
+                throw new IllegalStateException("Chỉ được gửi duyệt phiếu ở trạng thái DRAFT");
+            }
             receipt.setStatus(InventoryReceiptStatus.PENDING);
         }
 
@@ -151,6 +167,9 @@ public class InventoryServiceImpl implements InventoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Receipt not found"));
         if (r.getStatus() != InventoryReceiptStatus.DRAFT) {
             throw new IllegalStateException("Chỉ được gửi duyệt phiếu ở trạng thái DRAFT");
+        }
+        if (r.getCreatedBy() == null || r.getCreatedBy().getId() == null || !r.getCreatedBy().getId().equals(userId)) {
+            throw new IllegalStateException("Bạn không có quyền gửi duyệt phiếu này");
         }
         if (r.getLines() == null || r.getLines().isEmpty()) {
             throw new IllegalStateException("Phiếu phải có ít nhất 1 dòng hàng");

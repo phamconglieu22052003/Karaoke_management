@@ -39,8 +39,8 @@
         <div>
           <h2>Phiếu #<span th:text="${receipt.id}"></span></h2>
           <div class="muted">
-            <span class="pill" th:text="${receipt.type.label}"></span>
-            <span class="pill" th:text="${receipt.status.label}"></span>
+            <span class="pill" th:text="${receipt.type}"></span>
+            <span class="pill" th:text="${receipt.status}"></span>
             <span
               th:text="${#temporals.format(receipt.createdAt, 'HH:mm dd/MM/yyyy')}"
             ></span>
@@ -50,7 +50,8 @@
           <a class="btn" th:href="@{/inventory/receipts}">Danh sách</a>
           <a
             class="btn"
-            th:if="${receipt.status.name()=='DRAFT'}"
+            sec:authorize="hasRole('STOREKEEPER')"
+            th:if="${receipt.status.name()=='DRAFT' and receipt.createdBy != null and receipt.createdBy.username == #authentication.name}"
             th:href="@{/inventory/receipts/{id}/edit(id=${receipt.id})}"
             >Sửa</a
           >
@@ -91,7 +92,7 @@
 
       <div
         style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap"
-        sec:authorize="hasAnyRole('MANAGER','STOREKEEPER')"
+        sec:authorize="hasRole('MANAGER')"
       >
         <form
           th:if="${receipt.status.name()=='PENDING'}"

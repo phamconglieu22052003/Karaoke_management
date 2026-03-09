@@ -115,6 +115,24 @@ public class SecurityConfig {
                         .requestMatchers("/tech/**").hasAnyRole("MANAGER", "TECHNICIAN")
 
                         // Inventory: nhân viên kho + quản lý
+                        // Nghiệp vụ: QUẢN LÝ duyệt/từ chối phiếu; nhân viên kho chỉ tạo/sửa/gửi phiếu
+                        .requestMatchers(HttpMethod.POST,
+                                "/inventory/receipts/*/approve",
+                                "/inventory/receipts/*/reject")
+                        .hasRole("MANAGER")
+
+                        // Nhân viên kho chỉ được TẠO/SỬA/GỬI DUYỆT khi phiếu còn DRAFT
+                        // (Ràng buộc trạng thái DRAFT được kiểm soát ở service/controller)
+                        // Admin = Manager: quản lý phải có full quyền, bao gồm tạo/sửa phiếu kho.
+                        .requestMatchers(HttpMethod.GET,
+                                "/inventory/receipts/new",
+                                "/inventory/receipts/*/edit")
+                        .hasAnyRole("MANAGER", "STOREKEEPER")
+                        .requestMatchers(HttpMethod.POST,
+                                "/inventory/receipts",
+                                "/inventory/receipts/*")
+                        .hasAnyRole("MANAGER", "STOREKEEPER")
+
                         .requestMatchers("/inventory/**").hasAnyRole("MANAGER", "STOREKEEPER")
 
                         // Product + category: quản lý (và nhân viên kho được xem danh sách)

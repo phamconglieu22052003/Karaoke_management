@@ -107,9 +107,6 @@
 
       <div class="card">
         <h3 style="margin-top: 0">Thanh toán</h3>
-        <div class="help-text" style="margin-top: 6px">
-          Chỉ hiển thị khi hóa đơn chưa ở trạng thái <b>PAID</b>.
-        </div>
 
         <div class="hr"></div>
 
@@ -170,11 +167,6 @@
               >Mở ca để thanh toán</a
             >
           </div>
-
-          <div class="help-text" th:if="${hasOpenShift}">
-            Mẹo: Nếu bạn dùng QR (mock), trang sẽ tự refresh để cập nhật trạng
-            thái sau khi quét.
-          </div>
         </div>
 
         <div
@@ -190,11 +182,6 @@
 
         <div class="hr" style="margin-top: 14px"></div>
         <h3 style="margin-top: 0">Link/QR cho khách hàng</h3>
-        <div class="help-text" style="margin-top: 6px">
-          Dùng để khách quét và mở trang thanh toán công khai. Trang khách hàng
-          <b>chỉ hiển thị</b> QR/thông tin, không tự đánh dấu <b>PAID</b>.
-        </div>
-
         <div
           style="
             display: flex;
@@ -227,9 +214,6 @@
                 readonly
               />
             </div>
-            <div class="help-text">
-              Bạn có thể copy link này hoặc cho khách quét QR.
-            </div>
           </div>
         </div>
       </div>
@@ -237,10 +221,6 @@
 
     <div class="card" style="margin-top: 16px">
       <h3 style="margin-top: 0">Chi tiết món / dịch vụ</h3>
-      <div class="help-text" style="margin-top: 6px">
-        Đây là <b>snapshot</b> tại thời điểm tạo hóa đơn, không bị ảnh hưởng nếu
-        giá sản phẩm thay đổi.
-      </div>
       <div class="hr"></div>
 
       <div class="table-wrap">

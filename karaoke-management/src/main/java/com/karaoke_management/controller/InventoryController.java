@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
 import java.math.BigDecimal;
@@ -60,6 +61,8 @@ public class InventoryController {
     }
 
     // UC2: Tạo phiếu
+    // Admin = Manager: Quản lý phải có full quyền thao tác kho giống nhân viên kho
+    @PreAuthorize("hasAnyRole('STOREKEEPER','MANAGER')")
     @GetMapping("/receipts/new")
     public String newReceipt(@RequestParam(value = "type", required = false) String type,
                              Model model) {
@@ -72,6 +75,7 @@ public class InventoryController {
     }
 
     // UC2: Lưu phiếu (draft hoặc submit)
+    @PreAuthorize("hasAnyRole('STOREKEEPER','MANAGER')")
     @PostMapping("/receipts")
     public String createReceipt(@RequestParam("type") String type,
                                 @RequestParam(value = "note", required = false) String note,
@@ -106,6 +110,7 @@ public class InventoryController {
     }
 
     // UC2: Sửa phiếu DRAFT
+    @PreAuthorize("hasAnyRole('STOREKEEPER','MANAGER')")
     @GetMapping("/receipts/{id}/edit")
     public String editReceipt(@PathVariable("id") Long id, Model model) {
         InventoryReceipt r = inventoryService.getReceiptWithLines(id);
@@ -116,6 +121,7 @@ public class InventoryController {
         return "inventory/receipt-form";
     }
 
+    @PreAuthorize("hasAnyRole('STOREKEEPER','MANAGER')")
     @PostMapping("/receipts/{id}")
     public String updateReceipt(@PathVariable("id") Long id,
                                 @RequestParam("type") String type,
@@ -160,6 +166,7 @@ public class InventoryController {
     }
 
     // UC3: Duyệt/Từ chối
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/receipts/{id}/approve")
     public String approve(@PathVariable("id") Long id,
                           Authentication auth,
@@ -170,6 +177,7 @@ public class InventoryController {
         return "redirect:/inventory/receipts/" + id;
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/receipts/{id}/reject")
     public String reject(@PathVariable("id") Long id,
                          @RequestParam(value = "reason", required = false) String reason,
