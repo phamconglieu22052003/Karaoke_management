@@ -5,25 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Thanh toán</title>
     <link rel="stylesheet" th:href="@{/css/main.css}" />
-    <style>
-      body { background: #0b1220; }
-      .wrap { max-width: 760px; margin: 0 auto; padding: 18px; }
-      .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
-      .title { color: #e5e7eb; margin: 0; }
-      .sub { color: rgba(229,231,235,0.8); margin-top: 6px; }
-      .qr { display:flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-      .qr img { width: 220px; height: 220px; background: #fff; padding: 10px; border-radius: 12px; }
-      .kv { color: rgba(229,231,235,0.95); }
-      .kv-k { color: rgba(229,231,235,0.7); }
-      .btn { text-decoration: none; }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/pay.css}" />
   </head>
   <body>
     <div class="wrap">
       <div class="topbar" style="margin-bottom: 12px">
         <div>
           <h2 class="title">Thanh toán</h2>
-          <div class="sub">Trang công khai cho khách hàng (chỉ hiển thị, không tự xác nhận thanh toán).</div>
+          <div class="sub">
+            Trang công khai cho khách hàng (chỉ hiển thị, không tự xác nhận
+            thanh toán).
+          </div>
         </div>
         <div></div>
       </div>
@@ -31,7 +23,7 @@
       <div th:if="${error}" class="alert danger" th:text="${error}"></div>
 
       <div class="card" th:if="${valid}">
-        <h3 style="margin-top:0" class="title">Thông tin hóa đơn</h3>
+        <h3 style="margin-top: 0" class="title">Thông tin hóa đơn</h3>
         <div class="hr"></div>
 
         <div class="kv">
@@ -41,32 +33,62 @@
           </div>
           <div class="kv-row">
             <div class="kv-k">Phòng</div>
-            <div class="kv-v" th:text="${invoice.roomSession != null && invoice.roomSession.room != null ? invoice.roomSession.room.name : ''}">P1</div>
+            <div
+              class="kv-v"
+              th:text="${invoice.roomSession != null && invoice.roomSession.room != null ? invoice.roomSession.room.name : ''}"
+            >
+              P1
+            </div>
           </div>
           <div class="kv-row">
             <div class="kv-k">Tổng tiền</div>
-            <div class="kv-v"><b th:text="${invoice.totalAmount != null ? #numbers.formatDecimal(invoice.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}">0 ₫</b></div>
+            <div class="kv-v">
+              <b
+                th:text="${invoice.totalAmount != null ? #numbers.formatDecimal(invoice.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                >0 ₫</b
+              >
+            </div>
           </div>
           <div class="kv-row">
             <div class="kv-k">Tiền phòng</div>
-            <div class="kv-v"><b th:text="${roomCharge != null ? #numbers.formatDecimal(roomCharge, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}">0 ₫</b></div>
+            <div class="kv-v">
+              <b
+                th:text="${roomCharge != null ? #numbers.formatDecimal(roomCharge, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                >0 ₫</b
+              >
+            </div>
           </div>
           <div class="kv-row">
             <div class="kv-k">Tiền gọi món</div>
-            <div class="kv-v"><b th:text="${orderCharge != null ? #numbers.formatDecimal(orderCharge, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}">0 ₫</b></div>
+            <div class="kv-v">
+              <b
+                th:text="${orderCharge != null ? #numbers.formatDecimal(orderCharge, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                >0 ₫</b
+              >
+            </div>
           </div>
         </div>
 
         <div class="hr"></div>
-        <h3 class="title" style="margin-top:0">Mã QR thanh toán (demo)</h3>
-        <div class="sub">Bạn có thể dùng app ngân hàng để quét (demo). Sau khi thanh toán, vui lòng báo thu ngân để xác nhận.</div>
+        <h3 class="title" style="margin-top: 0">Mã QR thanh toán (demo)</h3>
+        <div class="sub">
+          Bạn có thể dùng app ngân hàng để quét (demo). Sau khi thanh toán, vui
+          lòng báo thu ngân để xác nhận.
+        </div>
 
         <div class="qr" style="margin-top: 12px">
           <img th:src="@{/qr(data=${qrData})}" alt="QR" />
           <div style="flex: 1; min-width: 240px">
-            <div class="alert" style="background: rgba(59,130,246,0.10); color: rgba(229,231,235,0.95)">
-              <b>Lưu ý:</b> Trang này chỉ hiển thị QR và thông tin hóa đơn.
-              Hệ thống sẽ chỉ ghi nhận <b>PAID</b> khi thu ngân xác nhận hoặc khi có callback cổng thanh toán (nếu tích hợp thật).
+            <div
+              class="alert"
+              style="
+                background: rgba(59, 130, 246, 0.1);
+                color: rgba(229, 231, 235, 0.95);
+              "
+            >
+              <b>Lưu ý:</b> Trang này chỉ hiển thị QR và thông tin hóa đơn. Hệ
+              thống sẽ chỉ ghi nhận <b>Đã thanh toán</b> khi thu ngân xác nhận
+              hoặc khi có callback cổng thanh toán (nếu tích hợp thật).
             </div>
           </div>
         </div>

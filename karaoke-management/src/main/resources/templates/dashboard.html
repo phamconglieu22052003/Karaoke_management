@@ -26,7 +26,9 @@
         >
           --
         </div>
-        <div class="kpi-sub">Tính theo hóa đơn <b>PAID</b> trong ngày</div>
+        <div class="kpi-sub">
+          Tính theo hóa đơn <b>Đã thanh toán</b> trong ngày
+        </div>
       </div>
 
       <div class="card">
@@ -38,11 +40,7 @@
           --
         </div>
         <div class="kpi-sub" th:if="${openShift != null}">
-          Ca đang mở: <b th:text="${openShift.shiftName}">Ca</b> (mở lúc
-          <b
-            th:text="${#temporals.format(openShift.openedAt, 'HH:mm dd/MM/yyyy')}"
-            >--</b
-          >)
+          Ca đang mở: <b th:text="${openShift.shiftName}">Ca</b>
         </div>
         <div class="kpi-sub" th:if="${openShift == null}">
           Chưa có ca đang mở.
@@ -62,7 +60,7 @@
         >
           0
         </div>
-        <div class="kpi-sub">Số phòng trạng thái <b>OCCUPIED</b></div>
+        <div class="kpi-sub">Số phòng trạng thái <b>Đang sử dụng</b></div>
       </div>
 
       <div class="card">
@@ -145,8 +143,10 @@
                 --
               </td>
               <td>
-                <span class="badge badge-muted" th:text="${b.status.label}"
-                  >BOOKED</span
+                <span
+                  class="badge badge-status-booked"
+                  th:text="${b.status.label}"
+                  >Đã đặt</span
                 >
               </td>
             </tr>

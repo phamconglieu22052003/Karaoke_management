@@ -27,7 +27,7 @@
           <thead>
             <tr>
               <th style="width: 70px">ID</th>
-              <th>Username</th>
+              <th>Tên đăng nhập</th>
               <th>Họ tên</th>
               <th>SĐT</th>
               <th>Role</th>
@@ -67,8 +67,8 @@
                 <span
                   class="badge"
                   th:classappend="${u.active} ? ' badge-ok' : ' badge-muted'"
-                  th:text="${u.active} ? 'ACTIVE' : 'INACTIVE'"
-                  >ACTIVE</span
+                  th:text="${u.active} ? 'Đang hoạt động' : 'Ngừng hoạt động'"
+                  >Đang hoạt động</span
                 >
               </td>
               <td style="text-align: right">
@@ -83,7 +83,7 @@
                     th:action="@{/users/{id}/toggle(id=${u.id})}"
                     method="post"
                     style="display: inline"
-                    onsubmit="return confirm('Đổi trạng thái user này?');"
+                    data-confirm="Đổi trạng thái user này?"
                   >
                     <button class="btn btn-outline btn-sm" type="submit">
                       <span th:text="${u.active} ? 'Khóa' : 'Mở khóa'"
@@ -96,11 +96,7 @@
                     th:action="@{/users/{id}/reset-password(id=${u.id})}"
                     method="post"
                     style="display: inline"
-                    onsubmit="
-                      return confirm(
-                        'Reset mật khẩu user này về giá trị nhập?',
-                      );
-                    "
+                    data-confirm="Reset mật khẩu user này về giá trị nhập?"
                   >
                     <input
                       class="input"

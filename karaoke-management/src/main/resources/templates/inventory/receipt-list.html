@@ -18,6 +18,26 @@
       .muted {
         color: #6b7280;
       }
+      .pill-status-draft {
+        background: #f9fafb;
+        border-color: #e5e7eb;
+        color: #6b7280;
+      }
+      .pill-status-pending {
+        background: #fffbeb;
+        border-color: #fde68a;
+        color: #92400e;
+      }
+      .pill-status-approved {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #065f46;
+      }
+      .pill-status-rejected {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #991b1b;
+      }
       .toolbar {
         display: flex;
         gap: 12px;
@@ -69,13 +89,13 @@
                 DRAFT
               </option>
               <option value="PENDING" th:selected="${status}=='PENDING'">
-                PENDING
+                Chờ duyệt
               </option>
               <option value="APPROVED" th:selected="${status}=='APPROVED'">
-                APPROVED
+                Đã duyệt
               </option>
               <option value="REJECTED" th:selected="${status}=='REJECTED'">
-                REJECTED
+                Từ chối
               </option>
             </select>
           </form>
@@ -109,7 +129,11 @@
                 <span class="pill" th:text="${r.type}"></span>
               </td>
               <td>
-                <span class="pill" th:text="${r.status.label}"></span>
+                <span
+                  class="pill"
+                  th:classappend="${r.status.name() == 'DRAFT'} ? ' pill-status-draft' : (${r.status.name() == 'PENDING'} ? ' pill-status-pending' : (${r.status.name() == 'APPROVED'} ? ' pill-status-approved' : ' pill-status-rejected'))"
+                  th:text="${r.status.label}"
+                ></span>
               </td>
               <td
                 th:text="${#temporals.format(r.createdAt, 'HH:mm dd/MM/yyyy')}"

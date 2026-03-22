@@ -1,5 +1,4 @@
 <!doctype html>
-<meta charset="UTF-8" />
 <html
   lang="vi"
   xmlns:th="http://www.thymeleaf.org"
@@ -141,6 +140,16 @@
           >
             Người dùng
           </a>
+
+          <a
+            class="nav-item"
+            th:classappend="${active} == 'profile' ? ' active' : ''"
+            th:attr="aria-current=${active} == 'profile' ? 'page' : null"
+            th:href="@{/profile/password}"
+            sec:authorize="isAuthenticated()"
+          >
+            Đổi mật khẩu
+          </a>
         </nav>
 
         <div class="sidebar-foot">
@@ -194,10 +203,36 @@
         </header>
 
         <main class="app-content">
-          <div class="container">
+          <div class="container-fluid app-container">
             <th:block th:insert="${content}" />
           </div>
         </main>
+      </div>
+    </div>
+
+    <div class="confirm-modal" id="appConfirmModal" hidden>
+      <div class="confirm-modal__backdrop" data-confirm-close></div>
+      <div
+        class="confirm-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="appConfirmTitle"
+        aria-describedby="appConfirmMessage"
+      >
+        <div class="confirm-modal__title" id="appConfirmTitle">
+          Xác nhận thao tác
+        </div>
+        <div class="confirm-modal__message" id="appConfirmMessage">
+          Bạn có chắc muốn tiếp tục?
+        </div>
+        <div class="confirm-modal__actions">
+          <button type="button" class="btn btn-outline" id="appConfirmCancel">
+            Hủy
+          </button>
+          <button type="button" class="btn btn-primary" id="appConfirmOk">
+            Đồng ý
+          </button>
+        </div>
       </div>
     </div>
 
@@ -217,6 +252,82 @@
           (e.target && e.target.closest && e.target.closest(".icon-btn"));
         if (!clickedInside) sidebar.classList.remove("open");
       });
+
+      (function () {
+        const modal = document.getElementById("appConfirmModal");
+        const titleEl = document.getElementById("appConfirmTitle");
+        const messageEl = document.getElementById("appConfirmMessage");
+        const okBtn = document.getElementById("appConfirmOk");
+        const cancelBtn = document.getElementById("appConfirmCancel");
+        let resolver = null;
+
+        function closeConfirm(result) {
+          if (!modal) return;
+          modal.hidden = true;
+          document.body.classList.remove("confirm-modal-open");
+          if (resolver) {
+            resolver(result);
+            resolver = null;
+          }
+        }
+
+        function showConfirm(message, title) {
+          if (!modal) return Promise.resolve(true);
+          titleEl.textContent = title || "Xác nhận thao tác";
+          messageEl.textContent = message || "Bạn có chắc muốn tiếp tục?";
+          modal.hidden = false;
+          document.body.classList.add("confirm-modal-open");
+          return new Promise(function (resolve) {
+            resolver = resolve;
+            window.requestAnimationFrame(function () {
+              okBtn.focus();
+            });
+          });
+        }
+
+        window.appShowConfirm = showConfirm;
+
+        okBtn.addEventListener("click", function () {
+          closeConfirm(true);
+        });
+
+        cancelBtn.addEventListener("click", function () {
+          closeConfirm(false);
+        });
+
+        modal.addEventListener("click", function (e) {
+          if (e.target.hasAttribute("data-confirm-close")) {
+            closeConfirm(false);
+          }
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (modal.hidden) return;
+          if (e.key === "Escape") closeConfirm(false);
+        });
+
+        document.addEventListener(
+          "submit",
+          function (e) {
+            const form = e.target;
+            if (!form || !form.matches || !form.matches("form[data-confirm]"))
+              return;
+            if (form.dataset.confirmBypass === "1") {
+              form.dataset.confirmBypass = "0";
+              return;
+            }
+            e.preventDefault();
+            showConfirm(form.dataset.confirm, form.dataset.confirmTitle).then(
+              function (confirmed) {
+                if (!confirmed) return;
+                form.dataset.confirmBypass = "1";
+                form.submit();
+              },
+            );
+          },
+          true,
+        );
+      })();
     </script>
 
     <script th:src="@{/js/table-pagination.js}"></script>

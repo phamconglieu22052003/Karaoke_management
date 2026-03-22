@@ -23,4 +23,13 @@ public interface UserService {
     void toggleStatus(Long id);
 
     void resetPassword(Long id, String rawPassword);
+
+    /**
+     * Đổi mật khẩu cho chính người dùng đang đăng nhập.
+     *
+     * @param username    username của user (lấy từ Principal)
+     * @param oldPassword mật khẩu hiện tại
+     * @param newPassword mật khẩu mới
+     */
+    void changePassword(String username, String oldPassword, String newPassword);
 }

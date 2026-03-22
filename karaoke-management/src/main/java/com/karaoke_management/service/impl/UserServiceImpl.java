@@ -115,4 +115,26 @@ public class UserServiceImpl implements UserService {
         roles.add(r);
         return roles;
     }
+
+    @Override
+    public void changePassword(String username, String oldPassword, String newPassword) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Không xác định được user đang đăng nhập.");
+        }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user: " + username));
+
+        if (oldPassword == null || oldPassword.isBlank()) {
+            throw new IllegalArgumentException("Vui lòng nhập mật khẩu hiện tại.");
+        }
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Mật khẩu hiện tại không đúng.");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new IllegalArgumentException("Mật khẩu mới phải >= 6 ký tự.");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }

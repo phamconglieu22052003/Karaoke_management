@@ -154,6 +154,48 @@ body {
   color: #991b1b;
 }
 
+.badge-status-open {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+.badge-status-closed {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+.badge-status-booked {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+}
+.badge-status-paid,
+.badge-status-approved,
+.badge-status-active,
+.badge-status-available {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+.badge-status-unpaid,
+.badge-status-pending,
+.badge-status-occupied {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+.badge-status-rejected,
+.badge-status-inactive,
+.badge-status-maintenance {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.badge-status-draft {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #6b7280;
+}
 .table-wrap table td,
 .table-wrap table th {
   vertical-align: middle;

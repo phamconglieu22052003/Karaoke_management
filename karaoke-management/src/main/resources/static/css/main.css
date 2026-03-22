@@ -186,8 +186,10 @@ textarea {
 }
 
 .main {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  width: calc(100vw - 270px);
+  max-width: none;
 }
 
 .app-header {
@@ -254,7 +256,9 @@ textarea {
 }
 
 .app-content {
-  padding: 18px 0;
+  width: 100%;
+  max-width: none;
+  padding: 18px 24px 24px;
 }
 
 /* Mobile sidebar */
@@ -273,10 +277,17 @@ textarea {
 }
 
 /* ===== Layout ===== */
-.container {
-  max-width: 1100px;
-  margin: 24px auto;
-  padding: 0 16px;
+/*
+  IMPORTANT:
+  Do NOT override Bootstrap's .container max-width.
+  We use a dedicated wrapper class for our app pages so screens can fill the
+  available width (especially on wide monitors) without causing huge empty space.
+*/
+.app-container {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0;
+  padding: 0;
 }
 
 .page-title {
@@ -713,8 +724,16 @@ tbody tr:hover {
 }
 
 @media (max-width: 960px) {
+  .main {
+    width: 100%;
+  }
+
   .app-header {
     flex-wrap: wrap;
+  }
+
+  .app-content {
+    padding: 14px 14px 20px;
   }
 
   .current-page-badge {
@@ -962,4 +981,55 @@ tbody tr:hover {
   .pc-table-wrap table {
     min-width: 640px;
   }
+}
+
+/* ===== Confirm modal ===== */
+.confirm-modal[hidden] {
+  display: none;
+}
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+.confirm-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+}
+.confirm-modal__dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(92vw, 460px);
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
+  padding: 22px;
+}
+.confirm-modal__title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #0f172a;
+}
+.confirm-modal__message {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569;
+}
+.confirm-modal__actions {
+  margin-top: 22px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.confirm-modal__actions .btn {
+  min-width: 96px;
+}
+.confirm-modal-open {
+  overflow: hidden;
 }

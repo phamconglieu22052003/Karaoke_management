@@ -47,9 +47,9 @@
               <td th:text="${rt.id}">1</td>
               <td th:text="${rt.name}">VIP</td>
               <td
-                th:text="${rt.pricePerHour != null ? #numbers.formatDecimal(rt.pricePerHour, 0, 'COMMA', 0, 'POINT') + ' ₫' : ''}"
+                th:text="${rt.pricePerHour != null ? #numbers.formatDecimal(rt.pricePerHour, 0, 'COMMA', 0, 'POINT') + ' đ' : ''}"
               >
-                100,000 ₫
+                100,000 đ
               </td>
               <td th:text="${rt.description}">...</td>
             </tr>

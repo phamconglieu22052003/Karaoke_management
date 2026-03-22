@@ -1,0 +1,42 @@
+body {
+  background: #0b1220;
+}
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 18px;
+}
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.title {
+  color: #e5e7eb;
+  margin: 0;
+}
+.sub {
+  color: rgba(229, 231, 235, 0.8);
+  margin-top: 6px;
+}
+.qr {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.qr img {
+  width: 220px;
+  height: 220px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 12px;
+}
+.kv {
+  color: rgba(229, 231, 235, 0.95);
+}
+.kv-k {
+  color: rgba(229, 231, 235, 0.7);
+}
+.btn {
+  text-decoration: none;
+}

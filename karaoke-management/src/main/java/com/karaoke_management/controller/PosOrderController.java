@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+
 
 @Controller
 @RequiredArgsConstructor
@@ -37,6 +39,8 @@ public class PosOrderController {
      */
     @GetMapping("/sessions/{sessionId}/order")
     public String orderScreen(@PathVariable Long sessionId,
+                              @RequestParam(value = "cat", required = false) Long categoryId,
+                              @RequestParam(value = "q", required = false) String keyword,
                               Model model,
                               Authentication authentication,
                               @ModelAttribute("msg") String msg,
@@ -63,21 +67,40 @@ public class PosOrderController {
         boolean canCreateNewOrder = false;
         String autoWarn = null;
 
-        var openOpt = orderRepository.findFirstByRoomSession_IdAndStatusOrderByCreatedAtDesc(sessionId, OrderStatus.OPEN);
-        if (openOpt.isPresent()) {
-            order = openOpt.get();
-        } else {
-            var lastOpt = orderRepository.findFirstByRoomSession_IdOrderByCreatedAtDesc(sessionId);
-            if (lastOpt.isPresent()) {
-                order = lastOpt.get();
-                if (order.getStatus() == OrderStatus.CLOSED) {
-                    canCreateNewOrder = true;
-                    autoWarn = "Order đã chốt. Nếu muốn gọi thêm món, bấm 'Tạo order mới'.";
-                }
-            } else {
-                // chưa có order nào -> tạo OPEN mới
-                order = orderService.getOrCreateOpenOrder(sessionId, username);
+        // IMPORTANT:
+        // Có thể phát sinh nhiều order OPEN cho cùng 1 session (do thao tác nhầm, dữ liệu demo, hoặc bug lịch sử).
+        // Nếu chỉ lấy "OPEN mới nhất" thì dễ dính case OPEN mới nhất rỗng, còn OPEN trước đó có món => user tưởng
+        // "mất dữ liệu" sau khi reload.
+        // => Ưu tiên hiển thị order OPEN có món (nếu có). Nếu không có, mới fallback.
+
+        List<Order> all = orderRepository.findAllByRoomSession_IdOrderByCreatedAtDesc(sessionId);
+
+        Order openWithItems = all.stream()
+                .filter(o -> o.getStatus() == OrderStatus.OPEN)
+                .filter(o -> o.getItems() != null && !o.getItems().isEmpty())
+                .findFirst()
+                .orElse(null);
+
+        Order anyOpen = all.stream()
+                .filter(o -> o.getStatus() == OrderStatus.OPEN)
+                .findFirst()
+                .orElse(null);
+
+        Order last = all.stream().findFirst().orElse(null);
+
+        if (openWithItems != null) {
+            order = openWithItems;
+        } else if (anyOpen != null) {
+            order = anyOpen;
+        } else if (last != null) {
+            order = last;
+            if (order.getStatus() == OrderStatus.CLOSED) {
+                canCreateNewOrder = true;
+                autoWarn = "Order đã chốt. Nếu muốn gọi thêm món, bấm 'Tạo order mới'.";
             }
+        } else {
+            // chưa có order nào -> tạo OPEN mới
+            order = orderService.getOrCreateOpenOrder(sessionId, username);
         }
 
         boolean readOnly = (order.getStatus() == OrderStatus.CLOSED);
@@ -138,8 +161,17 @@ public class PosOrderController {
         model.addAttribute("lastClosedItems", lastClosedItems);
         model.addAttribute("lastClosedTotal", lastClosedTotal);
 
+        List<com.karaoke_management.entity.Product> filteredProducts = productRepository.findByActiveTrueOrderByNameAsc()
+                .stream()
+                .filter(p -> categoryId == null || (p.getCategory() != null && categoryId.equals(p.getCategory().getId())))
+                .filter(p -> keyword == null || keyword.isBlank() ||
+                        (p.getName() != null && p.getName().toLowerCase(Locale.ROOT).contains(keyword.trim().toLowerCase(Locale.ROOT))))
+                .toList();
+
         model.addAttribute("categories", productCategoryRepository.findAll());
-        model.addAttribute("products", productRepository.findByActiveTrueOrderByNameAsc());
+        model.addAttribute("products", filteredProducts);
+        model.addAttribute("selectedCategoryId", categoryId);
+        model.addAttribute("keyword", keyword == null ? "" : keyword.trim());
 
         return "pos/order-screen";
     }

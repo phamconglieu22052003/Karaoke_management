@@ -244,8 +244,8 @@
                   <span
                     class="badge"
                     th:classappend="${p.active} ? ' badge-ok' : ' badge-muted'"
-                    th:text="${p.active} ? 'ACTIVE' : 'INACTIVE'"
-                    >ACTIVE</span
+                    th:text="${p.active} ? 'Đang hoạt động' : 'Ngừng hoạt động'"
+                    >Đang hoạt động</span
                   >
                 </td>
                 <td>
@@ -259,7 +259,7 @@
                       th:action="@{/products/toggle/{id}(id=${p.id})}"
                       method="post"
                       style="display: inline"
-                      onsubmit="return confirm('Đổi trạng thái sản phẩm?');"
+                      data-confirm="Đổi trạng thái sản phẩm?"
                     >
                       <button class="btn btn-danger btn-sm" type="submit">
                         Đổi trạng thái

@@ -164,7 +164,22 @@
           <div class="kv-row">
             <div class="kv-k">Tiền mặt kỳ vọng trong két</div>
             <div class="kv-v">
-              <b th:text="${summary.expectedCashInDrawer}">0</b> VND
+              <b
+                id="expectedCashAmount"
+                th:text="${summary.expectedCashInDrawer}"
+                >0</b
+              >
+              VND
+            </div>
+          </div>
+          <div class="kv-row">
+            <div class="kv-k">Số tiền bằng chữ</div>
+            <div class="kv-v">
+              <b
+                id="expectedCashInWords"
+                th:attr="data-amount=${summary.expectedCashInDrawer}"
+                >--</b
+              >
             </div>
           </div>
           <div class="kv-row" th:if="${summary.cashDifference != null}">
@@ -198,9 +213,6 @@
               th:if="${openSessions != null && !#lists.isEmpty(openSessions)}"
             >
               <h4 style="margin: 0 0 8px">Phòng đang mở</h4>
-              <div class="help-text" style="margin-top: 0">
-                Cần đóng phòng (check-out) trước khi đóng ca.
-              </div>
               <div class="table-wrap" style="margin-top: 10px">
                 <table>
                   <thead>
@@ -394,9 +406,6 @@
                   name="closingCashDeclared"
                   placeholder="Ví dụ: 1500000"
                 />
-                <div class="help-text">
-                  Nếu nhập, hệ thống sẽ tính chênh lệch so với tiền kỳ vọng.
-                </div>
               </div>
               <div class="field">
                 <label>Ghi chú (tuỳ chọn)</label>
@@ -433,10 +442,6 @@
     <!-- Danh sách hóa đơn trong ca -->
     <div class="card" style="margin-top: 16px">
       <h3 style="margin-top: 0">Hóa đơn đã thanh toán trong ca</h3>
-      <div class="help-text" style="margin-top: 6px">
-        Chỉ lấy các hóa đơn có trạng thái <b>PAID</b> và thời gian <b>paidAt</b>
-        nằm trong khoảng thống kê.
-      </div>
       <div class="hr"></div>
 
       <div class="table-wrap">
@@ -485,11 +490,109 @@
               <td style="text-align: right">
                 <b th:text="${inv.totalAmount}">0</b>
               </td>
-              <td th:text="${inv.paymentMethod}">CASH</td>
+              <td
+                th:text="${inv.paymentMethod == 'CASH' ? 'Tiền mặt' : (inv.paymentMethod == 'VNPAY' ? 'VNPay' : (inv.paymentMethod == 'BANK_TRANSFER' ? 'Chuyển khoản' : inv.paymentMethod))}"
+              >
+                CASH
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <script th:inline="javascript">
+      (function () {
+        function readThreeDigits(num, full) {
+          const digits = [
+            "không",
+            "một",
+            "hai",
+            "ba",
+            "bốn",
+            "năm",
+            "sáu",
+            "bảy",
+            "tám",
+            "chín",
+          ];
+          const hundred = Math.floor(num / 100);
+          const ten = Math.floor((num % 100) / 10);
+          const unit = num % 10;
+          const parts = [];
+
+          if (hundred > 0 || full) {
+            parts.push(digits[hundred] + " trăm");
+          }
+
+          if (ten > 1) {
+            parts.push(digits[ten] + " mươi");
+            if (unit === 1) {
+              parts.push("mốt");
+            } else if (unit === 4) {
+              parts.push("tư");
+            } else if (unit === 5) {
+              parts.push("lăm");
+            } else if (unit > 0) {
+              parts.push(digits[unit]);
+            }
+          } else if (ten === 1) {
+            parts.push("mười");
+            if (unit === 5) {
+              parts.push("lăm");
+            } else if (unit > 0) {
+              parts.push(digits[unit]);
+            }
+          } else if (ten === 0 && unit > 0) {
+            if (hundred > 0 || full) {
+              parts.push("lẻ");
+            }
+            if (unit === 5 && (hundred > 0 || full)) {
+              parts.push("năm");
+            } else {
+              parts.push(digits[unit]);
+            }
+          }
+
+          return parts.join(" ").trim();
+        }
+
+        function numberToVietnamese(num) {
+          num = Math.floor(Math.abs(Number(num) || 0));
+          if (num === 0) return "Không đồng";
+
+          const units = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
+          const chunks = [];
+          while (num > 0) {
+            chunks.push(num % 1000);
+            num = Math.floor(num / 1000);
+          }
+
+          const parts = [];
+          let hasHigherNonZero = false;
+          for (let i = chunks.length - 1; i >= 0; i--) {
+            const chunk = chunks[i];
+            if (chunk === 0) {
+              if (hasHigherNonZero) {
+                // keep context for lower groups, but skip empty group text
+              }
+              continue;
+            }
+            const full = hasHigherNonZero;
+            const chunkText = readThreeDigits(chunk, full);
+            parts.push(chunkText + (units[i] ? " " + units[i] : ""));
+            hasHigherNonZero = true;
+          }
+
+          const result = parts.join(" ").replace(/\s+/g, " ").trim();
+          return result.charAt(0).toUpperCase() + result.slice(1) + " đồng";
+        }
+
+        const target = document.getElementById("expectedCashInWords");
+        if (!target) return;
+        const raw = target.getAttribute("data-amount") || "0";
+        target.textContent = numberToVietnamese(raw);
+      })();
+    </script>
   </section>
 </html>

@@ -62,19 +62,19 @@
                 value="OPEN"
                 th:selected="${status != null && status.name() == 'OPEN'}"
               >
-                OPEN
+                Đang mở
               </option>
               <option
                 value="ACTIVE"
                 th:selected="${status != null && status.name() == 'ACTIVE'}"
               >
-                ACTIVE
+                Đang hoạt động
               </option>
               <option
                 value="CLOSED"
                 th:selected="${status != null && status.name() == 'CLOSED'}"
               >
-                CLOSED
+                Đã đóng
               </option>
             </select>
           </div>
@@ -145,8 +145,8 @@
                 <span
                   class="badge"
                   th:classappend="${s.status.name() == 'OPEN'} ? ' badge-ok' : ' badge-muted'"
-                  th:text="${s.status}"
-                  >OPEN</span
+                  th:text="${s.status.label}"
+                  >Đang mở</span
                 >
               </td>
               <td th:text="${s.totalMinutes}">60</td>
@@ -180,7 +180,7 @@
                     th:action="@{/room-sessions/close/{id}(id=${s.id})}"
                     method="post"
                     style="display: inline"
-                    onsubmit="return confirm('Đóng phòng và tính tiền?');"
+                    data-confirm="Đóng phòng và tính tiền?"
                   >
                     <button class="btn btn-primary btn-sm" type="submit">
                       Đóng phòng

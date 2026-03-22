@@ -63,13 +63,13 @@
                 value="OPEN"
                 th:selected="${status != null && status.name() == 'OPEN'}"
               >
-                OPEN
+                Đang mở
               </option>
               <option
                 value="CLOSED"
                 th:selected="${status != null && status.name() == 'CLOSED'}"
               >
-                CLOSED
+                Đã đóng
               </option>
             </select>
           </div>
@@ -114,9 +114,9 @@
               <td>
                 <span
                   class="badge"
-                  th:classappend="${s.status.name() == 'OPEN'} ? ' badge-ok' : ' badge-muted'"
-                  th:text="${s.status}"
-                  >OPEN</span
+                  th:classappend="${s.status.name() == 'OPEN'} ? ' badge-status-open' : ' badge-status-closed'"
+                  th:text="${s.status.label}"
+                  >Đang mở</span
                 >
               </td>
               <td

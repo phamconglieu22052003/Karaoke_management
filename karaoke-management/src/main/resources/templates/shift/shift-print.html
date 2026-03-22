@@ -91,7 +91,7 @@
         <h1>BÁO CÁO CA</h1>
         <div class="muted">Shift ID: <b th:text="${shift.id}">1</b></div>
         <div class="muted">
-          Trạng thái: <b th:text="${shift.status.label}">OPEN</b>
+          Trạng thái: <b th:text="${shift.status.label}">Đang mở</b>
         </div>
       </div>
       <div style="text-align: right">
@@ -127,7 +127,7 @@
     <table>
       <tbody>
         <tr>
-          <td>Số hóa đơn PAID</td>
+          <td>Số hóa đơn đã thanh toán</td>
           <td class="right" th:text="${summary.invoiceCount}">0</td>
         </tr>
         <tr>
@@ -175,7 +175,7 @@
       </tbody>
     </table>
 
-    <h2>Danh sách hóa đơn PAID</h2>
+    <h2>Danh sách hóa đơn đã thanh toán</h2>
     <table>
       <thead>
         <tr>
@@ -207,7 +207,11 @@
             P101
           </td>
           <td class="right" th:text="${inv.totalAmount}">0</td>
-          <td th:text="${inv.paymentMethod}">CASH</td>
+          <td
+            th:text="${inv.paymentMethod == 'CASH' ? 'Tiền mặt' : (inv.paymentMethod == 'VNPAY' ? 'VNPay' : (inv.paymentMethod == 'BANK_TRANSFER' ? 'Chuyển khoản' : inv.paymentMethod))}"
+          >
+            CASH
+          </td>
         </tr>
       </tbody>
     </table>

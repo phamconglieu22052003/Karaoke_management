@@ -8,7 +8,13 @@
     <h2>VNPay Demo - Quét QR để thanh toán</h2>
 
     <p>Hóa đơn: <b th:text="${invoice.id}">0</b></p>
-    <p>Trạng thái hiện tại: <b th:text="${invoice.status.label}">UNPAID</b></p>
+    <p>
+      Trạng thái hiện tại:
+      <b
+        th:text="${invoice.status != null and invoice.status.name() == 'PAID'} ? 'Đã thanh toán' : 'Chưa thanh toán'"
+        >Chưa thanh toán</b
+      >
+    </p>
 
     <p>Khách dùng điện thoại quét QR bên dưới:</p>
 

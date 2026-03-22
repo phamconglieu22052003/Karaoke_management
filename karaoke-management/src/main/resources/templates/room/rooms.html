@@ -128,9 +128,9 @@
               onchange="filterRooms()"
             >
               <option value="">Tất cả</option>
-              <option value="AVAILABLE">AVAILABLE</option>
-              <option value="OCCUPIED">OCCUPIED</option>
-              <option value="MAINTENANCE">MAINTENANCE</option>
+              <option value="AVAILABLE">Phòng trống</option>
+              <option value="OCCUPIED">Đang sử dụng</option>
+              <option value="MAINTENANCE">Bảo trì</option>
             </select>
           </div>
         </div>
@@ -206,7 +206,7 @@
                     (${r.status.name() == 'OCCUPIED'} ? ' badge-warn' : ' badge-muted')
                   "
                   th:text="${r.status.label}"
-                  >AVAILABLE</span
+                  >Phòng trống</span
                 >
               </td>
 
@@ -217,7 +217,7 @@
                     th:action="@{/room-sessions/open}"
                     method="post"
                     style="display: inline"
-                    onsubmit="return confirm('Mở phòng này?');"
+                    data-confirm="Mở phòng này?"
                   >
                     <input type="hidden" name="roomId" th:value="${r.id}" />
                     <button class="btn btn-primary btn-sm" type="submit">
@@ -244,7 +244,7 @@
                     th:action="@{'/rooms/delete/' + ${r.id}}"
                     method="post"
                     style="display: inline"
-                    onsubmit="return confirm('Xoá phòng ' + [[${r.name}]] + ' ?');"
+                    th:attr="data-confirm='Xóa phòng ' + ${r.name} + '?'"
                   >
                     <button class="btn btn-outline btn-sm" type="submit">
                       Xoá

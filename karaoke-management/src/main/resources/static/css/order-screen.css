@@ -1,6 +1,36 @@
 .pos-page {
   padding: 8px 2px;
 }
+
+.pos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 660px;
+  gap: 16px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+.pos-layout > .card {
+  width: 100%;
+  min-width: 0;
+}
+
+.pos-products-card,
+.pos-order-card {
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .pos-layout {
+    grid-template-columns: minmax(0, 1fr) 560px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .pos-layout {
+    grid-template-columns: 1fr;
+  }
+}
 .pos-header {
   display: flex;
   align-items: flex-end;
@@ -148,10 +178,9 @@
   margin-bottom: 14px;
 }
 .pos-filter-bar--top {
-  grid-template-columns: 180px minmax(260px, 1.2fr) 150px minmax(
-      260px,
-      1fr
-    ) 110px;
+  grid-template-columns:
+    180px minmax(260px, 1.2fr) 150px minmax(260px, 1fr)
+    110px;
 }
 @media (max-width: 1280px) {
   .pos-filter-bar,
@@ -199,16 +228,16 @@
 }
 .prod-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 .prod-grid--top {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 @media (max-width: 1280px) {
   .prod-grid,
   .prod-grid--top {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 960px) {
@@ -385,6 +414,44 @@
   max-width: 70px;
   text-align: center;
 }
+
+/* Qty stepper (dễ nhập số lượng trên mobile/touch) */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-qty {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-qty:active {
+  transform: translateY(1px);
+}
+
+.qty-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(13, 110, 253, 0.12);
+  color: #0d6efd;
+  font-weight: 800;
+}
 .order-note-text {
   color: #334155;
   line-height: 1.4;
@@ -428,6 +495,21 @@
     margin-bottom: 4px;
     text-transform: uppercase;
     font-weight: 700;
+  }
+
+  .qty-stepper {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .qty-stepper .input-qty {
+    flex: 1;
+    max-width: none;
+  }
+  .btn-qty {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 20px;
   }
 }
 .last-closed-block {

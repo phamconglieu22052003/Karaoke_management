@@ -205,10 +205,9 @@
               <td>
                 <span
                   class="badge"
-                  th:classappend="${inv.status != null and inv.status.name() == 'PAID'} ? ' badge-ok'
-                    : (${inv.status != null and inv.status.name() == 'UNPAID'} ? ' badge-warn' : ' badge-bad')"
-                  th:text="${inv.status}"
-                  >PAID</span
+                  th:classappend="${inv.status != null and inv.status.name() == 'PAID'} ? ' badge-status-paid' : (${inv.status != null and inv.status.name() == 'UNPAID'} ? ' badge-status-unpaid' : ' badge-status-closed')"
+                  th:text="${inv.status != null and inv.status.name() == 'PAID'} ? 'Đã thanh toán' : (${inv.status != null and inv.status.name() == 'UNPAID'} ? 'Chưa thanh toán' : 'Đã đóng')"
+                  >Đã thanh toán</span
                 >
               </td>
 

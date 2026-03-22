@@ -110,7 +110,7 @@
 
               <td>
                 <span class="badge badge-muted" th:text="${b.status}"
-                  >BOOKED</span
+                  >Đã đặt</span
                 >
               </td>
 
@@ -127,7 +127,7 @@
                     th:action="@{/booking/delete/{id}(id=${b.id})}"
                     method="post"
                     style="display: inline"
-                    onsubmit="return confirm('Xóa booking này?');"
+                    data-confirm="Xóa booking này?"
                   >
                     <button class="btn btn-danger btn-sm" type="submit">
                       Xóa
